@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>0.0.1SNAPSHOT</version>
     </parent>
 
     <artifactId>quarkus-jberet</artifactId>
