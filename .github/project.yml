@@ -1,5 +1,5 @@
-name: Quarkiverse Parent
+name: Quarkiverse JBeret
 release:
-  current-version: 2
-  next-version: 3-SNAPSHOT
+  current-version: 0
+  next-version: 0.0.1-SNAPSHOT
 
