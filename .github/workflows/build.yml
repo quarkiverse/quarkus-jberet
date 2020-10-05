@@ -1,39 +1,37 @@
-name: CI
+name: Build
 
 on:
   push:
-    branches: 
-      - master
+    branches:
+      - "master"
     paths-ignore:
       - '.gitignore'
       - 'CODEOWNERS'
       - 'LICENSE'
-      - 'NOTICE'
       - 'README*'
   pull_request:
-    paths-ignore:
-      - '.gitignore'
-      - 'CODEOWNERS'
-      - 'LICENSE'
-      - 'NOTICE'
-      - 'README*'
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [8, 11]
-    name: build with jdk ${{matrix.java}}
 
     steps:
-      - uses: actions/checkout@v2
-        name: checkout
+    - uses: actions/checkout@v2
 
-      - uses: actions/setup-java@v1.3.0
-        name: set up jdk ${{matrix.java}}
-        with:
-          java-version: ${{matrix.java}}
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
 
-      - name: build with maven
-        run: mvn verify
+    - name: Cache local Maven repository
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+
+    - name: Build with Maven
+      run: mvn formatter:validate verify --file pom.xml
+
