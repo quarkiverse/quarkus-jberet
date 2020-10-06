@@ -8,7 +8,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,6 +40,7 @@ import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
+import io.quarkus.deployment.util.GlobUtil;
 import io.quarkus.runtime.util.ClassPathUtils;
 
 public class JBeretProcessor {
@@ -65,6 +68,7 @@ public class JBeretProcessor {
 
     @BuildStep
     public void loadJobs(
+            JBeretBuildTimeConfig config,
             BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles,
             BuildProducer<BatchJobBuildItem> batchJobs) throws Exception {
 
@@ -72,7 +76,8 @@ public class JBeretProcessor {
         MetaInfBatchJobsJobXmlResolver jobXmlResolver = new MetaInfBatchJobsJobXmlResolver();
 
         ClassPathUtils.consumeAsPaths("META-INF/batch-jobs", path -> {
-            Set<String> batchFilesNames = findBatchFilesFromPath(path);
+            Set<String> batchFilesNames = findBatchFilesFromPath(path, toPatterns(config.jobs.includes),
+                    toPatterns(config.jobs.excludes));
             List<Job> loadedJobs = new ArrayList<>();
 
             batchFilesNames.forEach(jobXmlName -> {
@@ -138,16 +143,31 @@ public class JBeretProcessor {
                 next -> Collections.singletonList(next.getOn()));
     }
 
-    private static Set<String> findBatchFilesFromPath(Path path) {
+    private static Set<String> findBatchFilesFromPath(Path path, List<Pattern> includes, List<Pattern> excludes) {
         try {
-            return Files.walk(path)
+            Stream<String> filePaths = Files.walk(path)
                     .filter(Files::isRegularFile)
                     .map(file -> file.getFileName().toString())
-                    .filter(file -> file.endsWith(".xml"))
-                    .map(file -> file.substring(0, file.length() - 4))
-                    .collect(Collectors.toSet());
+                    .filter(file -> file.endsWith(".xml"));
+
+            if (!includes.isEmpty()) {
+                filePaths = filePaths
+                        .filter(filePath -> includes.stream().allMatch(pattern -> pattern.matcher(filePath).matches()));
+            }
+
+            if (!excludes.isEmpty()) {
+                filePaths = filePaths
+                        .filter(filePath -> excludes.stream().noneMatch(pattern -> pattern.matcher(filePath).matches()));
+            }
+
+            return filePaths.map(file -> file.substring(0, file.length() - 4)).collect(Collectors.toSet());
         } catch (IOException e) {
             return Collections.emptySet();
         }
+    }
+
+    private static List<Pattern> toPatterns(Optional<List<String>> pattern) {
+        return pattern.map(patterns -> patterns.stream().map(GlobUtil::toRegexPattern).map(Pattern::compile).collect(toList()))
+                .orElseGet(ArrayList::new);
     }
 }
