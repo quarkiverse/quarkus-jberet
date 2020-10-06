@@ -1,4 +1,4 @@
-package io.quarkus.jberet.deployment;
+package io.quarkiverse.jberet.deployment;
 
 import static java.util.stream.Collectors.toList;
 import static javax.batch.runtime.Metric.MetricType.COMMIT_COUNT;

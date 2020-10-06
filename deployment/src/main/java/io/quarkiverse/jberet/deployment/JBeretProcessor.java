@@ -1,4 +1,4 @@
-package io.quarkus.jberet.deployment;
+package io.quarkiverse.jberet.deployment;
 
 import static java.util.stream.Collectors.toList;
 
@@ -24,6 +24,8 @@ import org.jberet.job.model.Transition;
 import org.jberet.tools.MetaInfBatchJobsJobXmlResolver;
 import org.jboss.logging.Logger;
 
+import io.quarkiverse.jberet.runtime.JBeretProducer;
+import io.quarkiverse.jberet.runtime.JBeretRecorder;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -36,8 +38,6 @@ import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
-import io.quarkus.jberet.runtime.JBeretProducer;
-import io.quarkus.jberet.runtime.JBeretRecorder;
 import io.quarkus.runtime.util.ClassPathUtils;
 
 public class JBeretProcessor {

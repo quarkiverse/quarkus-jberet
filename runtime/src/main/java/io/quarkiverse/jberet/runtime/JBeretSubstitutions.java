@@ -1,4 +1,4 @@
-package io.quarkus.jberet.runtime;
+package io.quarkiverse.jberet.runtime;
 
 import java.io.Serializable;
 import java.util.Arrays;

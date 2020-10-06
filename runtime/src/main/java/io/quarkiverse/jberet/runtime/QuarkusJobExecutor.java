@@ -1,4 +1,4 @@
-package io.quarkus.jberet.runtime;
+package io.quarkiverse.jberet.runtime;
 
 import java.util.concurrent.Executor;
 

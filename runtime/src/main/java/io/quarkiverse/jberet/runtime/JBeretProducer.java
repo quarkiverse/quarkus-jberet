@@ -1,4 +1,4 @@
-package io.quarkus.jberet.runtime;
+package io.quarkiverse.jberet.runtime;
 
 import javax.batch.operations.JobOperator;
 import javax.enterprise.inject.Produces;

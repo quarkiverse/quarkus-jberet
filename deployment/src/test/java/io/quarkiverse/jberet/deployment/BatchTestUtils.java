@@ -1,4 +1,4 @@
-package io.quarkus.jberet.deployment;
+package io.quarkiverse.jberet.deployment;
 
 import java.util.HashMap;
 import java.util.Map;

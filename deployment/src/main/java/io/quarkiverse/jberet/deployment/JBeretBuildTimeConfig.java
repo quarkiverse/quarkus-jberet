@@ -1,4 +1,4 @@
-package io.quarkus.jberet.deployment;
+package io.quarkiverse.jberet.deployment;
 
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;

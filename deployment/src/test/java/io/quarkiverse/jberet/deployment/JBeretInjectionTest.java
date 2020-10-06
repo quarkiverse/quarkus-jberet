@@ -1,4 +1,4 @@
-package io.quarkus.jberet.deployment;
+package io.quarkiverse.jberet.deployment;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
