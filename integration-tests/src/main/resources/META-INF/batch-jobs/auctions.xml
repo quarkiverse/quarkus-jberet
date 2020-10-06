@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctions" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+  <step id="auctionsChunk">
+    <chunk>
+      <reader ref="auctionItemReader"/>
+      <processor ref="auctionItemProcessor"/>
+      <writer ref="auctionItemWriter"/>
+    </chunk>
+  </step>
+</job>
