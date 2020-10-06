@@ -41,7 +41,7 @@ import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.runtime.util.ClassPathUtils;
 
 public class JBeretProcessor {
-    private static final Logger log = Logger.getLogger("io.quarkus.jberet");
+    private static final Logger log = Logger.getLogger("io.quarkiverse.jberet");
 
     @BuildStep
     public void registerExtension(BuildProducer<FeatureBuildItem> feature, BuildProducer<CapabilityBuildItem> capability) {
@@ -58,37 +58,42 @@ public class JBeretProcessor {
     }
 
     @BuildStep
-    @Record(ExecutionTime.STATIC_INIT)
+    public void additionalBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
+        additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
+        additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
+    }
+
+    @BuildStep
     public void loadJobs(
-            RecorderContext recorderContext,
-            JBeretRecorder recorder,
-            BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles)
-            throws Exception {
+            BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles,
+            BuildProducer<BatchJobBuildItem> batchJobs) throws Exception {
 
-        registerNonDefaultConstructors(recorderContext);
-
-        List<Job> loadedJobs = new ArrayList<>();
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         MetaInfBatchJobsJobXmlResolver jobXmlResolver = new MetaInfBatchJobsJobXmlResolver();
 
         ClassPathUtils.consumeAsPaths("META-INF/batch-jobs", path -> {
             Set<String> batchFilesNames = findBatchFilesFromPath(path);
+            List<Job> loadedJobs = new ArrayList<>();
 
             batchFilesNames.forEach(jobXmlName -> {
                 Job job = ArchiveXmlLoader.loadJobXml(jobXmlName, contextClassLoader, loadedJobs, jobXmlResolver);
                 job.setJobXmlName(jobXmlName);
                 watchedFiles.produce(new HotDeploymentWatchedFileBuildItem("META-INF/batch-jobs/" + jobXmlName + ".xml"));
+                batchJobs.produce(new BatchJobBuildItem(job));
                 log.debug("Processed job with ID " + job.getId() + "  from file " + jobXmlName);
             });
         });
-
-        recorder.registerJobs(loadedJobs);
     }
 
     @BuildStep
-    public void additionalBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
-        additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
-        additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
+    @Record(ExecutionTime.STATIC_INIT)
+    public void registerJobs(
+            RecorderContext recorderContext,
+            JBeretRecorder recorder,
+            List<BatchJobBuildItem> batchJobs) throws Exception {
+        registerNonDefaultConstructors(recorderContext);
+
+        recorder.registerJobs(batchJobs.stream().map(BatchJobBuildItem::getJob).collect(toList()));
     }
 
     @BuildStep
