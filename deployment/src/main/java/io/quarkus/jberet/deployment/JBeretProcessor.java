@@ -26,7 +26,6 @@ import org.jboss.logging.Logger;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
-import io.quarkus.deployment.Feature;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
