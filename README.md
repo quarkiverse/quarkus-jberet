@@ -1,6 +1,9 @@
 # Quarkus JBeret Extension
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![Build](https://github.com/quarkiverse/quarkiverse-jberet/workflows/Build/badge.svg?branch=master)](https://github.com/quarkiverse/quarkiverse-jberet/actions?query=workflow%3ABuild)
+[![License](https://img.shields.io/github/license/quarkiverse/quarkiverse-jberet.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+[![Central](https://img.shields.io/maven-central/v/io.quarkiverse.jberet/quarkus-jberet-parent?color=green)](https://search.maven.org/search?q=a:quarkus-jberet-parent)
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-green.svg)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ## Contributors ✨
