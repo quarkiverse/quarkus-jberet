@@ -48,7 +48,7 @@ public class JBeretProcessor {
 
     @BuildStep
     public void registerExtension(BuildProducer<FeatureBuildItem> feature, BuildProducer<CapabilityBuildItem> capability) {
-        feature.produce(new FeatureBuildItem("JBeret"));
+        feature.produce(new FeatureBuildItem("jberet"));
     }
 
     /**
