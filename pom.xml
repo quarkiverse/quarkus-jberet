@@ -24,7 +24,7 @@
     <compiler.plugin.version>3.8.1</compiler.plugin.version>
     <surefire.plugin.version>2.22.2</surefire.plugin.version>
 
-    <quarkus.version>1.8.0.Final</quarkus.version>
+    <quarkus.version>1.8.3.Final</quarkus.version>
     <jakarta.batch-api.version>1.0.2</jakarta.batch-api.version>
     <jberet.version>1.4.0.Final</jberet.version>
   </properties>
