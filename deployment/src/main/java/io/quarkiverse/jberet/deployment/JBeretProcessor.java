@@ -1,21 +1,30 @@
 package io.quarkiverse.jberet.deployment;
 
 import static java.util.stream.Collectors.toList;
+import static org.jboss.jandex.AnnotationTarget.Kind.CLASS;
+import static org.jboss.jandex.AnnotationValue.createStringValue;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.enterprise.context.Dependent;
+import javax.inject.Named;
+
 import org.jberet.creation.ArchiveXmlLoader;
 import org.jberet.creation.BatchBeanProducer;
+import org.jberet.job.model.BatchArtifacts;
 import org.jberet.job.model.Decision;
 import org.jberet.job.model.Flow;
 import org.jberet.job.model.Job;
@@ -24,12 +33,16 @@ import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
 import org.jberet.job.model.Transition;
 import org.jberet.tools.MetaInfBatchJobsJobXmlResolver;
+import org.jboss.jandex.AnnotationTarget;
 import org.jboss.logging.Logger;
 
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
+import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
+import io.quarkus.arc.processor.AnnotationsTransformer;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -62,9 +75,33 @@ public class JBeretProcessor {
     }
 
     @BuildStep
-    public void additionalBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
+    public void additionalBeans(
+            BuildProducer<AdditionalBeanBuildItem> additionalBeans,
+            BuildProducer<AnnotationsTransformerBuildItem> annotationsTransformer) throws Exception {
+
         additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
+
+        Map<String, String> batchArtifacts = getBatchArtifacts();
+
+        annotationsTransformer.produce(new AnnotationsTransformerBuildItem(new AnnotationsTransformer() {
+            @Override
+            public boolean appliesTo(final AnnotationTarget.Kind kind) {
+                return CLASS.equals(kind);
+            }
+
+            @Override
+            public void transform(final TransformationContext context) {
+                final String className = context.getTarget().asClass().name().toString();
+                if (batchArtifacts.containsKey(className)) {
+                    context.transform()
+                            .add(Unremovable.class)
+                            .add(Dependent.class)
+                            .add(Named.class, createStringValue("value", batchArtifacts.get(className)))
+                            .done();
+                }
+            }
+        }));
     }
 
     @BuildStep
@@ -116,8 +153,6 @@ public class JBeretProcessor {
 
         return new ServiceStartBuildItem("jberet");
     }
-
-    // TODO: add @Dependent to detected batch components without CDI scope
 
     private static void registerNonDefaultConstructors(RecorderContext recorderContext) throws Exception {
         recorderContext.registerNonDefaultConstructor(Job.class.getConstructor(String.class),
@@ -176,5 +211,22 @@ public class JBeretProcessor {
     private static List<Pattern> toPatterns(Optional<List<String>> pattern) {
         return pattern.map(patterns -> patterns.stream().map(GlobUtil::toRegexPattern).map(Pattern::compile).collect(toList()))
                 .orElseGet(ArrayList::new);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, String> getBatchArtifacts() throws Exception {
+        BatchArtifacts batchArtifacts = ArchiveXmlLoader.loadBatchXml(Thread.currentThread().getContextClassLoader());
+        if (batchArtifacts == null) {
+            return Collections.emptyMap();
+        }
+
+        Field refs = BatchArtifacts.class.getDeclaredField("refs");
+        refs.setAccessible(true);
+        Map<String, String> refsToClass = (Map<String, String>) refs.get(batchArtifacts);
+        Map<String, String> classToRefs = new HashMap<>();
+        for (Map.Entry<String, String> entry : refsToClass.entrySet()) {
+            classToRefs.put(entry.getValue(), entry.getKey());
+        }
+        return classToRefs;
     }
 }
