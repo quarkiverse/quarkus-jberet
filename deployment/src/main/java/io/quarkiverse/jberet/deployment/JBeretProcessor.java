@@ -37,6 +37,7 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CapabilityBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
+import io.quarkus.deployment.builditem.RunTimeConfigurationSourceValueBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
@@ -99,6 +100,12 @@ public class JBeretProcessor {
         registerNonDefaultConstructors(recorderContext);
 
         recorder.registerJobs(batchJobs.stream().map(BatchJobBuildItem::getJob).collect(toList()));
+    }
+
+    @BuildStep
+    @Record(ExecutionTime.RUNTIME_INIT)
+    public RunTimeConfigurationSourceValueBuildItem config(JBeretRecorder recorder) {
+        return new RunTimeConfigurationSourceValueBuildItem(recorder.config());
     }
 
     @BuildStep
