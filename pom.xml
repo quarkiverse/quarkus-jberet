@@ -21,7 +21,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <compiler.plugin.version>3.8.1</compiler.plugin.version>
-    <surefire.plugin.version>2.22.2</surefire.plugin.version>
+    <surefire.plugin.version>3.0.0-M5</surefire.plugin.version>
+    <staging.plugin.version>1.6.8</staging.plugin.version>
 
     <quarkus.version>1.9.2.Final</quarkus.version>
     <jakarta.batch-api.version>1.0.2</jakarta.batch-api.version>
@@ -32,6 +33,7 @@
     <module>deployment</module>
     <module>runtime</module>
     <module>integration-tests</module>
+    <module>testsuite</module>
   </modules>
 
   <build>
