@@ -1,4 +1,4 @@
-package io.quarkiverse.jberet.it;
+package io.quarkiverse.jberet.it.chunk;
 
 import static io.restassured.RestAssured.given;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
@@ -15,7 +15,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import io.quarkiverse.jberet.it.AuctionResource.JobData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
@@ -43,17 +42,17 @@ class AuctionsJobTest {
 
     @Test
     void auctions() {
-        JobData jobData = given()
+        AuctionResource.JobData jobData = given()
                 .get("/auctions/job/execute/auctions.json")
                 .then()
                 .statusCode(200)
-                .extract().as(JobData.class);
+                .extract().as(AuctionResource.JobData.class);
 
         await().atMost(5, TimeUnit.SECONDS).until(() -> {
-            JobData current = given().get("/auctions/job/execution/{id}", jobData.getExecutionId())
+            AuctionResource.JobData current = given().get("/auctions/job/execution/{id}", jobData.getExecutionId())
                     .then()
                     .statusCode(200)
-                    .extract().as(JobData.class);
+                    .extract().as(AuctionResource.JobData.class);
             return BatchStatus.COMPLETED.equals(BatchStatus.valueOf(current.getStatus()));
         });
 

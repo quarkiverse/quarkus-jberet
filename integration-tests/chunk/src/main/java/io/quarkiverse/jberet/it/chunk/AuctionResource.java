@@ -1,4 +1,4 @@
-package io.quarkiverse.jberet.it;
+package io.quarkiverse.jberet.it.chunk;
 
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 

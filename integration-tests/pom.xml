@@ -8,6 +8,8 @@
   </parent>
 
   <artifactId>quarkus-jberet-integration-tests</artifactId>
+  <packaging>pom</packaging>
+
   <name>Quarkus - JBeret - Integrations Tests</name>
 
   <dependencies>
@@ -56,6 +58,10 @@
       </plugin>
     </plugins>
   </build>
+
+  <modules>
+    <module>chunk</module>
+  </modules>
 
   <profiles>
     <profile>

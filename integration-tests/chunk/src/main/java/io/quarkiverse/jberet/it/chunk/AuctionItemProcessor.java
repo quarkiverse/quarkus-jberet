@@ -1,4 +1,4 @@
-package io.quarkiverse.jberet.it;
+package io.quarkiverse.jberet.it.chunk;
 
 import java.time.LocalDate;
 
