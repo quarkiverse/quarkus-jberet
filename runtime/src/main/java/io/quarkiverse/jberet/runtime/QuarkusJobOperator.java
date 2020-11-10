@@ -20,11 +20,13 @@ public class QuarkusJobOperator extends AbstractJobOperator {
     private final Map<String, Job> jobs;
 
     public QuarkusJobOperator(
+            final JBeretConfig config,
             final ManagedExecutor managedExecutor,
             final TransactionManager transactionManager,
             final List<Job> jobs) {
 
-        this.batchEnvironment = new QuarkusBatchEnvironment(new QuarkusJobExecutor(managedExecutor), transactionManager);
+        this.batchEnvironment = new QuarkusBatchEnvironment(config, new QuarkusJobExecutor(managedExecutor),
+                transactionManager);
         this.jobs = jobs.stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
     }
 

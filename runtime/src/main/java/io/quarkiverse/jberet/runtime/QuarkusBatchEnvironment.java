@@ -7,7 +7,6 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
 import org.jberet.creation.AbstractArtifactFactory;
-import org.jberet.repository.InMemoryRepository;
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
@@ -25,11 +24,14 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
 
     private static final Properties PROPS = new Properties();
 
-    public QuarkusBatchEnvironment(final JobExecutor jobExecutor, final TransactionManager transactionManager) {
+    public QuarkusBatchEnvironment(
+            final JBeretConfig config,
+            final JobExecutor jobExecutor,
+            final TransactionManager transactionManager) {
 
         this.artifactFactory = new QuarkusArtifactFactory();
         this.jobExecutor = jobExecutor;
-        this.jobRepository = new InMemoryRepository();
+        this.jobRepository = JBeretRepositoryFactory.getJobRepository(config);
         this.transactionManager = transactionManager;
     }
 

@@ -1,5 +1,6 @@
 package io.quarkiverse.jberet.deployment;
 
+import static io.quarkiverse.jberet.runtime.JBeretConfig.Repository.Type.JDBC;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.jandex.AnnotationTarget.Kind.CLASS;
 import static org.jboss.jandex.AnnotationValue.createStringValue;
@@ -36,8 +37,10 @@ import org.jberet.tools.MetaInfBatchJobsJobXmlResolver;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.logging.Logger;
 
+import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
+import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
@@ -53,6 +56,7 @@ import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationSourceValueBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
+import io.quarkus.deployment.configuration.ConfigurationError;
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.deployment.util.GlobUtil;
 import io.quarkus.runtime.util.ClassPathUtils;
@@ -106,7 +110,7 @@ public class JBeretProcessor {
 
     @BuildStep
     public void loadJobs(
-            JBeretBuildTimeConfig config,
+            JBeretConfig config,
             BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles,
             BuildProducer<BatchJobBuildItem> batchJobs) throws Exception {
 
@@ -147,9 +151,14 @@ public class JBeretProcessor {
 
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
-    ServiceStartBuildItem init(JBeretRecorder recorder, BeanContainerBuildItem beanContainer) {
+    ServiceStartBuildItem init(JBeretRecorder recorder,
+            JBeretConfig config,
+            BeanContainerBuildItem beanContainer,
+            List<JdbcDataSourceBuildItem> datasources) {
 
-        recorder.initJobOperator(beanContainer.getValue());
+        validateRepository(config, datasources);
+
+        recorder.initJobOperator(config, beanContainer.getValue());
 
         return new ServiceStartBuildItem("jberet");
     }
@@ -228,5 +237,17 @@ public class JBeretProcessor {
             classToRefs.put(entry.getValue(), entry.getKey());
         }
         return classToRefs;
+    }
+
+    private static void validateRepository(
+            final JBeretConfig config,
+            final List<JdbcDataSourceBuildItem> datasources) {
+
+        if (JDBC.equals(config.repository.type)) {
+            final String datasource = config.repository.jdbc.datasource;
+            if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
+                throw new ConfigurationError("TODO");
+            }
+        }
     }
 }

@@ -47,11 +47,12 @@ public class JBeretRecorder {
         return new RuntimeValue<>(new JBeretConfigSourceProvider(properties));
     }
 
-    public void initJobOperator(BeanContainer beanContainer) {
+    public void initJobOperator(final JBeretConfig config, final BeanContainer beanContainer) {
         ManagedExecutor managedExecutor = beanContainer.instance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.instance(TransactionManager.class);
 
-        QuarkusJobOperator operator = new QuarkusJobOperator(managedExecutor, transactionManager, JBeretDataHolder.getJobs());
+        QuarkusJobOperator operator = new QuarkusJobOperator(config, managedExecutor, transactionManager,
+                JBeretDataHolder.getJobs());
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
     }
