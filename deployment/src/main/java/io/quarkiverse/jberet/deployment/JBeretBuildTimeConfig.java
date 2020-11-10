@@ -14,10 +14,10 @@ public class JBeretBuildTimeConfig {
      *
      */
     @ConfigItem
-    public JobsConfig jobs;
+    public JobConfig job;
 
     @ConfigGroup
-    public static class JobsConfig {
+    public static class JobConfig {
         /**
          *
          */
