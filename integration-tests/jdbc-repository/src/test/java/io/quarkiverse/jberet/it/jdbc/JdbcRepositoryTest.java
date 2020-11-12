@@ -2,6 +2,7 @@ package io.quarkiverse.jberet.it.jdbc;
 
 import static io.restassured.RestAssured.given;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -26,6 +27,7 @@ class JdbcRepositoryTest {
         RestAssured.filters(
                 (requestSpec, responseSpec, ctx) -> {
                     requestSpec.header(new Header(ACCEPT, APPLICATION_JSON));
+                    requestSpec.header(new Header(CONTENT_TYPE, APPLICATION_JSON));
                     return ctx.next(requestSpec, responseSpec);
                 },
                 new RequestLoggingFilter(),
@@ -41,9 +43,9 @@ class JdbcRepositoryTest {
     @Test
     void jdbc() {
         given()
-                .get("/batch/job/execute")
+                .post("/jobs/{jobXmlName}/start", "jdbc")
                 .then()
-                .statusCode(200);
+                .statusCode(201);
 
         given().get("/repository/instances/jdbc")
                 .then()

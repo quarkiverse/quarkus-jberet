@@ -1,6 +1,9 @@
 package io.quarkiverse.jberet.deployment;
 
+import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -12,10 +15,14 @@ import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 
 import org.jberet.repository.JobRepository;
+import org.jberet.rest.client.BatchClient;
+import org.jberet.rest.entity.JobExecutionEntity;
 import org.jberet.runtime.JobExecutionImpl;
 import org.jberet.runtime.StepExecutionImpl;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -24,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.common.http.TestHTTPResourceManager;
 
 public class BatchletTest {
     @RegisterExtension
@@ -116,6 +124,33 @@ public class BatchletTest {
         long restartId = jobOperator.restart(executionId, new Properties());
         await().atMost(5, TimeUnit.SECONDS).until(() -> {
             JobExecution jobExecution = jobOperator.getJobExecution(restartId);
+            return BatchStatus.COMPLETED.equals(jobExecution.getBatchStatus());
+        });
+    }
+
+    public static class BatchClientTestProducer {
+        @Produces
+        @Singleton
+        public BatchClient batchClient() {
+            return new BatchClient(TestHTTPResourceManager.getUri());
+        }
+    }
+
+    @Inject
+    BatchClient batchClient;
+
+    @Test
+    void rest() throws Exception {
+        Properties jobParameters = new Properties();
+        jobParameters.setProperty("name", "david");
+        JobExecutionEntity jobExecutionEntity = batchClient.startJob("batchlet", jobParameters);
+
+        assertNotNull(jobExecutionEntity);
+        assertEquals("batchlet-job", jobExecutionEntity.getJobName());
+        assertEquals(BatchStatus.STARTING, jobExecutionEntity.getBatchStatus());
+
+        await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            JobExecutionEntity jobExecution = batchClient.getJobExecution(jobExecutionEntity.getExecutionId());
             return BatchStatus.COMPLETED.equals(jobExecution.getBatchStatus());
         });
     }

@@ -1,5 +1,6 @@
 package io.quarkiverse.jberet.it.chunk;
 
+import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static io.restassured.RestAssured.given;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -7,10 +8,13 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.batch.runtime.BatchStatus;
 
+import org.jberet.rest.client.BatchClient;
+import org.jberet.rest.entity.JobExecutionEntity;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -41,19 +45,16 @@ class AuctionsJobTest {
     }
 
     @Test
-    void auctions() {
-        AuctionResource.JobData jobData = given()
-                .get("/auctions/job/execute/auctions.json")
-                .then()
-                .statusCode(200)
-                .extract().as(AuctionResource.JobData.class);
+    void auctions() throws Exception {
+        BatchClient batchClient = new BatchClient(getUri());
+
+        Properties properties = new Properties();
+        properties.setProperty("auctions.file", "auctions.json");
+        JobExecutionEntity auctions = batchClient.startJob("auctions", properties);
 
         await().atMost(5, TimeUnit.SECONDS).until(() -> {
-            AuctionResource.JobData current = given().get("/auctions/job/execution/{id}", jobData.getExecutionId())
-                    .then()
-                    .statusCode(200)
-                    .extract().as(AuctionResource.JobData.class);
-            return BatchStatus.COMPLETED.equals(BatchStatus.valueOf(current.getStatus()));
+            JobExecutionEntity jobExecution = batchClient.getJobExecution(auctions.getExecutionId());
+            return BatchStatus.COMPLETED.equals(jobExecution.getBatchStatus());
         });
 
         Auction auction = given().get("/auctions/{id}", 279573567L).then().statusCode(200).extract().as(Auction.class);
