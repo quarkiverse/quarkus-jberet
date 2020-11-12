@@ -17,6 +17,7 @@ import javax.json.bind.JsonbException;
 
 import org.jberet._private.BatchLogger;
 import org.jberet._private.BatchMessages;
+import org.jberet.rest.entity.BatchExceptionEntity;
 import org.jberet.runtime.SerializableData;
 import org.jberet.util.BatchUtil;
 
@@ -158,6 +159,24 @@ public class JBeretSubstitutions {
             decoder.decode(bb, cb, true);
             decoder.flush(cb);
             return new String(cb.array(), 0, cb.position());
+        }
+    }
+
+    @TargetClass(BatchExceptionEntity.class)
+    static final class Target_BatchExceptionEntity implements Serializable {
+        @Alias
+        private Class<? extends BatchRuntimeException> type;
+        @Alias
+        private String message;
+        @Alias
+        private String stackTrace;
+
+        @Substitute
+        @TargetElement(name = TargetElement.CONSTRUCTOR_NAME)
+        public Target_BatchExceptionEntity(final BatchRuntimeException ex) {
+            type = ex.getClass();
+            message = ex.getMessage();
+            stackTrace = getStackTraceAsString(ex);
         }
     }
 
