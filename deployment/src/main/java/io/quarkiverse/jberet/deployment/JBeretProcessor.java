@@ -56,6 +56,7 @@ import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationSourceValueBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.configuration.ConfigurationError;
 import io.quarkus.deployment.recording.RecorderContext;
@@ -171,6 +172,12 @@ public class JBeretProcessor {
         recorder.initJobOperator(config, beanContainer.getValue());
 
         return new ServiceStartBuildItem("jberet");
+    }
+
+    @BuildStep
+    public void nativeImage(BuildProducer<NativeImageResourceBuildItem> resources) {
+        resources.produce(new NativeImageResourceBuildItem("sql/jberet-sql.properties"));
+        resources.produce(new NativeImageResourceBuildItem("sql/jberet.ddl"));
     }
 
     private static void registerNonDefaultConstructors(RecorderContext recorderContext) throws Exception {
