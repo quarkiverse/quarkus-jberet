@@ -62,6 +62,7 @@
   <modules>
     <module>chunk</module>
     <module>jdbc-repository</module>
+    <module>scheduler</module>
   </modules>
 
   <profiles>

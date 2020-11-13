@@ -40,6 +40,7 @@ import org.jboss.logging.Logger;
 import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
+import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
 import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -57,6 +58,7 @@ import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationSourceValueBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.configuration.ConfigurationError;
 import io.quarkus.deployment.recording.RecorderContext;
@@ -175,9 +177,12 @@ public class JBeretProcessor {
     }
 
     @BuildStep
-    public void nativeImage(BuildProducer<NativeImageResourceBuildItem> resources) {
+    public void nativeImage(BuildProducer<NativeImageResourceBuildItem> resources,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClasses) {
         resources.produce(new NativeImageResourceBuildItem("sql/jberet-sql.properties"));
         resources.produce(new NativeImageResourceBuildItem("sql/jberet.ddl"));
+
+        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, false, false, QuarkusJobScheduler.class));
     }
 
     private static void registerNonDefaultConstructors(RecorderContext recorderContext) throws Exception {

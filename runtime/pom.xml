@@ -82,6 +82,13 @@
             <artifactId>wildfly-security-manager</artifactId>
             <version>1.1.2.Final</version>
         </dependency>
+
+        <!-- TODO, Only required by Schedule using the ScheduleExpression. We need to rewrite this -->
+        <dependency>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+            <version>1.0.0.Final</version>
+        </dependency>
     </dependencies>
 
     <build>
