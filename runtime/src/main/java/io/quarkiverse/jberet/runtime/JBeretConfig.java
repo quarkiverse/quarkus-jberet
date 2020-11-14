@@ -15,7 +15,7 @@ public class JBeretConfig {
      *
      */
     @ConfigItem
-    public JobConfig job;
+    public JobsConfig jobs;
 
     /**
      *
@@ -24,7 +24,7 @@ public class JBeretConfig {
     public Repository repository;
 
     @ConfigGroup
-    public static class JobConfig {
+    public static class JobsConfig {
         /**
          *
          */

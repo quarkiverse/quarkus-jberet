@@ -131,8 +131,8 @@ public class JBeretProcessor {
         MetaInfBatchJobsJobXmlResolver jobXmlResolver = new MetaInfBatchJobsJobXmlResolver();
 
         ClassPathUtils.consumeAsPaths("META-INF/batch-jobs", path -> {
-            Set<String> batchFilesNames = findBatchFilesFromPath(path, toPatterns(config.job.includes),
-                    toPatterns(config.job.excludes));
+            Set<String> batchFilesNames = findBatchFilesFromPath(path, toPatterns(config.jobs.includes),
+                    toPatterns(config.jobs.excludes));
             List<Job> loadedJobs = new ArrayList<>();
 
             batchFilesNames.forEach(jobXmlName -> {
