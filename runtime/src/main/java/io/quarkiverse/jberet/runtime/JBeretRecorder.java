@@ -3,6 +3,7 @@ package io.quarkiverse.jberet.runtime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.transaction.TransactionManager;
 
@@ -17,7 +18,12 @@ import org.jberet.job.model.Properties;
 import org.jberet.job.model.RefArtifact;
 import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
+import org.jberet.schedule.JobScheduler;
 import org.jberet.spi.JobOperatorContext;
+
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.parser.CronParser;
 
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.RuntimeValue;
@@ -25,8 +31,8 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class JBeretRecorder {
-    public void registerJobs(List<Job> jobs) {
-        JBeretDataHolder.registerJobs(jobs);
+    public void registerJobs(List<Job> jobs, List<JBeretDataHolder.JobSchedule> schedules) {
+        JBeretDataHolder.registerJobs(jobs, schedules);
     }
 
     public RuntimeValue<ConfigSourceProvider> config() {
@@ -55,6 +61,17 @@ public class JBeretRecorder {
                 JBeretDataHolder.getJobs());
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
+    }
+
+    public void initScheduler() {
+        QuarkusJobScheduler jobScheduler = (QuarkusJobScheduler) JobScheduler.getJobScheduler(QuarkusJobScheduler.class,
+                new ConcurrentHashMap<>(), null);
+
+        // TODO - Record Cron
+        CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
+        for (JBeretDataHolder.JobSchedule schedule : JBeretDataHolder.getSchedules()) {
+            jobScheduler.schedule(schedule.getConfig(), parser.parse(schedule.getCron()));
+        }
     }
 
     private static void addConfigNames(final Set<String> properties, final JobElement jobElement) {

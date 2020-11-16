@@ -1,7 +1,5 @@
 package io.quarkiverse.jberet.runtime;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import javax.batch.operations.JobOperator;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
@@ -49,6 +47,6 @@ public class JBeretProducer {
     @DefaultBean
     @Singleton
     public JobScheduler jobScheduler() {
-        return JobScheduler.getJobScheduler(QuarkusJobScheduler.class, new ConcurrentHashMap<>(), null);
+        return JobScheduler.getJobScheduler();
     }
 }

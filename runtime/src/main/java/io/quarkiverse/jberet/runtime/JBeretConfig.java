@@ -1,6 +1,7 @@
 package io.quarkiverse.jberet.runtime;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import io.quarkus.datasource.common.runtime.DataSourceUtil;
@@ -15,6 +16,12 @@ public class JBeretConfig {
      *
      */
     @ConfigItem
+    public Map<String, JobConfig> job;
+
+    /**
+     *
+     */
+    @ConfigItem
     public JobsConfig jobs;
 
     /**
@@ -22,6 +29,15 @@ public class JBeretConfig {
      */
     @ConfigItem
     public Repository repository;
+
+    @ConfigGroup
+    public static class JobConfig {
+        /**
+         *
+         */
+        @ConfigItem
+        public Optional<String> cron;
+    }
 
     @ConfigGroup
     public static class JobsConfig {
