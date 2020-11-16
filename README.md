@@ -6,6 +6,26 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-green.svg)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
+The Quarkus JBeret Extension adds support for 
+[JSR-352 Batch Applications for the Java Platform](https://jcp.org/en/jsr/detail?id=352). 
+[JBeret](https://github.com/jberet) is an implementation of JSR-352.
+
+## Usage
+
+To use the extension, add the dependency to the target project:
+
+```xml
+<dependency>
+  <groupId>io.quarkiverse.jberet</groupId>
+  <artifactId>quarkus-jberet</artifactId>
+  <version>0.0.1</version>
+</dependency>
+```
+
+The JBatch API and Runtime will be available out of the box. Please refer to the 
+[JBatch documentation](https://jcp.org/en/jsr/detail?id=352), or the 
+[JBeret documentation](https://jberet.gitbooks.io/jberet-user-guide/content/) to learn about JBatch.   
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
