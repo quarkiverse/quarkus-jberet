@@ -5,6 +5,7 @@
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet-parent</artifactId>
         <version>0.0.2-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>quarkus-jberet</artifactId>
