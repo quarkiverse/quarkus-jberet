@@ -7,37 +7,37 @@
         <version>0.0.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>quarkus-jberet-deployment</artifactId>
-    <name>Quarkus - JBeret - Deployment</name>
+    <artifactId>quarkus-jberet-rest-deployment</artifactId>
+    <name>Quarkus - JBeret - REST Deployment</name>
 
     <dependencies>
         <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-core-deployment</artifactId>
+            <groupId>io.quarkiverse.jberet</groupId>
+            <artifactId>quarkus-jberet-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-arc-deployment</artifactId>
+            <artifactId>quarkus-resteasy-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-narayana-jta-deployment</artifactId>
+            <artifactId>quarkus-resteasy-jsonb-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-context-propagation-deployment</artifactId>
+            <artifactId>quarkus-rest-client-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-jsonb-deployment</artifactId>
+            <artifactId>quarkus-rest-client-jsonb-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-agroal-deployment</artifactId>
+            <artifactId>quarkus-jackson-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.jberet</groupId>
-            <artifactId>quarkus-jberet</artifactId>
+            <artifactId>quarkus-jberet-rest</artifactId>
         </dependency>
 
         <dependency>

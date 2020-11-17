@@ -61,7 +61,6 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CapabilityBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
-import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationSourceValueBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
@@ -70,7 +69,6 @@ import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildI
 import io.quarkus.deployment.configuration.ConfigurationError;
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.deployment.util.GlobUtil;
-import io.quarkus.resteasy.common.spi.ResteasyJaxrsProviderBuildItem;
 import io.quarkus.runtime.util.ClassPathUtils;
 
 public class JBeretProcessor {
@@ -118,14 +116,6 @@ public class JBeretProcessor {
                 }
             }
         }));
-    }
-
-    @BuildStep
-    public void rest(
-            BuildProducer<IndexDependencyBuildItem> indexDependency,
-            BuildProducer<ResteasyJaxrsProviderBuildItem> providers) {
-
-        indexDependency.produce(new IndexDependencyBuildItem("org.jberet", "jberet-rest-api"));
     }
 
     @BuildStep

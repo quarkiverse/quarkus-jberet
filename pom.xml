@@ -34,6 +34,8 @@
   <modules>
     <module>core/deployment</module>
     <module>core/runtime</module>
+    <module>rest/deployment</module>
+    <module>rest/runtime</module>
     <module>integration-tests</module>
     <module>testsuite</module>
   </modules>
@@ -107,6 +109,24 @@
       <dependency>
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.quarkiverse.jberet</groupId>
+        <artifactId>quarkus-jberet-deployment</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.quarkiverse.jberet</groupId>
+        <artifactId>quarkus-jberet-rest</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.quarkiverse.jberet</groupId>
+        <artifactId>quarkus-jberet-deployment-rest</artifactId>
         <version>${project.version}</version>
       </dependency>
     </dependencies>

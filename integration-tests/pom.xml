@@ -18,12 +18,8 @@
       <artifactId>quarkus-jberet</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-jsonb</artifactId>
+      <groupId>io.quarkiverse.jberet</groupId>
+      <artifactId>quarkus-jberet-rest</artifactId>
     </dependency>
 
     <dependency>

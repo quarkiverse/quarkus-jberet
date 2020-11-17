@@ -17,7 +17,6 @@ import javax.json.bind.JsonbException;
 
 import org.jberet._private.BatchLogger;
 import org.jberet._private.BatchMessages;
-import org.jberet.rest.entity.BatchExceptionEntity;
 import org.jberet.runtime.SerializableData;
 import org.jberet.util.BatchUtil;
 
@@ -162,31 +161,13 @@ public class JBeretSubstitutions {
         }
     }
 
-    @TargetClass(BatchExceptionEntity.class)
-    static final class Target_BatchExceptionEntity implements Serializable {
-        @Alias
-        private Class<? extends BatchRuntimeException> type;
-        @Alias
-        private String message;
-        @Alias
-        private String stackTrace;
-
-        @Substitute
-        @TargetElement(name = TargetElement.CONSTRUCTOR_NAME)
-        public Target_BatchExceptionEntity(final BatchRuntimeException ex) {
-            type = ex.getClass();
-            message = ex.getMessage();
-            stackTrace = getStackTraceAsString(ex);
-        }
-    }
-
-    static String getStackTraceAsString(Throwable throwable) {
+    public static String getStackTraceAsString(Throwable throwable) {
         StringWriter stringWriter = new StringWriter();
         throwable.printStackTrace(new PrintWriter(stringWriter));
         return stringWriter.toString();
     }
 
-    static Throwable getRootCause(Throwable throwable) {
+    public static Throwable getRootCause(Throwable throwable) {
         // Keep a second pointer that slowly walks the causal chain. If the fast pointer ever catches
         // the slower pointer, then there's a loop.
         Throwable slowPointer = throwable;
