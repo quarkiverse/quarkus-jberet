@@ -37,6 +37,12 @@ public class JBeretConfig {
          */
         @ConfigItem
         public Optional<String> cron;
+
+        /**
+         *
+         */
+        @ConfigItem
+        public Map<String, String> params;
     }
 
     @ConfigGroup

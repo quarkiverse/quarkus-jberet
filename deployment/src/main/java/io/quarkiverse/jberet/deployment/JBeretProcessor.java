@@ -1,6 +1,7 @@
 package io.quarkiverse.jberet.deployment;
 
 import static io.quarkiverse.jberet.runtime.JBeretConfig.Repository.Type.JDBC;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.jandex.AnnotationTarget.Kind.CLASS;
 import static org.jboss.jandex.AnnotationValue.createStringValue;
@@ -33,7 +34,6 @@ import org.jberet.job.model.RefArtifact;
 import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
 import org.jberet.job.model.Transition;
-import org.jberet.schedule.JobScheduleConfig;
 import org.jberet.tools.MetaInfBatchJobsJobXmlResolver;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.logging.Logger;
@@ -45,7 +45,6 @@ import com.cronutils.parser.CronParser;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
-import io.quarkiverse.jberet.runtime.JBeretDataHolder.JobSchedule;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
 import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
@@ -146,8 +145,9 @@ public class JBeretProcessor {
             batchFilesNames.forEach(jobXmlName -> {
                 Job job = ArchiveXmlLoader.loadJobXml(jobXmlName, contextClassLoader, loadedJobs, jobXmlResolver);
                 job.setJobXmlName(jobXmlName);
+                JobConfig jobConfig = config.job.get(jobXmlName);
                 watchedFiles.produce(new HotDeploymentWatchedFileBuildItem("META-INF/batch-jobs/" + jobXmlName + ".xml"));
-                batchJobs.produce(new BatchJobBuildItem(job, parseCron(jobXmlName, config.job.get(jobXmlName))));
+                batchJobs.produce(new BatchJobBuildItem(job, parseCron(job, jobConfig)));
                 log.debug("Processed job with ID " + job.getId() + "  from file " + jobXmlName);
             });
         });
@@ -158,22 +158,12 @@ public class JBeretProcessor {
     public void registerJobs(
             RecorderContext recorderContext,
             JBeretRecorder recorder,
+            JBeretConfig config,
             List<BatchJobBuildItem> batchJobs) throws Exception {
         registerNonDefaultConstructors(recorderContext);
 
-        List<Job> jobs = new ArrayList<>();
-        List<JobSchedule> schedules = new ArrayList<>();
-        for (BatchJobBuildItem batchJob : batchJobs) {
-            jobs.add(batchJob.getJob());
-
-            if (batchJob.getCron() != null) {
-                JobScheduleConfig config = new JobScheduleConfig();
-                config.setJobName(batchJob.getJob().getJobXmlName());
-                schedules.add(new JobSchedule(config, batchJob.getCron()));
-            }
-        }
-
-        recorder.registerJobs(jobs, schedules);
+        // TODO - Record JobSchedulerConfig - Need changes in the original class.
+        recorder.registerJobs(batchJobs.stream().map(BatchJobBuildItem::getJob).collect(toList()));
     }
 
     @BuildStep
@@ -192,7 +182,7 @@ public class JBeretProcessor {
         validateRepository(config, datasources);
 
         recorder.initJobOperator(config, beanContainer.getValue());
-        recorder.initScheduler();
+        recorder.initScheduler(config);
 
         return new ServiceStartBuildItem("jberet");
     }
@@ -265,21 +255,21 @@ public class JBeretProcessor {
                 .orElseGet(ArrayList::new);
     }
 
-    private static String parseCron(String jobName, JobConfig config) {
-        if (config == null || !config.cron.isPresent()) {
+    private static String parseCron(Job job, JobConfig jobConfig) {
+        if (jobConfig == null || !jobConfig.cron.isPresent()) {
             return null;
         }
 
         try {
             CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
-            Cron cron = parser.parse(config.cron.get());
+            Cron cron = parser.parse(jobConfig.cron.get());
             cron.validate();
-            return config.cron.get();
+            return jobConfig.cron.get();
         } catch (Exception e) {
             e.printStackTrace();
             throw new ConfigurationError(
-                    String.format("The cron expression %s configured in %s is not valid", config.cron.get(),
-                            "quarkus.jberet.job." + jobName + ".cron"));
+                    String.format("The cron expression %s configured in %s is not valid", jobConfig.cron.get(),
+                            "quarkus.jberet.job." + job.getJobXmlName() + ".cron"));
         }
     }
 
@@ -287,7 +277,7 @@ public class JBeretProcessor {
     private static Map<String, String> getBatchArtifacts() throws Exception {
         BatchArtifacts batchArtifacts = ArchiveXmlLoader.loadBatchXml(Thread.currentThread().getContextClassLoader());
         if (batchArtifacts == null) {
-            return Collections.emptyMap();
+            return emptyMap();
         }
 
         Field refs = BatchArtifacts.class.getDeclaredField("refs");

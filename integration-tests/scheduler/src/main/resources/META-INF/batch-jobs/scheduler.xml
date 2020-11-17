@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <job id="scheduler" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
   <step id="schedulerStep">
-    <batchlet ref="schedulerBatchlet"/>
+    <batchlet ref="schedulerBatchlet">
+      <properties>
+        <property name="status" value="#{jobParameters['status']}"/>
+      </properties>
+    </batchlet>
   </step>
 </job>
