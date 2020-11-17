@@ -37,7 +37,6 @@
     <module>rest/deployment</module>
     <module>rest/runtime</module>
     <module>integration-tests</module>
-    <module>testsuite</module>
   </modules>
 
   <build>
