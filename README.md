@@ -44,11 +44,21 @@ The JBeret Quarkus extension supports the following configuration:
 
 The Batch API requires the `@BatchProperty` annotation to inject the specific configuration from the batch definition 
 file. Instead, you can use the `@ConfigProperty` annotation, which is used to inject configuration properties in 
-Quarkus. 
+Quarkus using the MicroProfile Config API and keep consistency:
 
-Although, there is a slight limitation: since Quarkus validates configuration values at startup time, the 
-Batch Job configuration may not be available yet, so injection points pointing to Batch properties need to set a default 
-value or use an `Optional`.
+```java
+@Inject
+@BatchProperty(name = "job.config.name")
+String batchConfig;
+
+// These is equivalent to @BatchProperty injection
+@ConfigProperty(name = "job.config.name")
+Optional<String> mpConfig;
+```
+
+Although, there is a slight limitation: since job configuration is mostly dynamic and only injected on job execution, 
+Quarkus may fail to start due to invalid configuration (can't find the Job configuration values). In this case, 
+configuration injection points with the `@ConfigProperty` annotation need to set a default value or use an `Optional`.     
 
 ### CDI Beans
 
