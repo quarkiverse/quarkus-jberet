@@ -3,13 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.quarkiverse.jberet</groupId>
-        <artifactId>quarkus-jberet-parent</artifactId>
+        <artifactId>quarkus-jberet-core-parent</artifactId>
         <version>0.0.2-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>quarkus-jberet-deployment</artifactId>
-    <name>Quarkus - JBeret - Deployment</name>
+    <name>Quarkus - JBeret - Core Deployment</name>
 
     <dependencies>
         <dependency>

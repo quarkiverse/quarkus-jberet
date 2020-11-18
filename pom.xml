@@ -32,11 +32,11 @@
   </properties>
 
   <modules>
-    <module>core/deployment</module>
-    <module>core/runtime</module>
+    <module>core</module>
     <module>rest/deployment</module>
     <module>rest/runtime</module>
     <module>integration-tests</module>
+    <module>release</module>
   </modules>
 
   <build>
