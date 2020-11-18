@@ -113,7 +113,7 @@ to the target project with the following dependency:
 ```xml
 <dependency>
   <groupId>io.quarkiverse.jberet</groupId>
-  <artifactId>quarkus-jberet</artifactId>
+  <artifactId>quarkus-jberet-rest</artifactId>
   <version>0.0.2</version>
 </dependency>
 ```
