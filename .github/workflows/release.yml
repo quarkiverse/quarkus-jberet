@@ -29,7 +29,7 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-      - uses: actions/setup-java@v1.4.3
+      - uses: actions/setup-java@v1
         with:
           java-version: 11
 
@@ -43,7 +43,7 @@ jobs:
             https://github.com/quarkiverse/quarkiverse-template/blob/master/.github/workflows/release.yml
 
       - name: Configure Git author
-        uses: oleksiyrudenko/gha-git-credentials@v1
+        uses: oleksiyrudenko/gha-git-credentials@v2
         with:
           token: '${{ secrets.GITHUB_TOKEN }}'
 
