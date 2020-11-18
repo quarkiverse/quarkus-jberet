@@ -133,7 +133,7 @@ void start() throws Exception {
  
 ## Example Applications
 
-Example applications can be found inside the integration-test folder:
+Example applications can be found inside the `integration-tests` folder:
 
 * `chunk` - A simple Job that reads, processes, and stores data from a file.
 * `jdbc-repository` - A Job that uses a `jdbc` datasource to store JBeret and Job metadata.
