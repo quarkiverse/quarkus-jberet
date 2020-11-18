@@ -149,7 +149,8 @@ The Quakus JBeret Extension fully supports the Graal Native Image. Except for:
 * A combination of JVM based runners and Native executables when using the `jdbc` Repository type connected to the same 
 datasource. This will corrupt the Batch and Job metadata. This is because the Graal Native Image does not support Java 
 Serialization (used by JBeret to store metadata). The native image substitutes the Java Serializer with a JSON 
-Serializer. Work is underway to provide JBeret with a way to select the serialization mechanism and remove this limitation.  
+Serializer. Work is underway to provide JBeret with a way to select the serialization mechanism and remove this 
+limitation (https://github.com/jberet/jsr352/issues/134).  
 
 ## Contributors ✨
 
