@@ -43,9 +43,9 @@ jobs:
             https://github.com/quarkiverse/quarkiverse-template/blob/master/.github/workflows/release.yml
 
       - name: Configure Git author
-        uses: oleksiyrudenko/gha-git-credentials@v2
-        with:
-          token: '${{ secrets.GITHUB_TOKEN }}'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
 
       - name: maven release ${{steps.metadata.outputs.current-version}}
         run: |
