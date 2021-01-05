@@ -11,6 +11,8 @@ import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
 
 import javax.batch.operations.BatchRuntimeException;
+import javax.batch.operations.JobOperator;
+import javax.batch.runtime.BatchRuntime;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbException;
@@ -18,6 +20,7 @@ import javax.json.bind.JsonbException;
 import org.jberet._private.BatchLogger;
 import org.jberet._private.BatchMessages;
 import org.jberet.runtime.SerializableData;
+import org.jberet.spi.JobOperatorContext;
 import org.jberet.util.BatchUtil;
 
 import com.oracle.svm.core.SubstrateUtil;
@@ -35,6 +38,14 @@ import com.oracle.svm.core.annotate.TargetElement;
  */
 public class JBeretSubstitutions {
     static final Jsonb jsonb = JsonbBuilder.newBuilder().build();
+
+    @TargetClass(BatchRuntime.class)
+    static final class Target_BatchRuntime {
+        @Substitute
+        public static JobOperator getJobOperator() {
+            return JobOperatorContext.getJobOperatorContext().getJobOperator();
+        }
+    }
 
     @TargetClass(SerializableData.class)
     static final class Target_SerializableData {
