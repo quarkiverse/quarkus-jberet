@@ -2,6 +2,8 @@ package io.quarkiverse.jberet.it.chunk;
 
 import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static io.restassured.RestAssured.given;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.batch.runtime.BatchStatus.COMPLETED;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.awaitility.Awaitility.await;
@@ -9,9 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import javax.batch.runtime.BatchStatus;
 
 import org.jberet.rest.client.BatchClient;
 import org.jberet.rest.entity.JobExecutionEntity;
@@ -19,6 +18,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import io.quarkiverse.jberet.it.chunk.BatchResource.JobData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
@@ -52,10 +52,29 @@ class AuctionsJobTest {
         properties.setProperty("auctions.file", "auctions.json");
         JobExecutionEntity auctions = batchClient.startJob("auctions", properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(() -> {
-            JobExecutionEntity jobExecution = batchClient.getJobExecution(auctions.getExecutionId());
-            return BatchStatus.COMPLETED.equals(jobExecution.getBatchStatus());
-        });
+        await().atMost(5, SECONDS)
+                .until(() -> COMPLETED.equals(batchClient.getJobExecution(auctions.getExecutionId()).getBatchStatus()));
+
+        Auction auction = given().get("/auctions/{id}", 279573567L).then().statusCode(200).extract().as(Auction.class);
+        assertNotNull(auction);
+        assertEquals(3800000, auction.getBid());
+        assertEquals(4000000, auction.getBuyout());
+        assertEquals(22792, auction.getItemId());
+        assertEquals(20, auction.getQuantity());
+    }
+
+    @Test
+    void batchRuntime() {
+        JobData jobData = given()
+                .get("/batch/job/execute/auctions.json")
+                .then()
+                .statusCode(200)
+                .extract().as(JobData.class);
+
+        BatchClient batchClient = new BatchClient(getUri());
+
+        await().atMost(5, SECONDS)
+                .until(() -> COMPLETED.equals(batchClient.getJobExecution(jobData.getExecutionId()).getBatchStatus()));
 
         Auction auction = given().get("/auctions/{id}", 279573567L).then().statusCode(200).extract().as(Auction.class);
         assertNotNull(auction);
