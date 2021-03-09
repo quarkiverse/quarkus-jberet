@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="batchletGroovySrc" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/jobXML_1_0.xsd"
+     version="1.0">
+    <step id="batchletGroovySrc.step1">
+        <batchlet>
+            <properties>
+                <property name="testName" value="#{jobParameters['testName']}"/>
+            </properties>
+            <script src="groovy/simple-batchlet.groovy"/>
+        </batchlet>
+    </step>
+</job>

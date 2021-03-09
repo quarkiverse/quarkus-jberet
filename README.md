@@ -142,7 +142,15 @@ Example applications can be found inside the `integration-tests` folder:
 Or take a look into the [World of Warcraft Auctions - Batch Application](https://github.com/radcortez/wow-auctions). It 
 downloads the World of Warcraft Auction House data and provides statistics about items prices. 
 
-## Contributors ✨
+## Native Image Limitations
+
+The Quakus JBeret Extension fully supports the Graal VM Native Image with the following exceptions:
+
+* [Scripting Languages](https://jberet.gitbooks.io/jberet-user-guide/content/develop_batch_artifacts_in_script_languages/). 
+While `Javascript` should work, it is unlikely that other scripting languages will be supported in 
+[Graal](https://github.com/oracle/graaljs/blob/master/docs/user/ScriptEngine.md) via JSR-223. 
+
+## Contributors ✨____
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 

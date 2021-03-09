@@ -29,8 +29,11 @@ import org.jberet.creation.BatchBeanProducer;
 import org.jberet.job.model.BatchArtifacts;
 import org.jberet.job.model.Decision;
 import org.jberet.job.model.Flow;
+import org.jberet.job.model.InheritableJobElement;
 import org.jberet.job.model.Job;
+import org.jberet.job.model.JobElement;
 import org.jberet.job.model.RefArtifact;
+import org.jberet.job.model.Script;
 import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
 import org.jberet.job.model.Transition;
@@ -137,6 +140,7 @@ public class JBeretProcessor {
                 job.setJobXmlName(jobXmlName);
                 JobConfig jobConfig = config.job.get(jobXmlName);
                 watchedFiles.produce(new HotDeploymentWatchedFileBuildItem("META-INF/batch-jobs/" + jobXmlName + ".xml"));
+                watchJobScripts(job, watchedFiles);
                 batchJobs.produce(new BatchJobBuildItem(job, parseCron(job, jobConfig)));
                 log.debug("Processed job with ID " + job.getId() + "  from file " + jobXmlName);
             });
@@ -215,6 +219,13 @@ public class JBeretProcessor {
                 stop -> Stream.of(stop.getOn(), stop.getRestart()).collect(toList()));
         recorderContext.registerNonDefaultConstructor(Transition.Next.class.getConstructor(String.class),
                 next -> Collections.singletonList(next.getOn()));
+
+        recorderContext.registerNonDefaultConstructor(Script.class.getConstructor(String.class, String.class, String.class),
+                script -> Stream
+                        .of(script.getType(), script.getSrc(),
+                                script.getSrc() != null ? script.getContent(Thread.currentThread().getContextClassLoader())
+                                        : script.getContent())
+                        .collect(toList()));
     }
 
     private static Set<String> findBatchFilesFromPath(Path path, List<Pattern> includes, List<Pattern> excludes) {
@@ -289,6 +300,62 @@ public class JBeretProcessor {
             if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
                 throw new ConfigurationError("TODO");
             }
+        }
+    }
+
+    private static void watchJobScripts(Job job, BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles) {
+        for (JobElement jobElement : job.getJobElements()) {
+            watchJobScripts(jobElement, watchedFiles);
+        }
+
+        for (final InheritableJobElement inheritingJobElement : job.getInheritingJobElements()) {
+            watchJobScripts(inheritingJobElement, watchedFiles);
+        }
+    }
+
+    private static void watchJobScripts(JobElement jobElement, BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles) {
+        if (jobElement instanceof Step) {
+            final Step step = (Step) jobElement;
+
+            watchJobScripts(step.getBatchlet(), watchedFiles);
+
+            if (step.getChunk() != null) {
+                watchJobScripts(step.getChunk().getReader(), watchedFiles);
+                watchJobScripts(step.getChunk().getProcessor(), watchedFiles);
+                watchJobScripts(step.getChunk().getWriter(), watchedFiles);
+                watchJobScripts(step.getChunk().getCheckpointAlgorithm(), watchedFiles);
+            }
+
+            if (step.getPartition() != null) {
+                watchJobScripts(step.getPartition().getMapper(), watchedFiles);
+                watchJobScripts(step.getPartition().getCollector(), watchedFiles);
+                watchJobScripts(step.getPartition().getAnalyzer(), watchedFiles);
+                watchJobScripts(step.getPartition().getReducer(), watchedFiles);
+            }
+        }
+
+        if (jobElement instanceof Flow) {
+            final Flow flow = (Flow) jobElement;
+
+            for (JobElement flowElement : flow.getJobElements()) {
+                watchJobScripts(flowElement, watchedFiles);
+            }
+        }
+
+        if (jobElement instanceof Split) {
+            final Split split = (Split) jobElement;
+            for (final Flow flow : split.getFlows()) {
+                watchJobScripts(flow, watchedFiles);
+            }
+        }
+    }
+
+    private static void watchJobScripts(RefArtifact refArtifact,
+            BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles) {
+        if (refArtifact != null &&
+                refArtifact.getScript() != null &&
+                refArtifact.getScript().getSrc() != null) {
+            watchedFiles.produce(new HotDeploymentWatchedFileBuildItem(refArtifact.getScript().getSrc()));
         }
     }
 }
