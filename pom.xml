@@ -24,7 +24,7 @@
     <surefire.plugin.version>3.0.0-M5</surefire.plugin.version>
     <staging.plugin.version>1.6.8</staging.plugin.version>
 
-    <quarkus.version>1.12.1.Final</quarkus.version>
+    <quarkus.version>1.12.2.Final</quarkus.version>
     <jakarta.batch-api.version>1.0.2</jakarta.batch-api.version>
     <jberet.version>1.4.0.Final</jberet.version>
     <jberet-rest.version>1.4.1.Final</jberet-rest.version>
