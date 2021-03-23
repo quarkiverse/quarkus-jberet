@@ -45,6 +45,6 @@ public class JBeretConfigSource implements ConfigSource {
 
     @Override
     public int getOrdinal() {
-        return ConfigSource.DEFAULT_ORDINAL + 50;
+        return ConfigSource.DEFAULT_ORDINAL + 270;
     }
 }

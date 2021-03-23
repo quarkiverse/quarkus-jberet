@@ -16,17 +16,20 @@ import javax.inject.Named;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-public class BatchConfigSourceTest {
+public class ConfigParamsTest {
     @RegisterExtension
     static QuarkusUnitTest TEST = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(ConfigBatchlet.class)
+                    .addAsResource(new StringAsset("quarkus.jberet.job.\"batchlet\".params.name=naruto"),
+                            "application.properties")
                     .addAsManifestResource("batchlet.xml", "batch-jobs/batchlet.xml"));
 
     @Named("batchlet")
@@ -49,7 +52,6 @@ public class BatchConfigSourceTest {
     @Test
     public void configBatchlet() {
         Properties jobParameters = new Properties();
-        jobParameters.setProperty("name", "naruto");
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         long executionId = jobOperator.start("batchlet", jobParameters);
 

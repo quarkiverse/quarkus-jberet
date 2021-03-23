@@ -11,7 +11,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @Named
 public class SchedulerBatchlet implements Batchlet {
     @Inject
-    @ConfigProperty(name = "status", defaultValue = "")
+    @ConfigProperty(name = "status", defaultValue = "FAILED")
     String status;
 
     @Override

@@ -15,9 +15,12 @@ import org.jberet.job.model.Job;
 import org.jberet.operations.AbstractJobOperator;
 import org.jberet.spi.BatchEnvironment;
 
+import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
+
 public class QuarkusJobOperator extends AbstractJobOperator {
     private final BatchEnvironment batchEnvironment;
     private final Map<String, Job> jobs;
+    private final JBeretConfig config;
 
     public QuarkusJobOperator(
             final JBeretConfig config,
@@ -28,6 +31,7 @@ public class QuarkusJobOperator extends AbstractJobOperator {
         this.batchEnvironment = new QuarkusBatchEnvironment(config, new QuarkusJobExecutor(managedExecutor),
                 transactionManager);
         this.jobs = jobs.stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
+        this.config = config;
     }
 
     @Override
@@ -39,6 +43,17 @@ public class QuarkusJobOperator extends AbstractJobOperator {
     @Override
     public long start(String jobXMLName, Properties jobParameters, String user)
             throws JobStartException, JobSecurityException {
+
+        // Add params for configuration. Don't override if already there.
+        JobConfig jobConfig = config.job.get(jobXMLName);
+        if (jobConfig != null && jobConfig.params != null) {
+            for (Map.Entry<String, String> param : jobConfig.params.entrySet()) {
+                if (!jobParameters.containsKey(param.getKey())) {
+                    jobParameters.setProperty(param.getKey(), param.getValue());
+                }
+            }
+        }
+
         // for now, we assume that all job XML files were identified and parsed during build
         Job jobDefinition = jobs.get(jobXMLName);
         if (jobDefinition != null) {

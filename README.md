@@ -36,7 +36,7 @@ The JBeret Quarkus extension supports the following configuration:
  | `quarkus.jberet.jobs.includes`<br>A list of patterns to match batch files to include.  | list of string  | |
  | `quarkus.jberet.jobs.excludes`<br>A list of patterns to match batch files to exclude. | list of string  | |
  | `quarkus.jberet.job."job-name".cron`<br>A cron style expression in Quartz format to schedule the job. | string  | |
- | `quarkus.jberet.job."job-name".params."param-key"`<br>A parameter to start a scheduled job. | string  | |
+ | `quarkus.jberet.job."job-name".params."param-key"`<br>A parameter to start a job. | string  | |
  
 ## Non-standard Features
 
