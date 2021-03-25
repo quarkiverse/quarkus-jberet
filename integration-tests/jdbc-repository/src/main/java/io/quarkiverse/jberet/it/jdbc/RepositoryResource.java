@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import javax.batch.runtime.JobInstance;
 import javax.inject.Inject;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -32,5 +33,12 @@ public class RepositoryResource {
                 }).collect(Collectors.toList());
 
         return Response.ok(jobInstances).build();
+    }
+
+    @DELETE
+    @Path("/jobs/{jobId}")
+    public Response removeJob(@PathParam("jobId") final String jobId) {
+        jobRepository.removeJob(jobId);
+        return Response.noContent().build();
     }
 }

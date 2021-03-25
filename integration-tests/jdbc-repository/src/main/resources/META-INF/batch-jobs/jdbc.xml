@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <job id="jdbc" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
   <step id="jdbcStep">
-    <batchlet ref="jdbcBatchlet"/>
+    <batchlet ref="jdbcBatchlet">
+      <properties>
+        <property name="jdbc.batchlet.fail" value="#{jobParameters['jdbc.batchlet.fail']}"/>
+      </properties>
+    </batchlet>
   </step>
 </job>
