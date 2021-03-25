@@ -11,26 +11,25 @@ import javax.batch.api.BatchProperty;
 import javax.batch.api.Batchlet;
 import javax.batch.runtime.BatchStatus;
 import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.jberet.rest.client.BatchClient;
 import org.jberet.rest.entity.JobExecutionEntity;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
-import io.quarkus.test.common.http.TestHTTPResourceManager;
 
 public class BatchletRestTest {
     @RegisterExtension
     static QuarkusUnitTest TEST = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(DummyBatchlet.class)
+                    .addAsResource(new StringAsset("%test.quarkus.http.port=8081\n"), "application.properties")
                     .addAsManifestResource("batchlet.xml", "batch-jobs/batchlet.xml"));
 
     @Named("batchlet")
@@ -71,13 +70,5 @@ public class BatchletRestTest {
             JobExecutionEntity jobExecution = batchClient.getJobExecution(jobExecutionEntity.getExecutionId());
             return BatchStatus.COMPLETED.equals(jobExecution.getBatchStatus());
         });
-    }
-
-    public static class BatchClientTestProducer {
-        @Produces
-        @Singleton
-        public BatchClient batchClient() {
-            return new BatchClient(TestHTTPResourceManager.getUri());
-        }
     }
 }
