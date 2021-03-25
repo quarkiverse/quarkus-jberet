@@ -13,7 +13,7 @@ jobs:
     if: ${{github.event.pull_request.merged == true}}
 
     steps:
-      - uses: radcortez/project-metadata-action@master
+      - uses: radcortez/project-metadata-action@main
         name: retrieve project metadata
         id: metadata
         with:
@@ -40,7 +40,7 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-            https://github.com/quarkiverse/quarkiverse-template/blob/master/.github/workflows/release.yml
+            https://github.com/quarkiverse/quarkiverse-template/blob/main/.github/workflows/release.yml
 
       - name: Configure Git author
         run: |
@@ -68,7 +68,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tags: true
 
-      - uses: radcortez/milestone-release-action@master
+      - uses: radcortez/milestone-release-action@main
         name: milestone release
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
