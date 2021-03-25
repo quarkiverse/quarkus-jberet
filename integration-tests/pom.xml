@@ -75,6 +75,7 @@
     <module>jdbc-repository</module>
     <module>scheduler</module>
     <module>programmatic</module>
+    <module>client</module>
     <module>tck</module>
   </modules>
 
