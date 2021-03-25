@@ -1,18 +1,28 @@
 package io.quarkiverse.jberet.runtime;
 
+import static org.jberet._private.BatchMessages.MESSAGES;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import javax.batch.operations.JobExecutionAlreadyCompleteException;
+import javax.batch.operations.JobExecutionNotMostRecentException;
+import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobException;
+import javax.batch.operations.NoSuchJobExecutionException;
 import javax.transaction.TransactionManager;
 
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.jberet.job.model.Job;
 import org.jberet.operations.AbstractJobOperator;
+import org.jberet.repository.ApplicationAndJobName;
+import org.jberet.repository.JobRepository;
+import org.jberet.runtime.JobExecutionImpl;
+import org.jberet.runtime.JobInstanceImpl;
 import org.jberet.spi.BatchEnvironment;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
@@ -60,6 +70,44 @@ public class QuarkusJobOperator extends AbstractJobOperator {
             return super.start(jobDefinition, jobParameters, user);
         } else {
             throw new NoSuchJobException("Job with xml name " + jobXMLName + " was not found");
+        }
+    }
+
+    @Override
+    public long restart(final long executionId, final Properties restartParameters)
+            throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException,
+            JobRestartException, JobSecurityException {
+        return restart(executionId, restartParameters, null);
+    }
+
+    @Override
+    public long restart(final long executionId, final Properties restartParameters, final String user)
+            throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException,
+            JobRestartException, JobSecurityException {
+
+        JobExecutionImpl originalToRestart = getJobExecutionImpl(executionId);
+        JobInstanceImpl jobInstance = originalToRestart.getJobInstance();
+        if (jobInstance == null) {
+            throw MESSAGES.noSuchJobInstance(null);
+        }
+
+        String jobName = originalToRestart.getJobName();
+        Job jobDefinition = jobInstance.getUnsubstitutedJob();
+        if (jobDefinition == null) {
+            ApplicationAndJobName applicationAndJobName = new ApplicationAndJobName(jobInstance.getApplicationName(), jobName);
+            JobRepository repository = getJobRepository();
+            jobDefinition = repository.getJob(applicationAndJobName);
+            if (jobDefinition == null) {
+                jobDefinition = jobs.get(jobName);
+                repository.addJob(applicationAndJobName, jobDefinition);
+            }
+            jobInstance.setUnsubstitutedJob(jobDefinition);
+        }
+
+        if (jobDefinition != null) {
+            return super.restart(executionId, restartParameters, user);
+        } else {
+            throw new NoSuchJobException("Job with xml name " + jobName + " was not found");
         }
     }
 
