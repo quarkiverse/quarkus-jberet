@@ -57,11 +57,12 @@ class JdbcRepositoryTest {
 
     @Test
     @Order(1)
-    void jdbc() {
-        given()
-                .post("/jobs/{jobXmlName}/start", "jdbc")
-                .then()
-                .statusCode(201);
+    void jdbc() throws Exception {
+        BatchClient batchClient = new BatchClient(getUri());
+        JobExecutionEntity execution = batchClient.startJob("jdbc", new Properties());
+        assertEquals(STARTED, execution.getBatchStatus());
+        await().atMost(5, SECONDS)
+                .until(() -> COMPLETED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
 
         given().get("/repository/instances/jdbc")
                 .then()

@@ -31,7 +31,8 @@ public class JBeretConfigSource implements ConfigSource {
         if (properties.contains(propertyName)) {
             final Properties properties = getCurrentArtifactCreationContext().getProperties();
             if (properties != null) {
-                return properties.get(propertyName);
+                String value = properties.get(propertyName);
+                return value.isEmpty() ? null : value;
             }
         }
 
