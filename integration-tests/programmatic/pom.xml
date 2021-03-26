@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.quarkiverse.jberet</groupId>
     <artifactId>quarkus-jberet-integration-tests</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>quarkus-jberet-integration-tests-programmatic</artifactId>
