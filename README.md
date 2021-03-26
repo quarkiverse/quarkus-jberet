@@ -18,7 +18,7 @@ To use the extension, add the dependency to the target project:
 <dependency>
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet</artifactId>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
 </dependency>
 ```
 
@@ -114,7 +114,7 @@ to the target project with the following dependency:
 <dependency>
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet-rest</artifactId>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
 </dependency>
 ```
 
