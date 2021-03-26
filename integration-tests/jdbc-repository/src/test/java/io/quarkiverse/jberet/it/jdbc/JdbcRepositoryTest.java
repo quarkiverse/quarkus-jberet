@@ -5,7 +5,6 @@ import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.batch.runtime.BatchStatus.COMPLETED;
 import static javax.batch.runtime.BatchStatus.FAILED;
-import static javax.batch.runtime.BatchStatus.STARTED;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -60,7 +59,6 @@ class JdbcRepositoryTest {
     void jdbc() throws Exception {
         BatchClient batchClient = new BatchClient(getUri());
         JobExecutionEntity execution = batchClient.startJob("jdbc", new Properties());
-        assertEquals(STARTED, execution.getBatchStatus());
         await().atMost(5, SECONDS)
                 .until(() -> COMPLETED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
 
@@ -84,7 +82,6 @@ class JdbcRepositoryTest {
         Properties properties = new Properties();
         properties.setProperty("jdbc.batchlet.fail", "true");
         JobExecutionEntity execution = batchClient.startJob("jdbc", properties);
-        assertEquals(STARTED, execution.getBatchStatus());
         await().atMost(5, SECONDS)
                 .until(() -> FAILED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
     }
@@ -96,7 +93,6 @@ class JdbcRepositoryTest {
         Properties properties = new Properties();
         properties.setProperty("jdbc.batchlet.fail", "true");
         JobExecutionEntity execution = batchClient.startJob("jdbc", properties);
-        assertEquals(STARTED, execution.getBatchStatus());
         await().atMost(5, SECONDS)
                 .until(() -> FAILED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
 
@@ -107,7 +103,6 @@ class JdbcRepositoryTest {
 
         properties.setProperty("jdbc.batchlet.fail", "false");
         JobExecutionEntity restart = batchClient.restartJobExecution(execution.getExecutionId(), properties);
-        assertEquals(STARTED, restart.getBatchStatus());
         await().atMost(5, SECONDS)
                 .until(() -> COMPLETED.equals(batchClient.getJobExecution(restart.getExecutionId()).getBatchStatus()));
     }
