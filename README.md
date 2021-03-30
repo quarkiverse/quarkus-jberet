@@ -140,17 +140,7 @@ Example applications can be found inside the `integration-tests` folder:
 * `scheduler` - Schedule a Job to run every 10 seconds 
 
 Or take a look into the [World of Warcraft Auctions - Batch Application](https://github.com/radcortez/wow-auctions). It 
-downloads the World of Warcraft Auction House data and provides statistics about items prices.
-
-## Native Image Limitations
-
-The Quakus JBeret Extension fully supports the Graal Native Image. Except for:
-
-* A combination of JVM based runners and Native executables when using the `jdbc` Repository type connected to the same 
-datasource. This will corrupt the Batch and Job metadata. This is because the Graal Native Image does not support Java 
-Serialization (used by JBeret to store metadata). The native image substitutes the Java Serializer with a JSON 
-Serializer. Work is underway to provide JBeret with a way to select the serialization mechanism and remove this 
-limitation (https://github.com/jberet/jsr352/issues/134).  
+downloads the World of Warcraft Auction House data and provides statistics about items prices. 
 
 ## Contributors ✨
 
