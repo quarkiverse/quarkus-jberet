@@ -76,6 +76,7 @@
     <module>scheduler</module>
     <module>programmatic</module>
     <module>client</module>
+    <module>scripting</module>
     <module>tck</module>
   </modules>
 
