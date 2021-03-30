@@ -14,6 +14,7 @@ import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobException;
 import javax.batch.operations.NoSuchJobExecutionException;
+import javax.enterprise.inject.Vetoed;
 import javax.transaction.TransactionManager;
 
 import org.eclipse.microprofile.context.ManagedExecutor;
@@ -27,6 +28,7 @@ import org.jberet.spi.BatchEnvironment;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
 
+@Vetoed
 public class QuarkusJobOperator extends AbstractJobOperator {
     private final BatchEnvironment batchEnvironment;
     private final Map<String, Job> jobs;
