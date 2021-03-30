@@ -77,6 +77,29 @@ void start() {
 }
 ```
 
+#### Additional Beans
+
+Specific Quarkus implementation is available in `QuarkusJobOperator`, which can be also injected directly:
+
+```java
+@Inject
+QuarkusJobOperator jobOperator;
+
+void start() {
+    Job job = new JobBuilder("programmatic")
+            .step(new StepBuilder("programmaticStep")
+                    .batchlet("programmaticBatchlet")
+                    .build())
+            .build();
+    
+    long executionId = jobOperator.start(job, new Properties());
+    JobExecution jobExecution = jobRepository.getJobExecution(executionId);
+}
+```
+
+With `QuarkusJobOperator` it is possible to define and start programmatic Jobs, with the 
+[JBeret Programmatic Job Definition](https://jberet.gitbooks.io/jberet-user-guide/content/programmatic_job_definition_with_java/).
+
 ### Scheduler
 
 The [JBeret Scheduler](https://github.com/jberet/jberet-schedule) is integrated out of the box in this extension. 

@@ -1,6 +1,7 @@
 package io.quarkiverse.jberet.deployment;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.batch.operations.JobOperator;
 import javax.inject.Inject;
@@ -11,6 +12,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkiverse.jberet.runtime.QuarkusJobOperator;
 import io.quarkus.test.QuarkusUnitTest;
 
 public class JBeretInjectionTest {
@@ -22,10 +24,15 @@ public class JBeretInjectionTest {
     JobOperator jobOperator;
     @Inject
     JobRepository jobRepository;
+    @Inject
+    QuarkusJobOperator quarkusJobOperator;
 
     @Test
     void injection() {
         assertNotNull(jobOperator);
         assertNotNull(jobRepository);
+
+        assertTrue(jobOperator instanceof QuarkusJobOperator);
+        assertNotNull(quarkusJobOperator);
     }
 }

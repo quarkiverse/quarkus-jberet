@@ -20,10 +20,16 @@ public class JBeretProducer {
     }
 
     @Produces
+    @Singleton
+    public QuarkusJobOperator quarkusJobOperator() {
+        return (QuarkusJobOperator) jobOperator();
+    }
+
+    @Produces
     @DefaultBean
     @Singleton
     public JobRepository jobRepository() {
-        return ((AbstractJobOperator) JobOperatorContext.getJobOperatorContext().getJobOperator()).getJobRepository();
+        return ((AbstractJobOperator) jobOperator()).getJobRepository();
     }
 
     @Produces
