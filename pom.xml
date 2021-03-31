@@ -10,7 +10,7 @@
 
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet-parent</artifactId>
-  <version>0.0.5-SNAPSHOT</version>
+  <version>0.0.5</version>
   <packaging>pom</packaging>
 
   <name>Quarkus - JBeret - Parent</name>
@@ -130,4 +130,8 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <scm>
+    <tag>0.0.5</tag>
+  </scm>
 </project>
