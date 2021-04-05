@@ -22,6 +22,7 @@ import org.jberet.runtime.JobInstanceImpl;
 @Produces(MediaType.APPLICATION_JSON)
 public class JdbcResource {
     @Inject
+    @io.quarkus.agroal.DataSource("batch")
     DataSource dataSource;
 
     @GET
