@@ -298,7 +298,9 @@ public class JBeretProcessor {
         if (JDBC.equals(config.repository.type)) {
             final String datasource = config.repository.jdbc.datasource;
             if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
-                throw new ConfigurationError("TODO");
+                throw new ConfigurationError("Datasource name " + datasource + " does not exist. Available datasources: "
+                        + datasources.stream().map(JdbcDataSourceBuildItem::getName).collect(
+                                Collectors.joining(",")));
             }
         }
     }
