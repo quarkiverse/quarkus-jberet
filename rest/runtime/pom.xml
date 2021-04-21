@@ -10,6 +10,7 @@
 
     <artifactId>quarkus-jberet-rest</artifactId>
     <name>Quarkus - JBeret - REST Runtime</name>
+    <description>Manage JBeret Batch Applications with REST</description>
 
     <dependencies>
         <dependency>

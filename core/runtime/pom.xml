@@ -9,6 +9,7 @@
 
     <artifactId>quarkus-jberet</artifactId>
     <name>Quarkus - JBeret - Core Runtime</name>
+    <description>Write Batch Applications with JBeret a JSR-352 implementation</description>
 
     <dependencies>
         <dependency>
