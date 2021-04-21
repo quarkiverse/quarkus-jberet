@@ -1,5 +1,6 @@
 ---
 name: "JBeret - Batch Processing"
+description: "Write Batch Applications with JBeret a JSR-352 implementation"
 metadata:
   keywords:
   - "batch"
