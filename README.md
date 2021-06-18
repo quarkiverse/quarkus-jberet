@@ -94,7 +94,7 @@ void start() {
             .build();
     
     long executionId = jobOperator.start(job, new Properties());
-    JobExecution jobExecution = jobRepository.getJobExecution(executionId);
+    JobExecution jobExecution = jobOperator.getJobExecution(executionId);
 }
 ```
 
