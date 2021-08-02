@@ -6,6 +6,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.jberet.creation.AbstractArtifactFactory;
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
@@ -72,6 +73,11 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
     @Override
     public Properties getBatchConfigurationProperties() {
         return PROPS;
+    }
+
+    @Override
+    public String getApplicationName() {
+        return ConfigProvider.getConfig().getConfigValue("quarkus.application.name").getValue();
     }
 
     static class QuarkusArtifactFactory extends AbstractArtifactFactory {
