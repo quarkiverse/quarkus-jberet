@@ -2,7 +2,6 @@ package io.quarkiverse.jberet.runtime;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -69,6 +68,10 @@ public class JBeretRecorder {
     }
 
     public void initScheduler(final JBeretConfig config) {
+        if (config.job.values().stream().noneMatch(jobConfig -> jobConfig.cron.isPresent())) {
+            return;
+        }
+
         QuarkusJobScheduler jobScheduler = (QuarkusJobScheduler) JobScheduler.getJobScheduler(QuarkusJobScheduler.class,
                 new ConcurrentHashMap<>(), null);
 
@@ -77,13 +80,10 @@ public class JBeretRecorder {
         for (Job job : JBeretDataHolder.getJobs()) {
             JobConfig jobConfig = config.job.get(job.getJobXmlName());
             if (jobConfig != null && jobConfig.cron.isPresent()) {
-
                 Cron cron = parser.parse(jobConfig.cron.get());
                 java.util.Properties jobParameters = new java.util.Properties();
                 if (jobConfig.params != null && !jobConfig.params.isEmpty()) {
-                    for (final Map.Entry<String, String> entry : jobConfig.params.entrySet()) {
-                        jobParameters.put(entry.getKey(), entry.getValue());
-                    }
+                    jobParameters.putAll(jobConfig.params);
                 }
 
                 JobScheduleConfig scheduleConfig = JobScheduleConfigBuilder.newInstance()
