@@ -80,6 +80,18 @@ public class JBeretConfig {
              */
             @ConfigItem(defaultValue = DataSourceUtil.DEFAULT_DATASOURCE_NAME)
             public String datasource;
+            /** Allow custom DDL file resource for JBeret tables creation */
+            @ConfigItem(name = "ddl-filename")
+            public Optional<String> ddlFileName;
+            /** Allow custom queries to be used to query JBeret tables */
+            @ConfigItem(name = " sql-filename")
+            public Optional<String> sqlFileName;
+            /** If present, prefix JBeret tables with this property value */
+            @ConfigItem(name = "table-prefix")
+            public Optional<String> dbTablePrefix;
+            /** If present, suffix JBeret tables with this property value */
+            @ConfigItem(name = "table-suffix")
+            public Optional<String> dbTableSuffix;
         }
 
         public enum Type {
