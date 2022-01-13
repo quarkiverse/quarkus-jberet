@@ -34,6 +34,7 @@ The JBeret Quarkus extension supports the following configuration:
  |---|---|---|
  | `quarkus.jberet.repository`<br>The repository type to store JBeret and Job data. A `jdbc` type requires a JDBC datasource. | `in-memory`, `jdbc`  | `in-memory` |
  | `quarkus.jberet.repository.jdbc.datasource`<br>The datasource name. | string  | `<default>` |
+ | `quarkus.jberet.max_processors`<br>A parameter to specify maximum processor count.  | int  | |
  | `quarkus.jberet.jobs.includes`<br>A list of patterns to match batch files to include.  | list of string  | |
  | `quarkus.jberet.jobs.excludes`<br>A list of patterns to match batch files to exclude. | list of string  | |
  | `quarkus.jberet.job."job-name".cron`<br>A cron style expression in Quartz format to schedule the job. | string  | |

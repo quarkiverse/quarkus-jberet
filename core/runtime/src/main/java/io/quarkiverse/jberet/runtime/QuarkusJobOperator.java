@@ -40,7 +40,7 @@ public class QuarkusJobOperator extends AbstractJobOperator {
             final TransactionManager transactionManager,
             final List<Job> jobs) {
 
-        this.batchEnvironment = new QuarkusBatchEnvironment(config, new QuarkusJobExecutor(managedExecutor),
+        this.batchEnvironment = new QuarkusBatchEnvironment(config, new QuarkusJobExecutor(managedExecutor, config),
                 transactionManager);
         this.jobs = jobs.stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
         this.config = config;
