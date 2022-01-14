@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import javax.enterprise.context.Dependent;
 import javax.inject.Named;
 
+import io.quarkus.runtime.ThreadPoolConfig;
 import org.jberet.creation.ArchiveXmlLoader;
 import org.jberet.creation.BatchBeanProducer;
 import org.jberet.job.model.BatchArtifacts;
@@ -169,13 +170,14 @@ public class JBeretProcessor {
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
     ServiceStartBuildItem init(JBeretRecorder recorder,
-            JBeretConfig config,
-            BeanContainerBuildItem beanContainer,
-            List<JdbcDataSourceBuildItem> datasources) {
+                               JBeretConfig config,
+                               BeanContainerBuildItem beanContainer,
+                               List<JdbcDataSourceBuildItem> datasources,
+                               ThreadPoolConfig threadPoolConfig) {
 
         validateRepository(config, datasources);
 
-        recorder.initJobOperator(config, beanContainer.getValue());
+        recorder.initJobOperator(config, beanContainer.getValue(), threadPoolConfig);
         recorder.initScheduler(config);
 
         return new ServiceStartBuildItem("jberet");

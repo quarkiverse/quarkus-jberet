@@ -1,16 +1,17 @@
 package io.quarkiverse.jberet.runtime;
 
-import com.cronutils.utils.StringUtils;
+import io.quarkus.runtime.ThreadPoolConfig;
 import org.jberet.spi.JobExecutor;
+import org.wildfly.common.cpu.ProcessorInfo;
 
 import java.util.concurrent.Executor;
 
 class QuarkusJobExecutor extends JobExecutor {
-    private final JBeretConfig config;
+    private final ThreadPoolConfig threadPoolConfig;
 
-    public QuarkusJobExecutor(Executor delegate, final JBeretConfig config) {
+    public QuarkusJobExecutor(Executor delegate, final ThreadPoolConfig threadPoolConfig) {
         super(delegate);
-        this.config = config;
+        this.threadPoolConfig = threadPoolConfig;
     }
 
     @Override
@@ -18,16 +19,7 @@ class QuarkusJobExecutor extends JobExecutor {
         // From io.quarkus.smallrye.context.runtime.SmallRyeContextPropagationRecorder.initializeManagedExecutor and
         // io.smallrye.context.SmallRyeManagedExecutor.newThreadPoolExecutor
         // It is initialized with -1 and fallbacks to Runtime.getRuntime().availableProcessors();
-        // Added max_processors config to manually override
-        var availableProcessors = Runtime.getRuntime().availableProcessors();
-        if (config.max_processors.isPresent() && StringUtils.isNumeric(config.max_processors.get())) {
-            try {
-                var maxProcessors = Integer.valueOf(config.max_processors.get());
-                return maxProcessors < 0 ? availableProcessors : maxProcessors;
-            } catch (NumberFormatException ex) {
-                return availableProcessors;
-            }
-        }
-        return availableProcessors;
+        final var cpus = ProcessorInfo.availableProcessors();
+        return threadPoolConfig.maxThreads.orElse(Math.max(8 * cpus, 200));
     }
 }

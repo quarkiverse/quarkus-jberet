@@ -17,6 +17,7 @@ import javax.batch.operations.NoSuchJobExecutionException;
 import javax.enterprise.inject.Vetoed;
 import javax.transaction.TransactionManager;
 
+import io.quarkus.runtime.ThreadPoolConfig;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.jberet.job.model.Job;
 import org.jberet.operations.AbstractJobOperator;
@@ -33,17 +34,20 @@ public class QuarkusJobOperator extends AbstractJobOperator {
     private final BatchEnvironment batchEnvironment;
     private final Map<String, Job> jobs;
     private final JBeretConfig config;
+    private final ThreadPoolConfig threadPoolConfig;
 
     public QuarkusJobOperator(
             final JBeretConfig config,
             final ManagedExecutor managedExecutor,
             final TransactionManager transactionManager,
-            final List<Job> jobs) {
+            final List<Job> jobs,
+            final ThreadPoolConfig threadPoolConfig) {
 
-        this.batchEnvironment = new QuarkusBatchEnvironment(config, new QuarkusJobExecutor(managedExecutor, config),
+        this.batchEnvironment = new QuarkusBatchEnvironment(config, new QuarkusJobExecutor(managedExecutor, threadPoolConfig),
                 transactionManager);
         this.jobs = jobs.stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
         this.config = config;
+        this.threadPoolConfig = threadPoolConfig;
     }
 
     @Override

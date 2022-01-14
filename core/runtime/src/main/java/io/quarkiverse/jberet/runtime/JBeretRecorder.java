@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.transaction.TransactionManager;
 
+import io.quarkus.runtime.ThreadPoolConfig;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.jberet.job.model.Decision;
@@ -57,12 +58,12 @@ public class JBeretRecorder {
         return new RuntimeValue<>(new JBeretConfigSourceProvider(properties));
     }
 
-    public void initJobOperator(final JBeretConfig config, final BeanContainer beanContainer) {
+    public void initJobOperator(final JBeretConfig config, final BeanContainer beanContainer, final ThreadPoolConfig threadPoolConfig) {
         ManagedExecutor managedExecutor = beanContainer.instance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.instance(TransactionManager.class);
 
         QuarkusJobOperator operator = new QuarkusJobOperator(config, managedExecutor, transactionManager,
-                JBeretDataHolder.getJobs());
+                JBeretDataHolder.getJobs(), threadPoolConfig);
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
     }

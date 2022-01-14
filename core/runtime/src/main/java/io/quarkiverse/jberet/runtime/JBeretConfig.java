@@ -30,12 +30,6 @@ public class JBeretConfig {
     @ConfigItem
     public Repository repository;
 
-    /**
-     *
-     */
-    @ConfigItem
-    public Optional<String> max_processors;
-
     @ConfigGroup
     public static class JobConfig {
         /**
