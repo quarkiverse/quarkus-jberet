@@ -7,16 +7,15 @@ import org.wildfly.common.cpu.ProcessorInfo;
 import java.util.concurrent.Executor;
 
 class QuarkusJobExecutor extends JobExecutor {
-    private final ThreadPoolConfig threadPoolConfig;
-    private final int cpuPoolSize = Math.max(8 * ProcessorInfo.availableProcessors(), 200);
+    private final int cpuPoolSize;
 
     public QuarkusJobExecutor(Executor delegate, final ThreadPoolConfig threadPoolConfig) {
         super(delegate);
-        this.threadPoolConfig = threadPoolConfig;
+        this.cpuPoolSize = threadPoolConfig.maxThreads.orElse(Math.max(8 * ProcessorInfo.availableProcessors(), 200));
     }
 
     @Override
     protected int getMaximumPoolSize() {
-        return threadPoolConfig.maxThreads.orElse(cpuPoolSize);
+        return cpuPoolSize;
     }
 }
