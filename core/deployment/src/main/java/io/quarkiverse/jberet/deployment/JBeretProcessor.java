@@ -24,8 +24,6 @@ import java.util.stream.Stream;
 import javax.enterprise.context.Dependent;
 import javax.inject.Named;
 
-import io.quarkiverse.jberet.runtime.*;
-import io.quarkus.runtime.ThreadPoolConfig;
 import org.jberet.creation.ArchiveXmlLoader;
 import org.jberet.creation.BatchBeanProducer;
 import org.jberet.job.model.BatchArtifacts;
@@ -48,6 +46,7 @@ import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
 
+import io.quarkiverse.jberet.runtime.*;
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
 import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
 import io.quarkus.arc.Unremovable;
@@ -70,6 +69,7 @@ import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildI
 import io.quarkus.deployment.configuration.ConfigurationError;
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.deployment.util.GlobUtil;
+import io.quarkus.runtime.ThreadPoolConfig;
 import io.quarkus.runtime.util.ClassPathUtils;
 
 public class JBeretProcessor {
@@ -167,10 +167,10 @@ public class JBeretProcessor {
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
     ServiceStartBuildItem init(JBeretRecorder recorder,
-                               JBeretConfig config,
-                               ThreadPoolConfig threadPoolConfig,
-                               BeanContainerBuildItem beanContainer,
-                               List<JdbcDataSourceBuildItem> datasources) {
+            JBeretConfig config,
+            ThreadPoolConfig threadPoolConfig,
+            BeanContainerBuildItem beanContainer,
+            List<JdbcDataSourceBuildItem> datasources) {
 
         validateRepository(config, datasources);
 
