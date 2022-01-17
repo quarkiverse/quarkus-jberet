@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import javax.enterprise.context.Dependent;
 import javax.inject.Named;
 
+import io.quarkiverse.jberet.runtime.*;
 import io.quarkus.runtime.ThreadPoolConfig;
 import org.jberet.creation.ArchiveXmlLoader;
 import org.jberet.creation.BatchBeanProducer;
@@ -47,11 +48,7 @@ import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
 
-import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
-import io.quarkiverse.jberet.runtime.JBeretProducer;
-import io.quarkiverse.jberet.runtime.JBeretRecorder;
-import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
 import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -171,13 +168,13 @@ public class JBeretProcessor {
     @Record(ExecutionTime.RUNTIME_INIT)
     ServiceStartBuildItem init(JBeretRecorder recorder,
                                JBeretConfig config,
+                               ThreadPoolConfig threadPoolConfig,
                                BeanContainerBuildItem beanContainer,
-                               List<JdbcDataSourceBuildItem> datasources,
-                               ThreadPoolConfig threadPoolConfig) {
+                               List<JdbcDataSourceBuildItem> datasources) {
 
         validateRepository(config, datasources);
 
-        recorder.initJobOperator(config, beanContainer.getValue(), threadPoolConfig);
+        recorder.initJobOperator(config, threadPoolConfig, beanContainer.getValue());
         recorder.initScheduler(config);
 
         return new ServiceStartBuildItem("jberet");

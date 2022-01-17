@@ -8,6 +8,7 @@ import java.util.concurrent.Executor;
 
 class QuarkusJobExecutor extends JobExecutor {
     private final ThreadPoolConfig threadPoolConfig;
+    private final int cpuPoolSize = Math.max(8 * ProcessorInfo.availableProcessors(), 200);
 
     public QuarkusJobExecutor(Executor delegate, final ThreadPoolConfig threadPoolConfig) {
         super(delegate);
@@ -16,10 +17,6 @@ class QuarkusJobExecutor extends JobExecutor {
 
     @Override
     protected int getMaximumPoolSize() {
-        // From io.quarkus.smallrye.context.runtime.SmallRyeContextPropagationRecorder.initializeManagedExecutor and
-        // io.smallrye.context.SmallRyeManagedExecutor.newThreadPoolExecutor
-        // It is initialized with -1 and fallbacks to Runtime.getRuntime().availableProcessors();
-        final var cpus = ProcessorInfo.availableProcessors();
-        return threadPoolConfig.maxThreads.orElse(Math.max(8 * cpus, 200));
+        return threadPoolConfig.maxThreads.orElse(cpuPoolSize);
     }
 }
