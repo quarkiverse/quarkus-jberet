@@ -18,9 +18,11 @@ To use the extension, add the dependency to the target project:
 <dependency>
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
 </dependency>
 ```
+
+:information_source: **Recommended Quarkus version: `2.6.2.Final`**
 
 The Batch API and Runtime will be available out of the box. Please refer to the 
 [Batch documentation](https://jcp.org/en/jsr/detail?id=352), or the 
