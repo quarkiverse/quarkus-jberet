@@ -27,6 +27,7 @@ import org.jberet.runtime.JobInstanceImpl;
 import org.jberet.spi.BatchEnvironment;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
+import io.quarkus.runtime.ThreadPoolConfig;
 
 @Vetoed
 public class QuarkusJobOperator extends AbstractJobOperator {
@@ -36,11 +37,12 @@ public class QuarkusJobOperator extends AbstractJobOperator {
 
     public QuarkusJobOperator(
             final JBeretConfig config,
+            final ThreadPoolConfig threadPoolConfig,
             final ManagedExecutor managedExecutor,
             final TransactionManager transactionManager,
             final List<Job> jobs) {
 
-        this.batchEnvironment = new QuarkusBatchEnvironment(config, new QuarkusJobExecutor(managedExecutor),
+        this.batchEnvironment = new QuarkusBatchEnvironment(config, new QuarkusJobExecutor(managedExecutor, threadPoolConfig),
                 transactionManager);
         this.jobs = jobs.stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
         this.config = config;

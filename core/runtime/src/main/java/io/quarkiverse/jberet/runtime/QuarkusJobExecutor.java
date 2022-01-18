@@ -3,17 +3,20 @@ package io.quarkiverse.jberet.runtime;
 import java.util.concurrent.Executor;
 
 import org.jberet.spi.JobExecutor;
+import org.wildfly.common.cpu.ProcessorInfo;
+
+import io.quarkus.runtime.ThreadPoolConfig;
 
 class QuarkusJobExecutor extends JobExecutor {
-    public QuarkusJobExecutor(Executor delegate) {
+    private final int maxPoolSize;
+
+    public QuarkusJobExecutor(Executor delegate, final ThreadPoolConfig threadPoolConfig) {
         super(delegate);
+        this.maxPoolSize = threadPoolConfig.maxThreads.orElse(Math.max(8 * ProcessorInfo.availableProcessors(), 200));
     }
 
     @Override
     protected int getMaximumPoolSize() {
-        // From io.quarkus.smallrye.context.runtime.SmallRyeContextPropagationRecorder.initializeManagedExecutor and
-        // io.smallrye.context.SmallRyeManagedExecutor.newThreadPoolExecutor
-        // It is initialized with -1 and fallbacks to Runtime.getRuntime().availableProcessors();
-        return Runtime.getRuntime().availableProcessors();
+        return maxPoolSize;
     }
 }

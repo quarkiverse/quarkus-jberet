@@ -31,6 +31,7 @@ import com.cronutils.parser.CronParser;
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.RuntimeValue;
+import io.quarkus.runtime.ThreadPoolConfig;
 import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
@@ -57,11 +58,12 @@ public class JBeretRecorder {
         return new RuntimeValue<>(new JBeretConfigSourceProvider(properties));
     }
 
-    public void initJobOperator(final JBeretConfig config, final BeanContainer beanContainer) {
+    public void initJobOperator(final JBeretConfig config, final ThreadPoolConfig threadPoolConfig,
+            final BeanContainer beanContainer) {
         ManagedExecutor managedExecutor = beanContainer.instance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.instance(TransactionManager.class);
 
-        QuarkusJobOperator operator = new QuarkusJobOperator(config, managedExecutor, transactionManager,
+        QuarkusJobOperator operator = new QuarkusJobOperator(config, threadPoolConfig, managedExecutor, transactionManager,
                 JBeretDataHolder.getJobs());
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
