@@ -12,9 +12,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-import java.util.Collections;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.enterprise.inject.Alternative;
 
@@ -30,7 +28,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.QuarkusTestProfile;
 import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -39,19 +36,9 @@ import io.restassured.http.Header;
 @QuarkusTest
 @QuarkusTestResource(H2DatabaseTestResource.class)
 @TestMethodOrder(OrderAnnotation.class)
-//@TestProfile(Profile.class)
 @Alternative
 class JdbcRepositoryTest {
 	
-	public static class Profile implements QuarkusTestProfile
-	{
-		@Override
-		public Set<Class<?>> getEnabledAlternatives()
-		{
-			return Collections.singleton(JdbcRepositoryTest.class);
-		}
-	}
-
 	@BeforeAll
 	static void beforeAll()
 	{

@@ -37,13 +37,17 @@ class JdbcRepositoryTablesDDLFilenameTest extends JdbcRepositoryTest
     DataSource dataSource;
 
 	@Test
-	void test() throws SQLException 
+	void testTables() throws SQLException 
 	{
+		final String sql = "SELECT * FROM jb_test_schema.JOB_INSTANCE JI " + 
+		"inner join jb_test_schema.JOB_EXECUTION JE on JE.JOBINSTANCEID = JI.JOBINSTANCEID " +
+		"inner join jb_test_schema.STEP_EXECUTION SE on SE.JOBEXECUTIONID = JE.JOBEXECUTIONID " + 
+		"inner join jb_test_schema.PARTITION_EXECUTION PE on PE.STEPEXECUTIONID = SE.STEPEXECUTIONID";
 		try (Connection connection = dataSource.getConnection())
 		{
 			try (Statement statement = connection.createStatement())
 			{
-				statement.execute("SELECT * FROM jb_test_schema.JOB_INSTANCE");
+				statement.execute(sql);
 			}
 		}
 		assertTrue(true);

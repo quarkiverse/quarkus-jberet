@@ -37,13 +37,17 @@ class JdbcRepositoryTablesPrefixSuffixTest extends JdbcRepositoryTest
     DataSource dataSource;
 
 	@Test
-	void test() throws SQLException 
+	void testTables() throws SQLException 
 	{
+		final String sql = "SELECT * FROM jb_prefix_JOB_INSTANCE_jb_suffix JI " + 
+		"inner join jb_prefix_JOB_EXECUTION_jb_suffix JE on JE.JOBINSTANCEID = JI.JOBINSTANCEID " +
+		"inner join jb_prefix_STEP_EXECUTION_jb_suffix SE on SE.JOBEXECUTIONID = JE.JOBEXECUTIONID " + 
+		"inner join jb_prefix_PARTITION_EXECUTION_jb_suffix PE on PE.STEPEXECUTIONID = SE.STEPEXECUTIONID";
 		try (Connection connection = dataSource.getConnection())
 		{
 			try (Statement statement = connection.createStatement())
 			{
-				statement.execute("SELECT * FROM jb_prefix_JOB_INSTANCE_jb_suffix");
+				statement.execute(sql);
 			}
 		}
 		assertTrue(true);
