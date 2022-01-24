@@ -25,7 +25,7 @@ public class JdbcResource {
     @Inject
     @io.quarkus.agroal.DataSource("batch")
     DataSource dataSource;
-    
+
     @ConfigProperty(name = "job-instance-tablename", defaultValue = "JOB_INSTANCE")
     String jobInstanceTableName;
 

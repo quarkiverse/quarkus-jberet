@@ -38,80 +38,75 @@ import io.restassured.http.Header;
 @TestMethodOrder(OrderAnnotation.class)
 @Alternative
 class JdbcRepositoryTest {
-	
-	@BeforeAll
-	static void beforeAll()
-	{
-	    RestAssured.filters(
-	            (requestSpec, responseSpec, ctx) -> {
-	                requestSpec.header(new Header(ACCEPT, APPLICATION_JSON));
-	                requestSpec.header(new Header(CONTENT_TYPE, APPLICATION_JSON));
-	                return ctx.next(requestSpec, responseSpec);
-	            },
-	            new RequestLoggingFilter(),
-	            new ResponseLoggingFilter());
-	
-	}
 
-	@AfterAll
-	static void afterAll()
-	{
-	    RestAssured.reset();
-	}
+    @BeforeAll
+    static void beforeAll() {
+        RestAssured.filters(
+                (requestSpec, responseSpec, ctx) -> {
+                    requestSpec.header(new Header(ACCEPT, APPLICATION_JSON));
+                    requestSpec.header(new Header(CONTENT_TYPE, APPLICATION_JSON));
+                    return ctx.next(requestSpec, responseSpec);
+                },
+                new RequestLoggingFilter(),
+                new ResponseLoggingFilter());
 
-	@Test
-	@Order(1)
-	void jdbc() throws Exception
-	{
-	    BatchClient batchClient = new BatchClient(getUri());
-	    JobExecutionEntity execution = batchClient.startJob("jdbc", new Properties());
-	    await().atMost(5, SECONDS)
-	            .until(() -> COMPLETED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
-	
-	    given().get("/repository/instances/jdbc")
-	            .then()
-	            .statusCode(200)
-	            .body("size()", is(1))
-	            .body("[0].jobName", equalTo("jdbc"));
-	
-	    given().get("/jdbc/instances/jdbc")
-	            .then()
-	            .statusCode(200)
-	            .body("size()", is(1))
-	            .body("[0].jobName", equalTo("jdbc"));
-	}
+    }
 
-	@Test
-	void fail() throws Exception
-	{
-	    BatchClient batchClient = new BatchClient(getUri());
-	
-	    Properties properties = new Properties();
-	    properties.setProperty("jdbc.batchlet.fail", "true");
-	    JobExecutionEntity execution = batchClient.startJob("jdbc", properties);
-	    await().atMost(5, SECONDS)
-	            .until(() -> FAILED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
-	}
+    @AfterAll
+    static void afterAll() {
+        RestAssured.reset();
+    }
 
-	@Test
-	void restart() throws Exception
-	{
-	    BatchClient batchClient = new BatchClient(getUri());
-	
-	    Properties properties = new Properties();
-	    properties.setProperty("jdbc.batchlet.fail", "true");
-	    JobExecutionEntity execution = batchClient.startJob("jdbc", properties);
-	    await().atMost(5, SECONDS)
-	            .until(() -> FAILED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
-	
-	    // Remove Job from cache
-	    given().delete("/repository/jobs/{jobId}", "jdbc")
-	            .then()
-	            .statusCode(204);
-	
-	    properties.setProperty("jdbc.batchlet.fail", "false");
-	    JobExecutionEntity restart = batchClient.restartJobExecution(execution.getExecutionId(), properties);
-	    await().atMost(5, SECONDS)
-	            .until(() -> COMPLETED.equals(batchClient.getJobExecution(restart.getExecutionId()).getBatchStatus()));
-	}
+    @Test
+    @Order(1)
+    void jdbc() throws Exception {
+        BatchClient batchClient = new BatchClient(getUri());
+        JobExecutionEntity execution = batchClient.startJob("jdbc", new Properties());
+        await().atMost(5, SECONDS)
+                .until(() -> COMPLETED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
+
+        given().get("/repository/instances/jdbc")
+                .then()
+                .statusCode(200)
+                .body("size()", is(1))
+                .body("[0].jobName", equalTo("jdbc"));
+
+        given().get("/jdbc/instances/jdbc")
+                .then()
+                .statusCode(200)
+                .body("size()", is(1))
+                .body("[0].jobName", equalTo("jdbc"));
+    }
+
+    @Test
+    void fail() throws Exception {
+        BatchClient batchClient = new BatchClient(getUri());
+
+        Properties properties = new Properties();
+        properties.setProperty("jdbc.batchlet.fail", "true");
+        JobExecutionEntity execution = batchClient.startJob("jdbc", properties);
+        await().atMost(5, SECONDS)
+                .until(() -> FAILED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
+    }
+
+    @Test
+    void restart() throws Exception {
+        BatchClient batchClient = new BatchClient(getUri());
+
+        Properties properties = new Properties();
+        properties.setProperty("jdbc.batchlet.fail", "true");
+        JobExecutionEntity execution = batchClient.startJob("jdbc", properties);
+        await().atMost(5, SECONDS)
+                .until(() -> FAILED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
+
+        // Remove Job from cache
+        given().delete("/repository/jobs/{jobId}", "jdbc")
+                .then()
+                .statusCode(204);
+
+        properties.setProperty("jdbc.batchlet.fail", "false");
+        JobExecutionEntity restart = batchClient.restartJobExecution(execution.getExecutionId(), properties);
+        await().atMost(5, SECONDS)
+                .until(() -> COMPLETED.equals(batchClient.getJobExecution(restart.getExecutionId()).getBatchStatus()));
+    }
 }

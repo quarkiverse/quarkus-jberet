@@ -80,15 +80,17 @@ public class JBeretConfig {
              */
             @ConfigItem(defaultValue = DataSourceUtil.DEFAULT_DATASOURCE_NAME)
             public String datasource;
-            /** Allow custom DDL file resource for JBeret tables creation;
+            /**
+             * Allow custom DDL file resource for JBeret tables creation;
              * if using <b>custom table names</b> please also set <code>sql-filename</code>
              * property to propagate table names
              */
             @ConfigItem(name = "ddl-filename")
             public Optional<String> ddlFileName;
-            /** Allow custom queries to be used to query JBeret tables;
-             *  this is mandatory if custom table names are used in
-             *  custom DDL filename
+            /**
+             * Allow custom queries to be used to query JBeret tables;
+             * this is mandatory if custom table names are used in
+             * custom DDL filename
              */
             @ConfigItem(name = "sql-filename")
             public Optional<String> sqlFileName;

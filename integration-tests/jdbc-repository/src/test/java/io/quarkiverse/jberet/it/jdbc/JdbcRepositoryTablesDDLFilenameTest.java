@@ -21,35 +21,29 @@ import io.quarkus.test.junit.TestProfile;
 @QuarkusTest
 @QuarkusTestResource(H2DatabaseTestResource.class)
 @TestProfile(Profile.class)
-class JdbcRepositoryTablesDDLFilenameTest extends JdbcRepositoryTest
-{
-	public static class Profile implements QuarkusTestProfile
-	{
-		@Override
-	    public String getConfigProfile()
-		{
-	        return "test-ddl-filename";
-	    }
-	}
-	
+class JdbcRepositoryTablesDDLFilenameTest extends JdbcRepositoryTest {
+    public static class Profile implements QuarkusTestProfile {
+        @Override
+        public String getConfigProfile() {
+            return "test-ddl-filename";
+        }
+    }
+
     @Inject
     @io.quarkus.agroal.DataSource("batch")
     DataSource dataSource;
 
-	@Test
-	void testTables() throws SQLException 
-	{
-		final String sql = "SELECT * FROM jb_test_schema.JOB_INSTANCE JI " + 
-		"inner join jb_test_schema.JOB_EXECUTION JE on JE.JOBINSTANCEID = JI.JOBINSTANCEID " +
-		"inner join jb_test_schema.STEP_EXECUTION SE on SE.JOBEXECUTIONID = JE.JOBEXECUTIONID " + 
-		"inner join jb_test_schema.PARTITION_EXECUTION PE on PE.STEPEXECUTIONID = SE.STEPEXECUTIONID";
-		try (Connection connection = dataSource.getConnection())
-		{
-			try (Statement statement = connection.createStatement())
-			{
-				statement.execute(sql);
-			}
-		}
-		assertTrue(true);
-	}
+    @Test
+    void testTables() throws SQLException {
+        final String sql = "SELECT * FROM jb_test_schema.JOB_INSTANCE JI " +
+                "inner join jb_test_schema.JOB_EXECUTION JE on JE.JOBINSTANCEID = JI.JOBINSTANCEID " +
+                "inner join jb_test_schema.STEP_EXECUTION SE on SE.JOBEXECUTIONID = JE.JOBEXECUTIONID " +
+                "inner join jb_test_schema.PARTITION_EXECUTION PE on PE.STEPEXECUTIONID = SE.STEPEXECUTIONID";
+        try (Connection connection = dataSource.getConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(sql);
+            }
+        }
+        assertTrue(true);
+    }
 }
