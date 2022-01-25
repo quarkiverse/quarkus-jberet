@@ -1,15 +1,11 @@
 package io.quarkiverse.jberet.it.jdbc;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static io.restassured.RestAssured.given;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-import javax.inject.Inject;
-import javax.sql.DataSource;
-
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import io.quarkiverse.jberet.it.jdbc.JdbcRepositoryTablesDDLFilenameTest.Profile;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -29,21 +25,12 @@ class JdbcRepositoryTablesDDLFilenameTest extends JdbcRepositoryTest {
         }
     }
 
-    @Inject
-    @io.quarkus.agroal.DataSource("batch")
-    DataSource dataSource;
-
-    @Test
-    void testTables() throws SQLException {
-        final String sql = "SELECT * FROM jb_test_schema.JOB_INSTANCE JI " +
-                "inner join jb_test_schema.JOB_EXECUTION JE on JE.JOBINSTANCEID = JI.JOBINSTANCEID " +
-                "inner join jb_test_schema.STEP_EXECUTION SE on SE.JOBEXECUTIONID = JE.JOBEXECUTIONID " +
-                "inner join jb_test_schema.PARTITION_EXECUTION PE on PE.STEPEXECUTIONID = SE.STEPEXECUTIONID";
-        try (Connection connection = dataSource.getConnection()) {
-            try (Statement statement = connection.createStatement()) {
-                statement.execute(sql);
-            }
-        }
-        assertTrue(true);
+    @ParameterizedTest(name = "{argumentsWithNames}")
+    @ValueSource(strings = { "jb_test_schema.JOB_INSTANCE", "jb_test_schema.JOB_EXECUTION", "jb_test_schema.STEP_EXECUTION",
+            "jb_test_schema.PARTITION_EXECUTION" })
+    void testTables(String tableName) throws SQLException {
+        given().get("/jdbc/tables/" + tableName)
+                .then()
+                .statusCode(200);
     }
 }
