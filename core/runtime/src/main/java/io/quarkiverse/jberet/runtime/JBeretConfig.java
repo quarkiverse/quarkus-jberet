@@ -85,20 +85,20 @@ public class JBeretConfig {
              * if using <b>custom table names</b> please also set <code>sql-filename</code>
              * property to propagate table names
              */
-            @ConfigItem(name = "ddl-filename")
+            @ConfigItem(name = "ddl-file")
             public Optional<String> ddlFileName;
             /**
              * Allow custom queries to be used to query JBeret tables;
              * this is mandatory if custom table names are used in
              * custom DDL filename
              */
-            @ConfigItem(name = "sql-filename")
+            @ConfigItem(name = "sql-file")
             public Optional<String> sqlFileName;
             /** If present, prefix JBeret tables with this property value */
-            @ConfigItem(name = "table-prefix")
+            @ConfigItem(name = "db-table-prefix")
             public Optional<String> dbTablePrefix;
             /** If present, suffix JBeret tables with this property value */
-            @ConfigItem(name = "table-suffix")
+            @ConfigItem(name = "db-table-suffix")
             public Optional<String> dbTableSuffix;
         }
 
