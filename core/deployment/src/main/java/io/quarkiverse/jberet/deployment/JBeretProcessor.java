@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -182,10 +183,18 @@ public class JBeretProcessor {
 
     @BuildStep
     public void nativeImage(BuildProducer<NativeImageResourceBuildItem> resources,
-            BuildProducer<ReflectiveClassBuildItem> reflectiveClasses) {
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClasses,
+            JBeretConfig config) {
         resources.produce(new NativeImageResourceBuildItem("sql/jberet-sql.properties"));
         resources.produce(new NativeImageResourceBuildItem("sql/jberet.ddl"));
-
+        if (config.repository.type == JDBC) {
+            config.repository.jdbc.ddlFileName.map(String::trim)
+                    .filter(Predicate.not(String::isEmpty))
+                    .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
+            config.repository.jdbc.sqlFileName.map(String::trim)
+                    .filter(Predicate.not(String::isEmpty))
+                    .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
+        }
         reflectiveClasses.produce(new ReflectiveClassBuildItem(true, false, false, QuarkusJobScheduler.class));
     }
 
