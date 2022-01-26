@@ -3,6 +3,7 @@ package io.quarkiverse.jberet.it.jdbc;
 import static io.restassured.RestAssured.given;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -20,8 +21,11 @@ import io.quarkus.test.junit.TestProfile;
 class JdbcRepositoryTablesDDLFilenameTest extends JdbcRepositoryTest {
     public static class Profile implements QuarkusTestProfile {
         @Override
-        public String getConfigProfile() {
-            return "test-ddl-filename";
+        public Map<String, String> getConfigOverrides() {
+            return Map.of(
+                    "quarkus.jberet.repository.jdbc.ddl-file", "ddl/custom-jberet-tables.ddl",
+                    "quarkus.jberet.repository.jdbc.sql-file", "ddl/custom-jberet-sql.properties",
+                    "job-instance-tablename", "jb_test_schema.JOB_INSTANCE");
         }
     }
 

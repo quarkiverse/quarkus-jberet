@@ -3,6 +3,7 @@ package io.quarkiverse.jberet.it.jdbc;
 import static io.restassured.RestAssured.given;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -20,8 +21,10 @@ import io.quarkus.test.junit.TestProfile;
 class JdbcRepositoryTablesPrefixSuffixTest extends JdbcRepositoryTest {
     public static class Profile implements QuarkusTestProfile {
         @Override
-        public String getConfigProfile() {
-            return "test-prefix-suffix";
+        public Map<String, String> getConfigOverrides() {
+            return Map.of("quarkus.jberet.repository.jdbc.db-table-prefix", "jb_prefix_",
+                    "quarkus.jberet.repository.jdbc.db-table-suffix", "_jb_suffix",
+                    "job-instance-tablename", "jb_prefix_JOB_INSTANCE_jb_suffix");
         }
     }
 
