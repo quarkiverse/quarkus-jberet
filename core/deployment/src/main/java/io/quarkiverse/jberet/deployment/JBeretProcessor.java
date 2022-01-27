@@ -47,8 +47,11 @@ import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
 
-import io.quarkiverse.jberet.runtime.*;
+import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
+import io.quarkiverse.jberet.runtime.JBeretProducer;
+import io.quarkiverse.jberet.runtime.JBeretRecorder;
+import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
 import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -67,10 +70,10 @@ import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
-import io.quarkus.deployment.configuration.ConfigurationError;
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.deployment.util.GlobUtil;
 import io.quarkus.runtime.ThreadPoolConfig;
+import io.quarkus.runtime.configuration.ConfigurationException;
 import io.quarkus.runtime.util.ClassPathUtils;
 
 public class JBeretProcessor {
@@ -276,7 +279,7 @@ public class JBeretProcessor {
             return jobConfig.cron.get();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ConfigurationError(
+            throw new ConfigurationException(
                     String.format("The cron expression %s configured in %s is not valid", jobConfig.cron.get(),
                             "quarkus.jberet.job." + job.getJobXmlName() + ".cron"));
         }
@@ -306,9 +309,12 @@ public class JBeretProcessor {
         if (JDBC.equals(config.repository.type)) {
             final String datasource = config.repository.jdbc.datasource;
             if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
-                throw new ConfigurationError("Datasource name " + datasource + " does not exist. Available datasources: "
-                        + datasources.stream().map(JdbcDataSourceBuildItem::getName).collect(
-                                Collectors.joining(",")));
+                throw new ConfigurationException("Datasource name " +
+                        datasource +
+                        " does not exist. Available datasources: " +
+                        datasources.stream()
+                                .map(JdbcDataSourceBuildItem::getName)
+                                .collect(Collectors.joining(",")));
             }
         }
     }
