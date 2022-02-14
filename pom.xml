@@ -22,7 +22,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <compiler.plugin.version>3.9.0</compiler.plugin.version>
     <surefire.plugin.version>3.0.0-M5</surefire.plugin.version>
-    <staging.plugin.version>1.6.8</staging.plugin.version>
+    <staging.plugin.version>1.6.10</staging.plugin.version>
 
     <quarkus.version>2.7.0.Final</quarkus.version>
     <jakarta.batch-api.version>1.0.2</jakarta.batch-api.version>
