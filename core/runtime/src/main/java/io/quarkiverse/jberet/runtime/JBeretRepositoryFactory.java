@@ -18,14 +18,14 @@ final class JBeretRepositoryFactory {
     }
 
     static JobRepository getJobRepository(final JBeretConfig config) {
-        if (JDBC.equals(config.repository.type)) {
+        if (JDBC.equals(config.repository().type())) {
             final Properties configProperties = new Properties();
 
-            addJdbcProperty(config.repository.jdbc.sqlFileName, JdbcRepository.SQL_FILE_NAME_KEY, configProperties);
-            addJdbcProperty(config.repository.jdbc.ddlFileName, JdbcRepository.DDL_FILE_NAME_KEY, configProperties);
-            addJdbcProperty(config.repository.jdbc.dbTablePrefix, JdbcRepository.DB_TABLE_PREFIX_KEY, configProperties);
-            addJdbcProperty(config.repository.jdbc.dbTableSuffix, JdbcRepository.DB_TABLE_SUFFIX_KEY, configProperties);
-            return new JdbcRepository(DataSources.fromName(config.repository.jdbc.datasource), configProperties);
+            addJdbcProperty(config.repository().jdbc().sqlFileName(), JdbcRepository.SQL_FILE_NAME_KEY, configProperties);
+            addJdbcProperty(config.repository().jdbc().ddlFileName(), JdbcRepository.DDL_FILE_NAME_KEY, configProperties);
+            addJdbcProperty(config.repository().jdbc().dbTablePrefix(), JdbcRepository.DB_TABLE_PREFIX_KEY, configProperties);
+            addJdbcProperty(config.repository().jdbc().dbTableSuffix(), JdbcRepository.DB_TABLE_SUFFIX_KEY, configProperties);
+            return new JdbcRepository(DataSources.fromName(config.repository().jdbc().datasource()), configProperties);
         }
 
         return new InMemoryRepository();
