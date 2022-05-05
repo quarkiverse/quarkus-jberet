@@ -59,9 +59,9 @@ public class QuarkusJobOperator extends AbstractJobOperator {
             throws JobStartException, JobSecurityException {
 
         // Add params for configuration. Don't override if already there.
-        JobConfig jobConfig = config.job.get(jobXMLName);
-        if (jobConfig != null && jobConfig.params != null) {
-            for (Map.Entry<String, String> param : jobConfig.params.entrySet()) {
+        JobConfig jobConfig = config.job().get(jobXMLName);
+        if (jobConfig != null && jobConfig.params() != null) {
+            for (Map.Entry<String, String> param : jobConfig.params().entrySet()) {
                 if (!jobParameters.containsKey(param.getKey())) {
                     jobParameters.setProperty(param.getKey(), param.getValue());
                 }

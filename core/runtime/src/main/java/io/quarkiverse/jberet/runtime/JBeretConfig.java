@@ -5,104 +5,99 @@ import java.util.Map;
 import java.util.Optional;
 
 import io.quarkus.datasource.common.runtime.DataSourceUtil;
-import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
+import io.smallrye.config.WithName;
 
-@ConfigRoot(name = "jberet", phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
-public class JBeretConfig {
+@ConfigMapping(prefix = "quarkus.jberet")
+@ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
+public interface JBeretConfig {
     /**
      *
      */
-    @ConfigItem
-    public Map<String, JobConfig> job;
+    Map<String, JobConfig> job();
 
     /**
      *
      */
-    @ConfigItem
-    public JobsConfig jobs;
+    JobsConfig jobs();
 
     /**
      *
      */
-    @ConfigItem
-    public Repository repository;
+    Repository repository();
 
-    @ConfigGroup
-    public static class JobConfig {
+    interface JobConfig {
         /**
          *
          */
-        @ConfigItem
-        public Optional<String> cron;
+        Optional<String> cron();
 
         /**
          *
          */
-        @ConfigItem
-        public Map<String, String> params;
+        Map<String, String> params();
     }
 
-    @ConfigGroup
-    public static class JobsConfig {
+    interface JobsConfig {
         /**
          *
          */
-        @ConfigItem
-        public Optional<List<String>> includes;
+        Optional<List<String>> includes();
+
         /**
          *
          */
-        @ConfigItem
-        public Optional<List<String>> excludes;
+        Optional<List<String>> excludes();
     }
 
-    @ConfigGroup
-    public static class Repository {
+    interface Repository {
         /**
          *
          */
-        @ConfigItem(defaultValue = "in-memory")
-        public Type type;
+        @WithDefault("IN_MEMORY")
+        Type type();
 
         /**
          *
          */
-        @ConfigItem
-        public Jdbc jdbc;
+        Jdbc jdbc();
 
-        @ConfigGroup
-        public static class Jdbc {
+        interface Jdbc {
             /**
              *
              */
-            @ConfigItem(defaultValue = DataSourceUtil.DEFAULT_DATASOURCE_NAME)
-            public String datasource;
+            @WithDefault(DataSourceUtil.DEFAULT_DATASOURCE_NAME)
+            String datasource();
+
             /**
              * Allow custom DDL file resource for JBeret tables creation;
              * if using <b>custom table names</b> please also set <code>sql-filename</code>
              * property to propagate table names
              */
-            @ConfigItem(name = "ddl-file")
-            public Optional<String> ddlFileName;
+            @WithName("ddl-file")
+            Optional<String> ddlFileName();
+
             /**
              * Allow custom queries to be used to query JBeret tables;
              * this is mandatory if custom table names are used in
              * custom DDL filename
              */
-            @ConfigItem(name = "sql-file")
-            public Optional<String> sqlFileName;
+            @WithName("sql-file")
+            Optional<String> sqlFileName();
+
             /** If present, prefix JBeret tables with this property value */
-            @ConfigItem(name = "db-table-prefix")
-            public Optional<String> dbTablePrefix;
+            @WithName("db-table-prefix")
+            Optional<String> dbTablePrefix();
+
             /** If present, suffix JBeret tables with this property value */
-            @ConfigItem(name = "db-table-suffix")
-            public Optional<String> dbTableSuffix;
+            @WithName("db-table-suffix")
+            Optional<String> dbTableSuffix();
         }
 
-        public enum Type {
+        enum Type {
             IN_MEMORY,
             JDBC
         }

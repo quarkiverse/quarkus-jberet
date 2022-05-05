@@ -70,7 +70,7 @@ public class JBeretRecorder {
     }
 
     public void initScheduler(final JBeretConfig config) {
-        if (config.job.values().stream().noneMatch(jobConfig -> jobConfig.cron.isPresent())) {
+        if (config.job().values().stream().noneMatch(jobConfig -> jobConfig.cron().isPresent())) {
             return;
         }
 
@@ -80,12 +80,12 @@ public class JBeretRecorder {
         // TODO - Record Cron
         CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
         for (Job job : JBeretDataHolder.getJobs()) {
-            JobConfig jobConfig = config.job.get(job.getJobXmlName());
-            if (jobConfig != null && jobConfig.cron.isPresent()) {
-                Cron cron = parser.parse(jobConfig.cron.get());
+            JobConfig jobConfig = config.job().get(job.getJobXmlName());
+            if (jobConfig != null && jobConfig.cron().isPresent()) {
+                Cron cron = parser.parse(jobConfig.cron().get());
                 java.util.Properties jobParameters = new java.util.Properties();
-                if (jobConfig.params != null && !jobConfig.params.isEmpty()) {
-                    jobParameters.putAll(jobConfig.params);
+                if (jobConfig.params() != null && !jobConfig.params().isEmpty()) {
+                    jobParameters.putAll(jobConfig.params());
                 }
 
                 JobScheduleConfig scheduleConfig = JobScheduleConfigBuilder.newInstance()

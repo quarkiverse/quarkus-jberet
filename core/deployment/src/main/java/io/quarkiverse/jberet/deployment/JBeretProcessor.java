@@ -133,14 +133,14 @@ public class JBeretProcessor {
         MetaInfBatchJobsJobXmlResolver jobXmlResolver = new MetaInfBatchJobsJobXmlResolver();
 
         ClassPathUtils.consumeAsPaths("META-INF/batch-jobs", path -> {
-            Set<String> batchFilesNames = findBatchFilesFromPath(path, toPatterns(config.jobs.includes),
-                    toPatterns(config.jobs.excludes));
+            Set<String> batchFilesNames = findBatchFilesFromPath(path, toPatterns(config.jobs().includes()),
+                    toPatterns(config.jobs().excludes()));
             List<Job> loadedJobs = new ArrayList<>();
 
             batchFilesNames.forEach(jobXmlName -> {
                 Job job = ArchiveXmlLoader.loadJobXml(jobXmlName, contextClassLoader, loadedJobs, jobXmlResolver);
                 job.setJobXmlName(jobXmlName);
-                JobConfig jobConfig = config.job.get(jobXmlName);
+                JobConfig jobConfig = config.job().get(jobXmlName);
                 watchedFiles.produce(new HotDeploymentWatchedFileBuildItem("META-INF/batch-jobs/" + jobXmlName + ".xml"));
                 watchJobScripts(job, watchedFiles);
                 batchJobs.produce(new BatchJobBuildItem(job, parseCron(job, jobConfig)));
@@ -190,11 +190,11 @@ public class JBeretProcessor {
             JBeretConfig config) {
         resources.produce(new NativeImageResourceBuildItem("sql/jberet-sql.properties"));
         resources.produce(new NativeImageResourceBuildItem("sql/jberet.ddl"));
-        if (config.repository.type == JDBC) {
-            config.repository.jdbc.ddlFileName.map(String::trim)
+        if (config.repository().type() == JDBC) {
+            config.repository().jdbc().ddlFileName().map(String::trim)
                     .filter(Predicate.not(String::isEmpty))
                     .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
-            config.repository.jdbc.sqlFileName.map(String::trim)
+            config.repository().jdbc().sqlFileName().map(String::trim)
                     .filter(Predicate.not(String::isEmpty))
                     .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
         }
@@ -268,19 +268,19 @@ public class JBeretProcessor {
     }
 
     private static String parseCron(Job job, JobConfig jobConfig) {
-        if (jobConfig == null || !jobConfig.cron.isPresent()) {
+        if (jobConfig == null || !jobConfig.cron().isPresent()) {
             return null;
         }
 
         try {
             CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
-            Cron cron = parser.parse(jobConfig.cron.get());
+            Cron cron = parser.parse(jobConfig.cron().get());
             cron.validate();
-            return jobConfig.cron.get();
+            return jobConfig.cron().get();
         } catch (Exception e) {
             e.printStackTrace();
             throw new ConfigurationException(
-                    String.format("The cron expression %s configured in %s is not valid", jobConfig.cron.get(),
+                    String.format("The cron expression %s configured in %s is not valid", jobConfig.cron().get(),
                             "quarkus.jberet.job." + job.getJobXmlName() + ".cron"));
         }
     }
@@ -306,8 +306,8 @@ public class JBeretProcessor {
             final JBeretConfig config,
             final List<JdbcDataSourceBuildItem> datasources) {
 
-        if (JDBC.equals(config.repository.type)) {
-            final String datasource = config.repository.jdbc.datasource;
+        if (JDBC.equals(config.repository().type())) {
+            final String datasource = config.repository().jdbc().datasource();
             if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
                 throw new ConfigurationException("Datasource name " +
                         datasource +
