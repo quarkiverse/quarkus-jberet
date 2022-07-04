@@ -9,4 +9,4 @@ metadata:
   guide: "https://quarkus.io/guides/jberet"
   categories:
   - "data"
-  status: "experimental"
+  status: "preview"
