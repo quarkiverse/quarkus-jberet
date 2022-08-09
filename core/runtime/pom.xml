@@ -59,11 +59,11 @@
             <artifactId>svm</artifactId>
         </dependency>
 
-        <!-- TODO, jberet should NOT depend on these -->
+        <!-- TODO, jberet should NOT depend on these, marked as provided by JBeret -->
         <dependency>
             <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-security-manager</artifactId>
-            <version>1.1.2.Final</version>
+            <artifactId>wildfly-elytron-security-manager</artifactId>
+            <version>1.19.0.Final</version>
         </dependency>
 
         <!-- TODO, Only required by Schedule using the ScheduleExpression. We need to rewrite this -->
