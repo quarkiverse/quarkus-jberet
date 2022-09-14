@@ -6,7 +6,7 @@ metadata:
   - "batch"
   - "jberet"
   - "jsr352"
-  guide: "https://quarkus.io/guides/jberet"
+  guide: "https://github.com/quarkiverse/quarkus-jberet#readme"
   categories:
   - "data"
   status: "preview"
