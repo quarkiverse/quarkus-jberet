@@ -22,7 +22,7 @@ To use the extension, add the dependency to the target project:
 </dependency>
 ```
 
-:information_source: **Recommended Quarkus version: `2.6.2.Final` or higher **
+:information_source: **Recommended Quarkus version: `2.6.2.Final` or higher**
 
 :warning: JBeret requires running with `--add-opens=java.base/java.security=ALL-UNNAMED` for JDK 17
 
