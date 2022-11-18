@@ -2,6 +2,7 @@
 name: "JBeret - Batch Processing"
 description: "Write Batch Applications with JBeret a JSR-352 implementation"
 metadata:
+  short-name: "jberet"
   keywords:
   - "batch"
   - "jberet"
@@ -9,4 +10,6 @@ metadata:
   guide: "https://github.com/quarkiverse/quarkus-jberet#readme"
   categories:
   - "data"
-  status: "preview"
+  - "integration"
+  status: "stable"
+  config: "quarkus.jberet."
