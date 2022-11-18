@@ -1,7 +1,7 @@
 package io.quarkiverse.jberet.it.jdbc;
 
-import io.quarkus.test.junit.NativeImageTest;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 
-@NativeImageTest
+@QuarkusIntegrationTest
 public class JdbcRepositoryIT extends JdbcRepositoryTest {
 }

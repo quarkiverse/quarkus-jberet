@@ -1,8 +1,8 @@
 package io.quarkiverse.jberet.it.chunk;
 
-import io.quarkus.test.junit.NativeImageTest;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 
-@NativeImageTest
+@QuarkusIntegrationTest
 public class AuctionsJobIT extends AuctionsJobTest {
 
 }

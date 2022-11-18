@@ -1,7 +1,7 @@
 package io.quarkiverse.jberet.it.scheduler;
 
-import io.quarkus.test.junit.NativeImageTest;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 
-@NativeImageTest
+@QuarkusIntegrationTest
 public class ScheduleIT extends SchedulerTest {
 }

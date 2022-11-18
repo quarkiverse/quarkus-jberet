@@ -10,11 +10,11 @@ import io.quarkus.arc.DefaultBean;
 
 public class JBeretRestProducer {
     @ConfigProperty(name = "quarkus.http.host")
-    private String host;
+    String host;
     @ConfigProperty(name = "quarkus.http.port")
-    private int port;
+    int port;
     @ConfigProperty(name = "quarkus.http.insecure-requests")
-    private String insecure;
+    String insecure;
 
     @Produces
     @DefaultBean
