@@ -24,8 +24,6 @@ To use the extension, add the dependency to the target project:
 
 :information_source: **Recommended Quarkus version: `2.6.2.Final` or higher**
 
-:warning: JBeret requires running with `--add-opens=java.base/java.security=ALL-UNNAMED` for JDK 17
-
 The Batch API and Runtime will be available out of the box. Please refer to the 
 [Batch documentation](https://jcp.org/en/jsr/detail?id=352), or the 
 [JBeret documentation](https://jberet.gitbooks.io/jberet-user-guide/content/) to learn about Batch Applications.  
