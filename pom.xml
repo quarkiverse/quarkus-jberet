@@ -22,7 +22,7 @@
     <jakarta.batch-api.version>1.0.2</jakarta.batch-api.version>
     <jberet.version>1.4.8.Final</jberet.version>
     <jberet-rest.version>1.4.1.Final</jberet-rest.version>
-    <jberet-schedule.version>1.4.1.Final</jberet-schedule.version>
+    <jberet-schedule.version>2.0.0.Final</jberet-schedule.version>
   </properties>
 
   <modules>
