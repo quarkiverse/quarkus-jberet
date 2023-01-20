@@ -2,8 +2,8 @@ package io.quarkiverse.jberet.tck;
 
 import static io.quarkiverse.jberet.tck.JobOperatorSetter.setJobOperator;
 
-import javax.batch.operations.JobOperator;
-import javax.inject.Inject;
+import jakarta.batch.operations.JobOperator;
+import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;

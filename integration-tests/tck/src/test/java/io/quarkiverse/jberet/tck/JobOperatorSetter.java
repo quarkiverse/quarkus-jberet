@@ -2,7 +2,7 @@ package io.quarkiverse.jberet.tck;
 
 import java.lang.reflect.Field;
 
-import javax.batch.operations.JobOperator;
+import jakarta.batch.operations.JobOperator;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 

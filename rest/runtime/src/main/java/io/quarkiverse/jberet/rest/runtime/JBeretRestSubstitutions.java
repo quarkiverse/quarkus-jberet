@@ -4,7 +4,7 @@ import static io.quarkiverse.jberet.runtime.JBeretSubstitutions.getStackTraceAsS
 
 import java.io.Serializable;
 
-import javax.batch.operations.BatchRuntimeException;
+import jakarta.batch.operations.BatchRuntimeException;
 
 import org.jberet.rest.entity.BatchExceptionEntity;
 

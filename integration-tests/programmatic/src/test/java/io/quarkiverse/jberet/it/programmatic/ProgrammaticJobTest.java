@@ -2,10 +2,10 @@ package io.quarkiverse.jberet.it.programmatic;
 
 import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static io.restassured.RestAssured.given;
+import static jakarta.batch.runtime.BatchStatus.COMPLETED;
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.batch.runtime.BatchStatus.COMPLETED;
-import static javax.ws.rs.core.HttpHeaders.ACCEPT;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.awaitility.Awaitility.await;
 
 import org.jberet.rest.client.BatchClient;

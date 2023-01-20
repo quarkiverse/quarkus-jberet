@@ -1,10 +1,10 @@
 package io.quarkiverse.jberet.deployment;
 
-import javax.batch.api.BatchProperty;
-import javax.batch.api.Batchlet;
-import javax.batch.runtime.BatchStatus;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.Batchlet;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Named;
 
 import com.google.inject.Inject;
 

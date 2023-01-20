@@ -18,11 +18,11 @@
   <properties>
     <surefire.plugin.version>3.0.0-M7</surefire.plugin.version>
 
-    <quarkus.version>2.15.1.Final</quarkus.version>
-    <jakarta.batch-api.version>1.0.2</jakarta.batch-api.version>
-    <jberet.version>1.4.8.Final</jberet.version>
-    <jberet-rest.version>1.4.1.Final</jberet-rest.version>
-    <jberet-schedule.version>1.4.1.Final</jberet-schedule.version>
+    <quarkus.version>3.0.0.Alpha3</quarkus.version>
+    <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
+    <jberet.version>2.1.1.Final</jberet.version>
+    <jberet-rest.version>2.0.0.Final</jberet-rest.version>
+    <jberet-schedule.version>2.0.0.Final</jberet-schedule.version>
   </properties>
 
   <modules>
