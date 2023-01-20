@@ -1,9 +1,9 @@
 package io.quarkiverse.jberet.it.scheduler;
 
-import javax.batch.api.Batchlet;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.batch.api.Batchlet;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 

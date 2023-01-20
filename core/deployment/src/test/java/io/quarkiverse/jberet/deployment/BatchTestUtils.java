@@ -3,7 +3,7 @@ package io.quarkiverse.jberet.deployment;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.batch.runtime.Metric;
+import jakarta.batch.runtime.Metric;
 
 public class BatchTestUtils {
     static Map<Metric.MetricType, Long> getMetricsMap(Metric[] metrics) {

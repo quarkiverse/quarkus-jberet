@@ -1,8 +1,8 @@
 package io.quarkiverse.jberet.it.scripting;
 
 import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
+import static jakarta.batch.runtime.BatchStatus.COMPLETED;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.batch.runtime.BatchStatus.COMPLETED;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

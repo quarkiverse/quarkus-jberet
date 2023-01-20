@@ -7,12 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import javax.batch.api.BatchProperty;
-import javax.batch.api.Batchlet;
-import javax.batch.runtime.BatchStatus;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.Batchlet;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jberet.rest.client.BatchClient;
 import org.jberet.rest.entity.JobExecutionEntity;

@@ -1,9 +1,9 @@
 package io.quarkiverse.jberet.it.client;
 
-import javax.batch.api.AbstractBatchlet;
-import javax.batch.runtime.BatchStatus;
-import javax.enterprise.context.Dependent;
-import javax.inject.Named;
+import jakarta.batch.api.AbstractBatchlet;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Named;
 
 @Named
 @Dependent
