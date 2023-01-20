@@ -3,8 +3,8 @@ package io.quarkiverse.jberet.deployment;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import javax.batch.operations.JobOperator;
-import javax.inject.Inject;
+import jakarta.batch.operations.JobOperator;
+import jakarta.inject.Inject;
 
 import org.jberet.repository.JobRepository;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

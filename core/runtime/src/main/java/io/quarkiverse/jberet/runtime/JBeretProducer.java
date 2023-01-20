@@ -1,8 +1,8 @@
 package io.quarkiverse.jberet.runtime;
 
-import javax.batch.operations.JobOperator;
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
+import jakarta.batch.operations.JobOperator;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 
 import org.jberet.operations.AbstractJobOperator;
 import org.jberet.repository.JobRepository;

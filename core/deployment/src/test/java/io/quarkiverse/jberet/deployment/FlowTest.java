@@ -1,9 +1,9 @@
 package io.quarkiverse.jberet.deployment;
 
+import static jakarta.batch.runtime.Metric.MetricType.COMMIT_COUNT;
+import static jakarta.batch.runtime.Metric.MetricType.READ_COUNT;
+import static jakarta.batch.runtime.Metric.MetricType.WRITE_COUNT;
 import static java.util.stream.Collectors.toList;
-import static javax.batch.runtime.Metric.MetricType.COMMIT_COUNT;
-import static javax.batch.runtime.Metric.MetricType.READ_COUNT;
-import static javax.batch.runtime.Metric.MetricType.WRITE_COUNT;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,17 +15,17 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-import javax.batch.api.AbstractBatchlet;
-import javax.batch.api.chunk.AbstractItemReader;
-import javax.batch.api.chunk.AbstractItemWriter;
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.Metric;
-import javax.batch.runtime.StepExecution;
-import javax.enterprise.context.Dependent;
-import javax.inject.Named;
+import jakarta.batch.api.AbstractBatchlet;
+import jakarta.batch.api.chunk.AbstractItemReader;
+import jakarta.batch.api.chunk.AbstractItemWriter;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.batch.runtime.Metric;
+import jakarta.batch.runtime.StepExecution;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Named;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
