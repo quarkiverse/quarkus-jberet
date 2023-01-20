@@ -8,8 +8,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
 
 import org.jberet.spi.JobOperatorContext;
 import org.jberet.util.BatchUtil;
