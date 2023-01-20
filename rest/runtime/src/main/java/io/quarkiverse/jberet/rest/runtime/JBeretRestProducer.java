@@ -1,7 +1,7 @@
 package io.quarkiverse.jberet.rest.runtime;
 
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jberet.rest.client.BatchClient;

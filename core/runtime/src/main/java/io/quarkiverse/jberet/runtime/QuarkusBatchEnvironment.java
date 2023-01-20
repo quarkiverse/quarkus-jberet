@@ -3,9 +3,9 @@ package io.quarkiverse.jberet.runtime;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.transaction.TransactionManager;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.transaction.TransactionManager;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jberet.creation.AbstractArtifactFactory;

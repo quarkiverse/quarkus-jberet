@@ -5,15 +5,15 @@ import static org.awaitility.Awaitility.await;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import javax.batch.api.BatchProperty;
-import javax.batch.api.Batchlet;
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.JobExecution;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.Batchlet;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jberet.repository.JobRepository;
 import org.jberet.runtime.JobExecutionImpl;
