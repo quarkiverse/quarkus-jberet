@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.enterprise.context.Dependent;
 import javax.inject.Named;
 
 import org.jberet.creation.ArchiveXmlLoader;
@@ -39,7 +38,9 @@ import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
 import org.jberet.job.model.Transition;
 import org.jberet.tools.MetaInfBatchJobsJobXmlResolver;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.Logger;
 
 import com.cronutils.model.Cron;
@@ -58,11 +59,13 @@ import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.processor.AnnotationsTransformer;
+import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CapabilityBuildItem;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationSourceValueBuildItem;
@@ -95,13 +98,28 @@ public class JBeretProcessor {
 
     @BuildStep
     public void additionalBeans(
+            CombinedIndexBuildItem combinedIndex,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans,
-            BuildProducer<AnnotationsTransformerBuildItem> annotationsTransformer) throws Exception {
+            BuildProducer<AnnotationsTransformerBuildItem> annotationsTransformer,
+            BuildProducer<BatchArtifactBuildItem> batchArtifact) throws Exception {
 
         additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
 
         Map<String, String> batchArtifacts = getBatchArtifacts();
+        for (String artifact : batchArtifacts.keySet()) {
+            additionalBeans.produce(new AdditionalBeanBuildItem(artifact));
+            ClassInfo classInfo = combinedIndex.getIndex().getClassByName(artifact);
+            if (classInfo != null) {
+                String named = batchArtifacts.get(artifact);
+                String alias = named;
+                AnnotationInstance namedAnnotation = classInfo.annotation(DotNames.NAMED);
+                if (namedAnnotation != null && namedAnnotation.value() != null) {
+                    alias = namedAnnotation.value().asString();
+                }
+                batchArtifact.produce(new BatchArtifactBuildItem(artifact, named, alias));
+            }
+        }
 
         annotationsTransformer.produce(new AnnotationsTransformerBuildItem(new AnnotationsTransformer() {
             @Override
@@ -111,12 +129,12 @@ public class JBeretProcessor {
 
             @Override
             public void transform(final TransformationContext context) {
-                final String className = context.getTarget().asClass().name().toString();
+                String className = context.getTarget().asClass().name().toString();
                 if (batchArtifacts.containsKey(className)) {
+                    String named = batchArtifacts.get(className);
                     context.transform()
                             .add(Unremovable.class)
-                            .add(Dependent.class)
-                            .add(Named.class, createStringValue("value", batchArtifacts.get(className)))
+                            .add(Named.class, createStringValue("value", named))
                             .done();
                 }
             }
@@ -155,11 +173,23 @@ public class JBeretProcessor {
             RecorderContext recorderContext,
             JBeretRecorder recorder,
             JBeretConfig config,
-            List<BatchJobBuildItem> batchJobs) throws Exception {
+            List<BatchJobBuildItem> batchJobs,
+            List<BatchArtifactBuildItem> batchArtifacts) throws Exception {
         registerNonDefaultConstructors(recorderContext);
 
         // TODO - Record JobSchedulerConfig - Need changes in the original class.
-        recorder.registerJobs(batchJobs.stream().map(BatchJobBuildItem::getJob).collect(toList()));
+
+        List<Job> jobs = new ArrayList<>();
+        for (BatchJobBuildItem batchJob : batchJobs) {
+            jobs.add(batchJob.getJob());
+        }
+
+        Map<String, String> artifactsAliases = new HashMap<>();
+        for (BatchArtifactBuildItem batchArtifact : batchArtifacts) {
+            artifactsAliases.put(batchArtifact.getAlias(), batchArtifact.getNamed());
+        }
+
+        recorder.registerJobs(jobs, artifactsAliases);
     }
 
     @BuildStep

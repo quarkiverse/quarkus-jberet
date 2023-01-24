@@ -1,5 +1,6 @@
 package io.quarkiverse.jberet.runtime;
 
+import java.util.Map;
 import java.util.Properties;
 
 import javax.enterprise.inject.spi.Bean;
@@ -15,6 +16,7 @@ import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobTask;
 import org.jberet.spi.JobXmlResolver;
 
+import io.quarkiverse.jberet.runtime.JBeretDataHolder.JBeretData;
 import io.quarkus.arc.Arc;
 
 class QuarkusBatchEnvironment implements BatchEnvironment {
@@ -28,9 +30,10 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
     public QuarkusBatchEnvironment(
             final JBeretConfig config,
             final JobExecutor jobExecutor,
-            final TransactionManager transactionManager) {
+            final TransactionManager transactionManager,
+            final JBeretData data) {
 
-        this.artifactFactory = new QuarkusArtifactFactory();
+        this.artifactFactory = new QuarkusArtifactFactory(data.getBatchArtifactsAliases());
         this.jobExecutor = jobExecutor;
         this.jobRepository = JBeretRepositoryFactory.getJobRepository(config);
         this.transactionManager = transactionManager;
@@ -81,17 +84,23 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
     }
 
     static class QuarkusArtifactFactory extends AbstractArtifactFactory {
+        private final Map<String, String> aliases;
+
+        public QuarkusArtifactFactory(final Map<String, String> aliases) {
+            this.aliases = aliases;
+        }
+
         @Override
         public Object create(String ref, Class<?> cls, ClassLoader classLoader) {
             BeanManager bm = Arc.container().beanManager();
-            Bean<?> bean = bm.resolve(bm.getBeans(ref));
+            Bean<?> bean = bm.resolve(bm.getBeans(aliases.getOrDefault(ref, ref)));
             return bean == null ? null : bm.getReference(bean, bean.getBeanClass(), bm.createCreationalContext(bean));
         }
 
         @Override
         public Class<?> getArtifactClass(String ref, ClassLoader classLoader) {
             BeanManager bm = Arc.container().beanManager();
-            Bean<?> bean = bm.resolve(bm.getBeans(ref));
+            Bean<?> bean = bm.resolve(bm.getBeans(aliases.getOrDefault(ref, ref)));
             return bean == null ? null : bean.getBeanClass();
         }
     }

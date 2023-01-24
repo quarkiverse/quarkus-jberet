@@ -2,6 +2,7 @@ package io.quarkiverse.jberet.runtime;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,13 +37,13 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class JBeretRecorder {
-    public void registerJobs(List<Job> jobs) {
-        JBeretDataHolder.registerJobs(jobs);
+    public void registerJobs(List<Job> jobs, Map<String, String> batchArtifactsAliases) {
+        JBeretDataHolder.registerJobs(jobs, batchArtifactsAliases);
     }
 
     public RuntimeValue<ConfigSourceProvider> config() {
         final Set<String> properties = new HashSet<>();
-        final List<Job> jobs = JBeretDataHolder.getJobs();
+        final List<Job> jobs = JBeretDataHolder.getData().getJobs();
         for (Job job : jobs) {
             addConfigNames(properties, job);
 
@@ -60,11 +61,11 @@ public class JBeretRecorder {
 
     public void initJobOperator(final JBeretConfig config, final ThreadPoolConfig threadPoolConfig,
             final BeanContainer beanContainer) {
-        ManagedExecutor managedExecutor = beanContainer.instance(ManagedExecutor.class);
-        TransactionManager transactionManager = beanContainer.instance(TransactionManager.class);
+        ManagedExecutor managedExecutor = beanContainer.beanInstance(ManagedExecutor.class);
+        TransactionManager transactionManager = beanContainer.beanInstance(TransactionManager.class);
 
         QuarkusJobOperator operator = new QuarkusJobOperator(config, threadPoolConfig, managedExecutor, transactionManager,
-                JBeretDataHolder.getJobs());
+                JBeretDataHolder.getData());
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
     }
@@ -79,7 +80,7 @@ public class JBeretRecorder {
 
         // TODO - Record Cron
         CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
-        for (Job job : JBeretDataHolder.getJobs()) {
+        for (Job job : JBeretDataHolder.getData().getJobs()) {
             JobConfig jobConfig = config.job().get(job.getJobXmlName());
             if (jobConfig != null && jobConfig.cron().isPresent()) {
                 Cron cron = parser.parse(jobConfig.cron().get());
