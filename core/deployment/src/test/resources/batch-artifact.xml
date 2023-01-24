@@ -1,0 +1,9 @@
+<job id="batch-artifact-job" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <step id="batch-artifact-step">
+        <batchlet ref="#{jobParameters['refName']}">
+            <properties>
+                <property name="name" value="#{jobParameters['name']}"/>
+            </properties>
+        </batchlet>
+    </step> 
+</job>

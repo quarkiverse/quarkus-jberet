@@ -2,7 +2,6 @@ package io.quarkiverse.jberet.runtime;
 
 import static org.jberet._private.BatchMessages.MESSAGES;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -27,6 +26,7 @@ import org.jberet.runtime.JobInstanceImpl;
 import org.jberet.spi.BatchEnvironment;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
+import io.quarkiverse.jberet.runtime.JBeretDataHolder.JBeretData;
 import io.quarkus.runtime.ThreadPoolConfig;
 
 @Vetoed
@@ -40,11 +40,11 @@ public class QuarkusJobOperator extends AbstractJobOperator {
             final ThreadPoolConfig threadPoolConfig,
             final ManagedExecutor managedExecutor,
             final TransactionManager transactionManager,
-            final List<Job> jobs) {
+            final JBeretData data) {
 
-        this.batchEnvironment = new QuarkusBatchEnvironment(config, new QuarkusJobExecutor(managedExecutor, threadPoolConfig),
-                transactionManager);
-        this.jobs = jobs.stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
+        QuarkusJobExecutor jobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig);
+        this.batchEnvironment = new QuarkusBatchEnvironment(config, jobExecutor, transactionManager, data);
+        this.jobs = data.getJobs().stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
         this.config = config;
     }
 

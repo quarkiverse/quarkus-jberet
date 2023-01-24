@@ -17,22 +17,36 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-public class BatchArtifactTest {
+class BatchArtifactTest {
     @RegisterExtension
     static QuarkusUnitTest TEST = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(ArtifactBatchlet.class)
                     .addAsManifestResource("batch.xml")
-                    .addAsManifestResource("batchlet.xml", "batch-jobs/batchlet.xml"));
+                    .addAsManifestResource("batch-artifact.xml", "batch-jobs/batch-artifact.xml"));
 
     @Inject
     JobOperator jobOperator;
 
     @Test
-    public void runBatchletJob() {
+    void batchXml() {
         Properties jobParameters = new Properties();
+        jobParameters.setProperty("refName", "batchlet");
         jobParameters.setProperty("name", "david");
-        long executionId = jobOperator.start("batchlet", jobParameters);
+        long executionId = jobOperator.start("batch-artifact", jobParameters);
+
+        await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            JobExecution jobExecution = jobOperator.getJobExecution(executionId);
+            return BatchStatus.COMPLETED.equals(jobExecution.getBatchStatus());
+        });
+    }
+
+    @Test
+    void named() {
+        Properties jobParameters = new Properties();
+        jobParameters.setProperty("refName", "artifactBatchlet");
+        jobParameters.setProperty("name", "david");
+        long executionId = jobOperator.start("batch-artifact", jobParameters);
 
         await().atMost(5, TimeUnit.SECONDS).until(() -> {
             JobExecution jobExecution = jobOperator.getJobExecution(executionId);
