@@ -4,17 +4,14 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Predicate;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Named;
-
 import org.jberet.repository.JdbcRepository;
 import org.jberet.repository.JobRepository;
 
 import io.quarkus.agroal.runtime.DataSources;
 
-@Named("JDBC")
-@ApplicationScoped
 public class JBeretJdbcRepositoryFactory implements JBeretRepositoryFactory {
+
+    static public final String NAME = "JDBC";
 
     @Override
     public JobRepository apply(JBeretConfig config) {

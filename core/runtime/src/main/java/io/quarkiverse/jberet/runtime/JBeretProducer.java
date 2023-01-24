@@ -2,6 +2,7 @@ package io.quarkiverse.jberet.runtime;
 
 import jakarta.batch.operations.JobOperator;
 import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import org.jberet.operations.AbstractJobOperator;
@@ -38,4 +39,19 @@ public class JBeretProducer {
     public JobScheduler jobScheduler() {
         return JobScheduler.getJobScheduler();
     }
+
+    @Produces
+    @Named(JBeretJdbcRepositoryFactory.NAME)
+    @Singleton
+    public JBeretRepositoryFactory jdbcRepositoryFactor() {
+        return new JBeretJdbcRepositoryFactory();
+    }
+
+    @Produces
+    @Named(JBeretInMemoryRepositoryFactory.NAME)
+    @Singleton
+    public JBeretRepositoryFactory inMemoryRepositoryFactor() {
+        return new JBeretInMemoryRepositoryFactory();
+    }
+
 }
