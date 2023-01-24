@@ -28,14 +28,14 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
     private static final Properties PROPS = new Properties();
 
     public QuarkusBatchEnvironment(
-            final JBeretConfig config,
+            final JobRepository jobRepository,
             final JobExecutor jobExecutor,
             final TransactionManager transactionManager,
             final JBeretData data) {
 
         this.artifactFactory = new QuarkusArtifactFactory(data.getBatchArtifactsAliases());
         this.jobExecutor = jobExecutor;
-        this.jobRepository = JBeretRepositoryFactory.getJobRepository(config);
+        this.jobRepository = jobRepository;
         this.transactionManager = transactionManager;
     }
 

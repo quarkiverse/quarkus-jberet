@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.enterprise.inject.literal.NamedLiteral;
 import jakarta.transaction.TransactionManager;
 
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
@@ -64,8 +65,22 @@ public class JBeretRecorder {
         ManagedExecutor managedExecutor = beanContainer.beanInstance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.beanInstance(TransactionManager.class);
 
-        QuarkusJobOperator operator = new QuarkusJobOperator(config, threadPoolConfig, managedExecutor, transactionManager,
-                JBeretDataHolder.getData());
+        JBeretRepositoryFactory beanInstance = beanContainer.beanInstance(
+                JBeretRepositoryFactory.class,
+                NamedLiteral.of(config.repository().type()));
+
+        JBeretDataHolder.JBeretData data = JBeretDataHolder.getData();
+
+        QuarkusJobOperator operator = new QuarkusJobOperator(
+                config,
+                new QuarkusBatchEnvironment(
+                        beanInstance.apply(config),
+                        new QuarkusJobExecutor(
+                                managedExecutor,
+                                threadPoolConfig),
+                        transactionManager,
+                        JBeretDataHolder.getData()),
+                data.getJobs());
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
     }

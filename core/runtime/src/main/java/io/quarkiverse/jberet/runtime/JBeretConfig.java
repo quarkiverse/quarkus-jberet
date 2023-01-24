@@ -58,7 +58,7 @@ public interface JBeretConfig {
          *
          */
         @WithDefault("IN_MEMORY")
-        Type type();
+        String type();
 
         /**
          *
@@ -97,9 +97,17 @@ public interface JBeretConfig {
             Optional<String> dbTableSuffix();
         }
 
-        enum Type {
-            IN_MEMORY,
-            JDBC
+        interface Jpa {
+            /**
+             *
+             */
+            @WithDefault(DataSourceUtil.DEFAULT_DATASOURCE_NAME)
+            String datasource();
         }
+
+        /**
+         *
+         */
+        Jpa jpa();
     }
 }
