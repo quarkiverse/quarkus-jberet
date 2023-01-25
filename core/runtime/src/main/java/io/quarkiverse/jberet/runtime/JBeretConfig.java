@@ -96,18 +96,5 @@ public interface JBeretConfig {
             @WithName("db-table-suffix")
             Optional<String> dbTableSuffix();
         }
-
-        interface Jpa {
-            /**
-             *
-             */
-            @WithDefault(DataSourceUtil.DEFAULT_DATASOURCE_NAME)
-            String datasource();
-        }
-
-        /**
-         *
-         */
-        Jpa jpa();
     }
 }
