@@ -348,7 +348,7 @@ public class JBeretProcessor {
             final JBeretConfig config,
             final List<JdbcDataSourceBuildItem> datasources) {
 
-        if (config.repository().type() == JDBC) {
+        if (JDBC.equals(config.repository().type())) {
             final String datasource = config.repository().jdbc().datasource();
             if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
                 throw new ConfigurationException("Datasource name " +
