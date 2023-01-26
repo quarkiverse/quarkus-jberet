@@ -4,14 +4,15 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Predicate;
 
+import jakarta.inject.Singleton;
+
 import org.jberet.repository.JdbcRepository;
 import org.jberet.repository.JobRepository;
 
 import io.quarkus.agroal.runtime.DataSources;
 
+@Singleton
 public class JBeretJdbcRepositoryFactory implements JBeretRepositoryFactory {
-
-    static public final String NAME = "JDBC";
 
     @Override
     public JobRepository apply(JBeretConfig config) {

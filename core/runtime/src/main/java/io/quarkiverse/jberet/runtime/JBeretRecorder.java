@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.enterprise.inject.literal.NamedLiteral;
 import jakarta.transaction.TransactionManager;
 
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
@@ -20,13 +19,13 @@ import org.jberet.job.model.Properties;
 import org.jberet.job.model.RefArtifact;
 import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
+import org.jberet.repository.JobRepository;
 import org.jberet.schedule.JobScheduleConfig;
 import org.jberet.schedule.JobScheduleConfigBuilder;
 import org.jberet.schedule.JobScheduler;
-import org.jberet.spi.JobOperatorContext;
-import org.jberet.repository.JobRepository;
 import org.jberet.spi.BatchEnvironment;
 import org.jberet.spi.JobExecutor;
+import org.jberet.spi.JobOperatorContext;
 
 import com.cronutils.model.Cron;
 import com.cronutils.model.CronType;
@@ -68,16 +67,15 @@ public class JBeretRecorder {
         ManagedExecutor managedExecutor = beanContainer.beanInstance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.beanInstance(TransactionManager.class);
 
-        JBeretRepositoryFactory beanInstance = beanContainer.beanInstance(
-                JBeretRepositoryFactory.class,
-                NamedLiteral.of(config.repository().type().toUpperCase()));
+        JBeretRepositoryFactory repositoryFactory = beanContainer.beanInstance(
+                JBeretRepositoryFactory.class);
 
-        JobRepository repository = beanInstance.apply(config);
-        
+        JobRepository repository = repositoryFactory.apply(config);
+
         JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig);
-        
+
         JBeretDataHolder.JBeretData data = JBeretDataHolder.getData();
-        
+
         BatchEnvironment batchEnvironment = new QuarkusBatchEnvironment(
                 repository,
                 quarkusJobExecutor,

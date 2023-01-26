@@ -58,7 +58,7 @@ public interface JBeretConfig {
          *
          */
         @WithDefault("IN_MEMORY")
-        String type();
+        Type type();
 
         /**
          *
@@ -95,6 +95,12 @@ public interface JBeretConfig {
             /** If present, suffix JBeret tables with this property value */
             @WithName("db-table-suffix")
             Optional<String> dbTableSuffix();
+        }
+
+        enum Type {
+            IN_MEMORY,
+            JDBC,
+            OTHER
         }
     }
 }

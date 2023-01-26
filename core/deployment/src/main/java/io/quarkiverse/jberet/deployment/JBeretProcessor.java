@@ -1,5 +1,6 @@
 package io.quarkiverse.jberet.deployment;
 
+import static io.quarkiverse.jberet.runtime.JBeretConfig.Repository.Type.JDBC;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.jandex.AnnotationTarget.Kind.CLASS;
@@ -49,6 +50,7 @@ import com.cronutils.parser.CronParser;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
+import io.quarkiverse.jberet.runtime.JBeretInMemoryRepositoryFactory;
 import io.quarkiverse.jberet.runtime.JBeretJdbcRepositoryFactory;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
@@ -98,6 +100,7 @@ public class JBeretProcessor {
 
     @BuildStep
     public void additionalBeans(
+            JBeretConfig config,
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans,
             BuildProducer<AnnotationsTransformerBuildItem> annotationsTransformer,
@@ -105,6 +108,15 @@ public class JBeretProcessor {
 
         additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
+
+        switch (config.repository().type()) {
+            case IN_MEMORY:
+                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretInMemoryRepositoryFactory.class));
+                break;
+            case JDBC:
+                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretJdbcRepositoryFactory.class));
+                break;
+        }
 
         Map<String, String> batchArtifacts = getBatchArtifacts();
         for (String artifact : batchArtifacts.keySet()) {
@@ -220,7 +232,7 @@ public class JBeretProcessor {
             JBeretConfig config) {
         resources.produce(new NativeImageResourceBuildItem("sql/jberet-sql.properties"));
         resources.produce(new NativeImageResourceBuildItem("sql/jberet.ddl"));
-        if (JBeretJdbcRepositoryFactory.NAME.equals(config.repository().type())) {
+        if (config.repository().type() == JDBC) {
             config.repository().jdbc().ddlFileName().map(String::trim)
                     .filter(Predicate.not(String::isEmpty))
                     .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
@@ -336,7 +348,7 @@ public class JBeretProcessor {
             final JBeretConfig config,
             final List<JdbcDataSourceBuildItem> datasources) {
 
-        if (JBeretJdbcRepositoryFactory.NAME.equals(config.repository().type())) {
+        if (config.repository().type() == JDBC) {
             final String datasource = config.repository().jdbc().datasource();
             if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
                 throw new ConfigurationException("Datasource name " +
