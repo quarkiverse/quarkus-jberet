@@ -11,9 +11,11 @@ import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 
-@ConfigMapping(prefix = "quarkus.jberet")
+@ConfigMapping(prefix = JBeretConfig.PREFIX)
 @ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public interface JBeretConfig {
+    public static final String PREFIX = "quarkus.jberet";
+    
     /**
      *
      */
