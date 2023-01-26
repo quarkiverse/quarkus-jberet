@@ -6,7 +6,7 @@ import org.jberet.repository.InMemoryRepository;
 import org.jberet.repository.JobRepository;
 
 @Singleton
-public class JBeretInMemoryRepositoryFactory implements JBeretRepositoryFactory {
+public class JBeretInMemoryJobRepositoryFactory implements JBeretRepositoryFactory {
 
     @Override
     public JobRepository apply(JBeretConfig config) {

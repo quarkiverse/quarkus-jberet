@@ -12,7 +12,7 @@ import org.jberet.repository.JobRepository;
 import io.quarkus.agroal.runtime.DataSources;
 
 @Singleton
-public class JBeretJdbcRepositoryFactory implements JBeretRepositoryFactory {
+public class JBeretJdbcJobRepositoryFactory implements JBeretRepositoryFactory {
 
     @Override
     public JobRepository apply(JBeretConfig config) {
