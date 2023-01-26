@@ -50,8 +50,8 @@ import com.cronutils.parser.CronParser;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
-import io.quarkiverse.jberet.runtime.JBeretInMemoryRepositoryFactory;
-import io.quarkiverse.jberet.runtime.JBeretJdbcRepositoryFactory;
+import io.quarkiverse.jberet.runtime.JBeretInMemoryJobRepositoryFactory;
+import io.quarkiverse.jberet.runtime.JBeretJdbcJobRepositoryFactory;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
 import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
@@ -111,10 +111,10 @@ public class JBeretProcessor {
 
         switch (config.repository().type()) {
             case IN_MEMORY:
-                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretInMemoryRepositoryFactory.class));
+                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretInMemoryJobRepositoryFactory.class));
                 break;
             case JDBC:
-                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretJdbcRepositoryFactory.class));
+                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretJdbcJobRepositoryFactory.class));
                 break;
         }
 
