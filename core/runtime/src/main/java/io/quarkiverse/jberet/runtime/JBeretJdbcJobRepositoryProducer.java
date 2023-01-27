@@ -3,7 +3,10 @@ package io.quarkiverse.jberet.runtime;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import org.jberet.repository.JdbcRepository;
@@ -12,10 +15,15 @@ import org.jberet.repository.JobRepository;
 import io.quarkus.agroal.runtime.DataSources;
 
 @Singleton
-public class JBeretJdbcJobRepositoryFactory implements JBeretRepositoryFactory {
+public class JBeretJdbcJobRepositoryProducer implements Supplier<JobRepository> {
+
+    @Inject
+    protected JBeretConfig config;
 
     @Override
-    public JobRepository apply(JBeretConfig config) {
+    @Produces
+    @Singleton
+    public JobRepository get() {
         final Properties configProperties = new Properties();
         addJdbcProperty(config.repository().jdbc().sqlFileName(), JdbcRepository.SQL_FILE_NAME_KEY, configProperties);
         addJdbcProperty(config.repository().jdbc().ddlFileName(), JdbcRepository.DDL_FILE_NAME_KEY, configProperties);

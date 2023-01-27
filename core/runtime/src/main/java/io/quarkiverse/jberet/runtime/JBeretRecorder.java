@@ -67,17 +67,15 @@ public class JBeretRecorder {
         ManagedExecutor managedExecutor = beanContainer.beanInstance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.beanInstance(TransactionManager.class);
 
-        JBeretRepositoryFactory repositoryFactory = beanContainer.beanInstance(
-                JBeretRepositoryFactory.class);
-
-        JobRepository repository = repositoryFactory.apply(config);
+        JobRepository jobRepository = beanContainer.beanInstance(
+                JobRepository.class);
 
         JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig);
 
         JBeretDataHolder.JBeretData data = JBeretDataHolder.getData();
 
         BatchEnvironment batchEnvironment = new QuarkusBatchEnvironment(
-                repository,
+                jobRepository,
                 quarkusJobExecutor,
                 transactionManager,
                 data);

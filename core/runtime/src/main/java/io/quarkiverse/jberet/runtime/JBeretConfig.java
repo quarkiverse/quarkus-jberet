@@ -15,7 +15,7 @@ import io.smallrye.config.WithName;
 @ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public interface JBeretConfig {
     public static final String PREFIX = "quarkus.jberet";
-    
+
     /**
      *
      */
