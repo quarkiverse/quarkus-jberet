@@ -14,7 +14,6 @@ import org.jberet.repository.JobRepository;
 
 import io.quarkus.agroal.runtime.DataSources;
 
-@Singleton
 public class JBeretJdbcJobRepositoryProducer implements Supplier<JobRepository> {
 
     @Inject
