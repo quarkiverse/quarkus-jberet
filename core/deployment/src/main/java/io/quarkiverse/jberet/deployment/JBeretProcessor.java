@@ -60,7 +60,9 @@ import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
+import io.quarkus.arc.deployment.BeanDiscoveryFinishedBuildItem;
 import io.quarkus.arc.processor.AnnotationsTransformer;
+import io.quarkus.arc.processor.BeanInfo;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -80,8 +82,11 @@ import io.quarkus.runtime.ThreadPoolConfig;
 import io.quarkus.runtime.configuration.ConfigurationException;
 import io.quarkus.runtime.util.ClassPathUtils;
 import io.quarkus.util.GlobUtil;
+import org.jberet.repository.JobRepository;
+import org.jboss.jandex.DotName;
 
 public class JBeretProcessor {
+
     private static final Logger log = Logger.getLogger("io.quarkiverse.jberet");
 
     @BuildStep
@@ -154,6 +159,43 @@ public class JBeretProcessor {
     }
 
     @BuildStep
+    @Record(ExecutionTime.STATIC_INIT)
+    public void validateRepository(
+            JBeretRecorder recorder,
+            JBeretConfig config,
+            BeanDiscoveryFinishedBuildItem beanDiscoveryFinishedBuildItem,
+            List<JdbcDataSourceBuildItem> datasources
+    ) {
+        switch (config.repository().type()) {
+            case JDBC:
+                final String datasource = config.repository().jdbc().datasource();
+                if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
+                    throw new ConfigurationException("Datasource name "
+                            + datasource
+                            + " does not exist. Available datasources: "
+                            + datasources.stream()
+                                    .map(JdbcDataSourceBuildItem::getName)
+                                    .collect(Collectors.joining(",")));
+                }
+
+                break;
+            case OTHER:
+                final DotName dotName = DotName.createSimple(JobRepository.class);
+                final List<BeanInfo> beanInfos = beanDiscoveryFinishedBuildItem.beanStream().filter(
+                        beanInfo -> beanInfo.hasType(dotName)
+                                && (beanInfo.isDefaultBean() || beanInfo.isProducerMethod() && beanInfo.hasDefaultQualifiers()))
+                        .collect();
+                if (beanInfos.isEmpty()) {
+                    throw new ConfigurationException("There is no injectable and @Default JobRepository bean");
+                } else if (beanInfos.size() > 1) {
+                    throw new ConfigurationException(
+                            "Multiple injectable and @Default JobRepository beans are not allowed : "
+                                    + beanInfos);
+                }
+        }
+    }
+
+    @BuildStep
     public void loadJobs(
             JBeretConfig config,
             BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles,
@@ -215,10 +257,7 @@ public class JBeretProcessor {
     ServiceStartBuildItem init(JBeretRecorder recorder,
             JBeretConfig config,
             ThreadPoolConfig threadPoolConfig,
-            BeanContainerBuildItem beanContainer,
-            List<JdbcDataSourceBuildItem> datasources) {
-
-        validateRepository(config, datasources);
+            BeanContainerBuildItem beanContainer) {
 
         recorder.initJobOperator(config, threadPoolConfig, beanContainer.getValue());
         recorder.initScheduler(config);
@@ -342,23 +381,6 @@ public class JBeretProcessor {
             classToRefs.put(entry.getValue(), entry.getKey());
         }
         return classToRefs;
-    }
-
-    private static void validateRepository(
-            final JBeretConfig config,
-            final List<JdbcDataSourceBuildItem> datasources) {
-
-        if (JDBC.equals(config.repository().type())) {
-            final String datasource = config.repository().jdbc().datasource();
-            if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
-                throw new ConfigurationException("Datasource name " +
-                        datasource +
-                        " does not exist. Available datasources: " +
-                        datasources.stream()
-                                .map(JdbcDataSourceBuildItem::getName)
-                                .collect(Collectors.joining(",")));
-            }
-        }
     }
 
     private static void watchJobScripts(Job job, BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles) {
