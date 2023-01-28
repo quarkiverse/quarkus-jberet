@@ -37,10 +37,12 @@ import org.jberet.job.model.Script;
 import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
 import org.jberet.job.model.Transition;
+import org.jberet.repository.JobRepository;
 import org.jberet.tools.MetaInfBatchJobsJobXmlResolver;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
 
 import com.cronutils.model.Cron;
@@ -82,8 +84,6 @@ import io.quarkus.runtime.ThreadPoolConfig;
 import io.quarkus.runtime.configuration.ConfigurationException;
 import io.quarkus.runtime.util.ClassPathUtils;
 import io.quarkus.util.GlobUtil;
-import org.jberet.repository.JobRepository;
-import org.jboss.jandex.DotName;
 
 public class JBeretProcessor {
 
@@ -164,8 +164,7 @@ public class JBeretProcessor {
             JBeretRecorder recorder,
             JBeretConfig config,
             BeanDiscoveryFinishedBuildItem beanDiscoveryFinishedBuildItem,
-            List<JdbcDataSourceBuildItem> datasources
-    ) {
+            List<JdbcDataSourceBuildItem> datasources) {
         switch (config.repository().type()) {
             case JDBC:
                 final String datasource = config.repository().jdbc().datasource();
@@ -182,9 +181,7 @@ public class JBeretProcessor {
             case OTHER:
                 final DotName dotName = DotName.createSimple(JobRepository.class);
                 final List<BeanInfo> beanInfos = beanDiscoveryFinishedBuildItem.beanStream().filter(
-                        beanInfo -> beanInfo.hasType(dotName)
-                                && (beanInfo.isDefaultBean() || beanInfo.isProducerMethod() && beanInfo.hasDefaultQualifiers()))
-                        .collect();
+                        beanInfo -> beanInfo.hasType(dotName) && beanInfo.hasDefaultQualifiers()).collect();
                 if (beanInfos.isEmpty()) {
                     throw new ConfigurationException("There is no injectable and @Default JobRepository bean");
                 } else if (beanInfos.size() > 1) {
