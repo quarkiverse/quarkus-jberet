@@ -2,6 +2,7 @@ package io.quarkiverse.jberet.runtime;
 
 import static org.jberet._private.BatchMessages.MESSAGES;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -14,9 +15,7 @@ import jakarta.batch.operations.JobStartException;
 import jakarta.batch.operations.NoSuchJobException;
 import jakarta.batch.operations.NoSuchJobExecutionException;
 import jakarta.enterprise.inject.Vetoed;
-import jakarta.transaction.TransactionManager;
 
-import org.eclipse.microprofile.context.ManagedExecutor;
 import org.jberet.job.model.Job;
 import org.jberet.operations.AbstractJobOperator;
 import org.jberet.repository.ApplicationAndJobName;
@@ -26,8 +25,6 @@ import org.jberet.runtime.JobInstanceImpl;
 import org.jberet.spi.BatchEnvironment;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
-import io.quarkiverse.jberet.runtime.JBeretDataHolder.JBeretData;
-import io.quarkus.runtime.ThreadPoolConfig;
 
 @Vetoed
 public class QuarkusJobOperator extends AbstractJobOperator {
@@ -37,14 +34,10 @@ public class QuarkusJobOperator extends AbstractJobOperator {
 
     public QuarkusJobOperator(
             final JBeretConfig config,
-            final ThreadPoolConfig threadPoolConfig,
-            final ManagedExecutor managedExecutor,
-            final TransactionManager transactionManager,
-            final JBeretData data) {
-
-        QuarkusJobExecutor jobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig);
-        this.batchEnvironment = new QuarkusBatchEnvironment(config, jobExecutor, transactionManager, data);
-        this.jobs = data.getJobs().stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
+            final BatchEnvironment batchEnvironment,
+            final Collection<Job> jobs) {
+        this.batchEnvironment = batchEnvironment;
+        this.jobs = jobs.stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
         this.config = config;
     }
 
