@@ -29,6 +29,7 @@
     <module>core</module>
     <module>rest/deployment</module>
     <module>rest/runtime</module>
+    <module>jpa</module>
     <module>integration-tests</module>
     <module>release</module>
   </modules>
@@ -43,7 +44,7 @@
         </plugin>
         <plugin>
           <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
+          <artifactId>quarkus-extension-maven-plugin</artifactId>
           <version>${quarkus.version}</version>
         </plugin>
         <plugin>
@@ -121,6 +122,18 @@
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet-deployment-rest</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+          <groupId>io.quarkiverse.jberet</groupId>
+          <artifactId>quarkus-jberet-jpa</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+          <groupId>io.quarkiverse.jberet</groupId>
+          <artifactId>quarkus-jberet-jpa-deployment</artifactId>
+          <version>${project.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
