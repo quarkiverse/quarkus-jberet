@@ -37,10 +37,12 @@ import org.jberet.job.model.Script;
 import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
 import org.jberet.job.model.Transition;
+import org.jberet.repository.JobRepository;
 import org.jberet.tools.MetaInfBatchJobsJobXmlResolver;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
 
 import com.cronutils.model.Cron;
@@ -50,6 +52,8 @@ import com.cronutils.parser.CronParser;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
+import io.quarkiverse.jberet.runtime.JBeretInMemoryJobRepositoryProducer;
+import io.quarkiverse.jberet.runtime.JBeretJdbcJobRepositoryProducer;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
 import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
@@ -58,7 +62,9 @@ import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
+import io.quarkus.arc.deployment.BeanDiscoveryFinishedBuildItem;
 import io.quarkus.arc.processor.AnnotationsTransformer;
+import io.quarkus.arc.processor.BeanInfo;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -80,6 +86,7 @@ import io.quarkus.runtime.util.ClassPathUtils;
 import io.quarkus.util.GlobUtil;
 
 public class JBeretProcessor {
+
     private static final Logger log = Logger.getLogger("io.quarkiverse.jberet");
 
     @BuildStep
@@ -98,6 +105,7 @@ public class JBeretProcessor {
 
     @BuildStep
     public void additionalBeans(
+            JBeretConfig config,
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans,
             BuildProducer<AnnotationsTransformerBuildItem> annotationsTransformer,
@@ -105,6 +113,15 @@ public class JBeretProcessor {
 
         additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
+
+        switch (config.repository().type()) {
+            case IN_MEMORY:
+                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretInMemoryJobRepositoryProducer.class));
+                break;
+            case JDBC:
+                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretJdbcJobRepositoryProducer.class));
+                break;
+        }
 
         Map<String, String> batchArtifacts = getBatchArtifacts();
         for (String artifact : batchArtifacts.keySet()) {
@@ -139,6 +156,40 @@ public class JBeretProcessor {
                 }
             }
         }));
+    }
+
+    @BuildStep
+    @Record(ExecutionTime.STATIC_INIT)
+    public void validateRepository(
+            JBeretRecorder recorder,
+            JBeretConfig config,
+            BeanDiscoveryFinishedBuildItem beanDiscoveryFinishedBuildItem,
+            List<JdbcDataSourceBuildItem> datasources) {
+        switch (config.repository().type()) {
+            case JDBC:
+                final String datasource = config.repository().jdbc().datasource();
+                if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
+                    throw new ConfigurationException("Datasource name "
+                            + datasource
+                            + " does not exist. Available datasources: "
+                            + datasources.stream()
+                                    .map(JdbcDataSourceBuildItem::getName)
+                                    .collect(Collectors.joining(",")));
+                }
+
+                break;
+            case OTHER:
+                final DotName dotName = DotName.createSimple(JobRepository.class);
+                final List<BeanInfo> beanInfos = beanDiscoveryFinishedBuildItem.beanStream().filter(
+                        beanInfo -> beanInfo.hasType(dotName) && beanInfo.hasDefaultQualifiers()).collect();
+                if (beanInfos.isEmpty()) {
+                    throw new ConfigurationException("There is no injectable and @Default JobRepository bean");
+                } else if (beanInfos.size() > 1) {
+                    throw new ConfigurationException(
+                            "Multiple injectable and @Default JobRepository beans are not allowed : "
+                                    + beanInfos);
+                }
+        }
     }
 
     @BuildStep
@@ -203,10 +254,7 @@ public class JBeretProcessor {
     ServiceStartBuildItem init(JBeretRecorder recorder,
             JBeretConfig config,
             ThreadPoolConfig threadPoolConfig,
-            BeanContainerBuildItem beanContainer,
-            List<JdbcDataSourceBuildItem> datasources) {
-
-        validateRepository(config, datasources);
+            BeanContainerBuildItem beanContainer) {
 
         recorder.initJobOperator(config, threadPoolConfig, beanContainer.getValue());
         recorder.initScheduler(config);
@@ -330,23 +378,6 @@ public class JBeretProcessor {
             classToRefs.put(entry.getValue(), entry.getKey());
         }
         return classToRefs;
-    }
-
-    private static void validateRepository(
-            final JBeretConfig config,
-            final List<JdbcDataSourceBuildItem> datasources) {
-
-        if (JDBC.equals(config.repository().type())) {
-            final String datasource = config.repository().jdbc().datasource();
-            if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
-                throw new ConfigurationException("Datasource name " +
-                        datasource +
-                        " does not exist. Available datasources: " +
-                        datasources.stream()
-                                .map(JdbcDataSourceBuildItem::getName)
-                                .collect(Collectors.joining(",")));
-            }
-        }
     }
 
     private static void watchJobScripts(Job job, BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles) {
