@@ -19,9 +19,12 @@ import org.jberet.job.model.Properties;
 import org.jberet.job.model.RefArtifact;
 import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
+import org.jberet.repository.JobRepository;
 import org.jberet.schedule.JobScheduleConfig;
 import org.jberet.schedule.JobScheduleConfigBuilder;
 import org.jberet.schedule.JobScheduler;
+import org.jberet.spi.BatchEnvironment;
+import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobOperatorContext;
 
 import com.cronutils.model.Cron;
@@ -64,8 +67,23 @@ public class JBeretRecorder {
         ManagedExecutor managedExecutor = beanContainer.beanInstance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.beanInstance(TransactionManager.class);
 
-        QuarkusJobOperator operator = new QuarkusJobOperator(config, threadPoolConfig, managedExecutor, transactionManager,
-                JBeretDataHolder.getData());
+        JobRepository jobRepository = beanContainer.beanInstance(
+                JobRepository.class);
+
+        JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig);
+
+        JBeretDataHolder.JBeretData data = JBeretDataHolder.getData();
+
+        BatchEnvironment batchEnvironment = new QuarkusBatchEnvironment(
+                jobRepository,
+                quarkusJobExecutor,
+                transactionManager,
+                data);
+
+        QuarkusJobOperator operator = new QuarkusJobOperator(
+                config,
+                batchEnvironment,
+                data.getJobs());
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
     }
