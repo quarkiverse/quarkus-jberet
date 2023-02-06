@@ -6,12 +6,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
+import org.jberet.jpa.repository.PropertiesConverter;
 import org.jberet.jpa.repository.entity.JobExecutionJpa;
 import org.jberet.jpa.repository.entity.JobInstanceJpa;
 import org.jberet.jpa.repository.entity.PartitionExecutionJpa;
 import org.jberet.jpa.repository.entity.StepExecutionJpa;
-import org.jberet.jpa.repository.PropertiesConverter;
 
 import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepository;
 import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepositoryConfig;
@@ -25,7 +26,6 @@ import io.quarkus.hibernate.orm.deployment.AdditionalJpaModelBuildItem;
 import io.quarkus.hibernate.orm.deployment.HibernateOrmConfig;
 import io.quarkus.hibernate.orm.deployment.HibernateOrmConfigPersistenceUnit;
 import io.quarkus.runtime.configuration.ConfigurationException;
-import java.util.Set;
 
 public class JBeretJpaJobRepositoryProcessor {
 
@@ -76,11 +76,8 @@ public class JBeretJpaJobRepositoryProcessor {
 
         ENTITY_CLASSES.forEach(
                 entityClass -> additionalJpaModelBuildItemsBuildProducer.produce(
-                            new AdditionalJpaModelBuildItem(
-                                    entityClass.getName()
-                            )
-                )
-        );
+                        new AdditionalJpaModelBuildItem(
+                                entityClass.getName())));
     }
 
 }
