@@ -25,6 +25,7 @@ import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.hibernate.orm.deployment.AdditionalJpaModelBuildItem;
 import io.quarkus.hibernate.orm.deployment.HibernateOrmConfig;
 import io.quarkus.hibernate.orm.deployment.HibernateOrmConfigPersistenceUnit;
+import io.quarkus.hibernate.orm.runtime.PersistenceUnitUtil;
 import io.quarkus.runtime.configuration.ConfigurationException;
 
 public class JBeretJpaJobRepositoryProcessor {
@@ -64,11 +65,14 @@ public class JBeretJpaJobRepositoryProcessor {
 
         String persistenceUnitName = jpaJobRepositoryConfig.repository().jpa().persistenceUnitName();
 
-        if (!hibernateOrmConfig.persistenceUnits.containsKey(persistenceUnitName)) {
+        if (!PersistenceUnitUtil.DEFAULT_PERSISTENCE_UNIT_NAME.equals(persistenceUnitName)
+                && !hibernateOrmConfig.persistenceUnits.containsKey(persistenceUnitName)) {
             throw new ConfigurationException("There is no persistence unit with name : " + persistenceUnitName);
         }
 
-        HibernateOrmConfigPersistenceUnit persistenceUnit = hibernateOrmConfig.persistenceUnits.get(persistenceUnitName);
+        HibernateOrmConfigPersistenceUnit persistenceUnit = Optional.ofNullable(
+                hibernateOrmConfig.persistenceUnits.get(persistenceUnitName)).orElse(
+                        hibernateOrmConfig.defaultPersistenceUnit);
 
         Set<String> packages = persistenceUnit.packages.orElse(new HashSet<>());
         packages.add(ENTITY_PACKAGE);

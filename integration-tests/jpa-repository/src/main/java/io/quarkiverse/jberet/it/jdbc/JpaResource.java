@@ -25,6 +25,7 @@ import org.jberet.runtime.JobInstanceImpl;
 
 import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepositoryConfig;
 import io.quarkus.hibernate.orm.PersistenceUnit;
+import io.quarkus.hibernate.orm.runtime.PersistenceUnitUtil;
 
 @Path("/jpa")
 @Produces(MediaType.APPLICATION_JSON)
@@ -40,9 +41,12 @@ public class JpaResource {
     @GET
     @Path("/instances/{name}")
     public Response instances(@PathParam("name") final String name) throws Exception {
-        EntityManager em = entityManager.select(
-                new PersistenceUnit.PersistenceUnitLiteral(
-                        config.repository().jpa().persistenceUnitName()))
+        EntityManager em = (PersistenceUnitUtil.DEFAULT_PERSISTENCE_UNIT_NAME
+                .equals(config.repository().jpa().persistenceUnitName())
+                        ? entityManager.select()
+                        : entityManager.select(
+                                new PersistenceUnit.PersistenceUnitLiteral(
+                                        config.repository().jpa().persistenceUnitName())))
                 .get();
 
         CriteriaBuilder cb = em.getCriteriaBuilder();
