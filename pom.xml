@@ -23,6 +23,7 @@
     <jberet.version>2.1.1.Final</jberet.version>
     <jberet-rest.version>2.0.0.Final</jberet-rest.version>
     <jberet-schedule.version>2.0.0.Final</jberet-schedule.version>
+    <jberet-jpa.version>2.1.4.Final</jberet-jpa.version>
   </properties>
 
   <modules>
@@ -104,6 +105,12 @@
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.jberet</groupId>
+        <artifactId>jberet-jpa-repository</artifactId>
+        <version>${jberet-jpa.version}</version>
       </dependency>
 
       <dependency>
