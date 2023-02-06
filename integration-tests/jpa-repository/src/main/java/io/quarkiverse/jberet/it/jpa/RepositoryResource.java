@@ -1,4 +1,4 @@
-package io.quarkiverse.jberet.it.jdbc;
+package io.quarkiverse.jberet.it.jpa;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package io.quarkiverse.jberet.it.jdbc;
+package io.quarkiverse.jberet.it.jpa;
 
 import jakarta.batch.api.AbstractBatchlet;
 import jakarta.batch.runtime.BatchStatus;
