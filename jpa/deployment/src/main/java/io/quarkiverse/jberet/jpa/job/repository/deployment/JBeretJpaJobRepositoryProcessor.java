@@ -1,7 +1,5 @@
 package io.quarkiverse.jberet.jpa.job.repository.deployment;
 
-import static io.quarkiverse.jberet.runtime.JBeretConfig.Repository.Type.OTHER;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -10,9 +8,13 @@ import java.util.Set;
 
 import org.jberet.jpa.repository.PropertiesConverter;
 import org.jberet.jpa.repository.entity.JobExecutionJpa;
+import org.jberet.jpa.repository.entity.JobExecutionJpa_;
 import org.jberet.jpa.repository.entity.JobInstanceJpa;
+import org.jberet.jpa.repository.entity.JobInstanceJpa_;
 import org.jberet.jpa.repository.entity.PartitionExecutionJpa;
+import org.jberet.jpa.repository.entity.PartitionExecutionJpa_;
 import org.jberet.jpa.repository.entity.StepExecutionJpa;
+import org.jberet.jpa.repository.entity.StepExecutionJpa_;
 
 import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepository;
 import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepositoryConfig;
@@ -22,6 +24,7 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CapabilityBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.hibernate.orm.deployment.AdditionalJpaModelBuildItem;
 import io.quarkus.hibernate.orm.deployment.HibernateOrmConfig;
 import io.quarkus.hibernate.orm.deployment.HibernateOrmConfigPersistenceUnit;
@@ -37,6 +40,12 @@ public class JBeretJpaJobRepositoryProcessor {
             PartitionExecutionJpa.class,
             PropertiesConverter.class);
 
+    public final static Collection<Class> METADATA_CLASSES = Arrays.asList(
+            JobInstanceJpa_.class,
+            JobExecutionJpa_.class,
+            StepExecutionJpa_.class,
+            PartitionExecutionJpa_.class);
+
     public final static String ENTITY_PACKAGE = "org.jberet.jpa.repository.entity";
 
     @BuildStep
@@ -48,7 +57,7 @@ public class JBeretJpaJobRepositoryProcessor {
     public void additionalBeans(
             JBeretConfig config,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
-        if (OTHER.equals(config.repository().type())) {
+        if (JBeretJpaJobRepository.TYPE.equals(config.repository().type().toUpperCase())) {
             additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretJpaJobRepository.class));
         }
     }
@@ -59,7 +68,7 @@ public class JBeretJpaJobRepositoryProcessor {
             JBeretJpaJobRepositoryConfig jpaJobRepositoryConfig,
             HibernateOrmConfig hibernateOrmConfig,
             BuildProducer<AdditionalJpaModelBuildItem> additionalJpaModelBuildItemsBuildProducer) {
-        if (!OTHER.equals(config.repository().type())) {
+        if (!JBeretJpaJobRepository.TYPE.equals(config.repository().type().toUpperCase())) {
             return;
         }
 
@@ -82,6 +91,18 @@ public class JBeretJpaJobRepositoryProcessor {
                 entityClass -> additionalJpaModelBuildItemsBuildProducer.produce(
                         new AdditionalJpaModelBuildItem(
                                 entityClass.getName())));
+    }
+
+    @BuildStep
+    public void nativeImage(BuildProducer<ReflectiveClassBuildItem> reflectiveClasses,
+            JBeretConfig config) {
+        METADATA_CLASSES.forEach(
+                metadataClass -> reflectiveClasses.produce(
+                        new ReflectiveClassBuildItem(
+                                true,
+                                true,
+                                true,
+                                metadataClass)));
     }
 
 }

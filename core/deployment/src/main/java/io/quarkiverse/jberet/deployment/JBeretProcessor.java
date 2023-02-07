@@ -1,6 +1,5 @@
 package io.quarkiverse.jberet.deployment;
 
-import static io.quarkiverse.jberet.runtime.JBeretConfig.Repository.Type.JDBC;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.jandex.AnnotationTarget.Kind.CLASS;
@@ -38,6 +37,7 @@ import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
 import org.jberet.job.model.Transition;
 import org.jberet.repository.JobRepository;
+import org.jberet.runtime.JobInstanceImpl;
 import org.jberet.tools.MetaInfBatchJobsJobXmlResolver;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -114,11 +114,11 @@ public class JBeretProcessor {
         additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
 
-        switch (config.repository().type()) {
-            case IN_MEMORY:
+        switch (config.repository().type().toUpperCase()) {
+            case JBeretInMemoryJobRepositoryProducer.TYPE:
                 additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretInMemoryJobRepositoryProducer.class));
                 break;
-            case JDBC:
+            case JBeretJdbcJobRepositoryProducer.TYPE:
                 additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretJdbcJobRepositoryProducer.class));
                 break;
         }
@@ -165,8 +165,8 @@ public class JBeretProcessor {
             JBeretConfig config,
             BeanDiscoveryFinishedBuildItem beanDiscoveryFinishedBuildItem,
             List<JdbcDataSourceBuildItem> datasources) {
-        switch (config.repository().type()) {
-            case JDBC:
+        switch (config.repository().type().toUpperCase()) {
+            case JBeretJdbcJobRepositoryProducer.TYPE:
                 final String datasource = config.repository().jdbc().datasource();
                 if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
                     throw new ConfigurationException("Datasource name "
@@ -178,7 +178,9 @@ public class JBeretProcessor {
                 }
 
                 break;
-            case OTHER:
+            case JBeretInMemoryJobRepositoryProducer.TYPE:
+                break;
+            default:
                 final DotName dotName = DotName.createSimple(JobRepository.class);
                 final List<BeanInfo> beanInfos = beanDiscoveryFinishedBuildItem.beanStream().filter(
                         beanInfo -> beanInfo.hasType(dotName) && beanInfo.hasDefaultQualifiers()).collect();
@@ -268,7 +270,7 @@ public class JBeretProcessor {
             JBeretConfig config) {
         resources.produce(new NativeImageResourceBuildItem("sql/jberet-sql.properties"));
         resources.produce(new NativeImageResourceBuildItem("sql/jberet.ddl"));
-        if (config.repository().type() == JDBC) {
+        if (JBeretJdbcJobRepositoryProducer.TYPE.equals(config.repository().type().toUpperCase())) {
             config.repository().jdbc().ddlFileName().map(String::trim)
                     .filter(Predicate.not(String::isEmpty))
                     .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
@@ -277,6 +279,7 @@ public class JBeretProcessor {
                     .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
         }
         reflectiveClasses.produce(new ReflectiveClassBuildItem(true, false, false, QuarkusJobScheduler.class));
+        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, true, true, JobInstanceImpl.class));
     }
 
     private static void registerNonDefaultConstructors(RecorderContext recorderContext) throws Exception {
