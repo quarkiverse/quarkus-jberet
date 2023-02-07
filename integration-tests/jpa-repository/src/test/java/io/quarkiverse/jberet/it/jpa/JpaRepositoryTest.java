@@ -1,4 +1,4 @@
-package io.quarkiverse.jberet.it.jdbc;
+package io.quarkiverse.jberet.it.jpa;
 
 import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static io.restassured.RestAssured.given;
