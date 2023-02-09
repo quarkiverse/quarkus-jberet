@@ -38,6 +38,7 @@ import org.jberet.job.model.Split;
 import org.jberet.job.model.Step;
 import org.jberet.job.model.Transition;
 import org.jberet.repository.JobRepository;
+import org.jberet.runtime.JobInstanceImpl;
 import org.jberet.tools.MetaInfBatchJobsJobXmlResolver;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -277,6 +278,7 @@ public class JBeretProcessor {
                     .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
         }
         reflectiveClasses.produce(new ReflectiveClassBuildItem(true, false, false, QuarkusJobScheduler.class));
+        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, true, true, JobInstanceImpl.class));
     }
 
     private static void registerNonDefaultConstructors(RecorderContext recorderContext) throws Exception {
