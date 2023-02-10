@@ -1,5 +1,6 @@
 package io.quarkiverse.jberet.deployment;
 
+import static io.quarkiverse.jberet.runtime.JBeretRepositoryTypeUtil.normalize;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.jandex.AnnotationTarget.Kind.CLASS;
@@ -57,7 +58,6 @@ import io.quarkiverse.jberet.runtime.JBeretJdbcJobRepositoryProducer;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
 import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
-import static io.quarkiverse.jberet.runtime.JBeretRepositoryTypeUtil.normalize;
 import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -114,7 +114,7 @@ public class JBeretProcessor {
 
         additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
-        
+
         switch (normalize(config.repository().type())) {
             case JBeretInMemoryJobRepositoryProducer.TYPE:
                 additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretInMemoryJobRepositoryProducer.class));

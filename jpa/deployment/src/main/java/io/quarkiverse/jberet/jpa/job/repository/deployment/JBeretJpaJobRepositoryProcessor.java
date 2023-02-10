@@ -1,5 +1,7 @@
 package io.quarkiverse.jberet.jpa.job.repository.deployment;
 
+import static io.quarkiverse.jberet.runtime.JBeretRepositoryTypeUtil.normalize;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -57,7 +59,7 @@ public class JBeretJpaJobRepositoryProcessor {
     public void additionalBeans(
             JBeretConfig config,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
-        if (JBeretJpaJobRepository.TYPE.equals(config.repository().type().toUpperCase())) {
+        if (JBeretJpaJobRepository.TYPE.equals(normalize(config.repository().type()))) {
             additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretJpaJobRepository.class));
         }
     }
@@ -68,7 +70,7 @@ public class JBeretJpaJobRepositoryProcessor {
             JBeretJpaJobRepositoryConfig jpaJobRepositoryConfig,
             HibernateOrmConfig hibernateOrmConfig,
             BuildProducer<AdditionalJpaModelBuildItem> additionalJpaModelBuildItemsBuildProducer) {
-        if (!JBeretJpaJobRepository.TYPE.equals(config.repository().type().toUpperCase())) {
+        if (!JBeretJpaJobRepository.TYPE.equals(normalize(config.repository().type()))) {
             return;
         }
 
