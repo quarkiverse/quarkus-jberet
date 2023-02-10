@@ -22,12 +22,6 @@ public interface JBeretJpaJobRepositoryConfig {
         /**
          *
          */
-        @WithDefault("OTHER")
-        Type type();
-
-        /**
-         *
-         */
         Jpa jpa();
 
         interface Jpa {
@@ -37,11 +31,6 @@ public interface JBeretJpaJobRepositoryConfig {
             @WithName("persistence-unit-name")
             @WithDefault(DEFAULT_PERSISTENCE_UNIT_NAME)
             String persistenceUnitName();
-        }
-
-        enum Type {
-            JPA,
-            OTHER
         }
     }
 }

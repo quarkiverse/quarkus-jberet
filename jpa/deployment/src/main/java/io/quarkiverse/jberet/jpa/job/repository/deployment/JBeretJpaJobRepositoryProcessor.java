@@ -1,7 +1,5 @@
 package io.quarkiverse.jberet.jpa.job.repository.deployment;
 
-import static io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepositoryConfig.Repository.Type.JPA;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,6 +18,7 @@ import org.jberet.jpa.repository.entity.StepExecutionJpa_;
 
 import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepository;
 import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepositoryConfig;
+import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -56,19 +55,20 @@ public class JBeretJpaJobRepositoryProcessor {
 
     @BuildStep
     public void additionalBeans(
-            JBeretJpaJobRepositoryConfig config,
+            JBeretConfig config,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
-        if (JPA.equals(config.repository().type())) {
+        if (JBeretJpaJobRepository.TYPE.equals(config.repository().type().toUpperCase())) {
             additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretJpaJobRepository.class));
         }
     }
 
     @BuildStep
     public void additionalEntities(
+            JBeretConfig config,
             JBeretJpaJobRepositoryConfig jpaJobRepositoryConfig,
             HibernateOrmConfig hibernateOrmConfig,
             BuildProducer<AdditionalJpaModelBuildItem> additionalJpaModelBuildItemsBuildProducer) {
-        if (!JPA.equals(jpaJobRepositoryConfig.repository().type())) {
+        if (!JBeretJpaJobRepository.TYPE.equals(config.repository().type().toUpperCase())) {
             return;
         }
 
