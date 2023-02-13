@@ -10,6 +10,8 @@ import org.jberet.repository.JobRepository;
 
 public class JBeretInMemoryJobRepositoryProducer implements Supplier<JobRepository> {
 
+    public final static String TYPE = "IN_MEMORY";
+
     @Override
     @Produces
     @Singleton
