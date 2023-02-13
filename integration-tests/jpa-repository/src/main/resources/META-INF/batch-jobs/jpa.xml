@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="jpa" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+  <step id="jpaStep">
+    <batchlet ref="jpaBatchlet">
+      <properties>
+        <property name="jpa.batchlet.fail" value="#{jobParameters['jpa.batchlet.fail']}"/>
+      </properties>
+    </batchlet>
+  </step>
+</job>

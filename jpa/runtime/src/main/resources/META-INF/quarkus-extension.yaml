@@ -1,0 +1,8 @@
+---
+name: "JBeret - JPA Job Repository"
+metadata:
+  keywords:
+  - "jberet-jpa-job-repository"
+  categories:
+  - "jpa"
+  status: "experimental"
