@@ -73,6 +73,7 @@
   <modules>
     <module>chunk</module>
     <module>jdbc-repository</module>
+    <module>jpa-repository</module>
     <module>scheduler</module>
     <module>programmatic</module>
     <module>client</module>
