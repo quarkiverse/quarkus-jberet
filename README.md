@@ -140,7 +140,7 @@ to the target project with the following dependency:
 <dependency>
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet-rest</artifactId>
-  <version>0.0.4</version>
+  <version>2.0.0</version>
 </dependency>
 ```
 
