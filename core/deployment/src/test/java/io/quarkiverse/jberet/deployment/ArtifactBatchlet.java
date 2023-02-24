@@ -4,9 +4,8 @@ import jakarta.batch.api.BatchProperty;
 import jakarta.batch.api.Batchlet;
 import jakarta.batch.runtime.BatchStatus;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
-
-import com.google.inject.Inject;
 
 @ApplicationScoped
 @Named("artifactBatchlet")
