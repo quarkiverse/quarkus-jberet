@@ -70,7 +70,7 @@ public class JBeretRecorder {
         JobRepository jobRepository = beanContainer.beanInstance(
                 JobRepository.class);
 
-        JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig);
+        JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig, config);
 
         JBeretDataHolder.JBeretData data = JBeretDataHolder.getData();
 
