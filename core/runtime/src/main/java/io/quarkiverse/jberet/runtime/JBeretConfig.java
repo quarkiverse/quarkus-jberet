@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
 import io.quarkus.datasource.common.runtime.DataSourceUtil;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
@@ -36,8 +34,7 @@ public interface JBeretConfig {
     /**
      *
      */
-    @ConfigProperty(name = "max-async")
-    Optional<String> maxAsync();
+    Optional<Integer> maxAsync();
 
     interface JobConfig {
         /**
