@@ -12,4 +12,5 @@ metadata:
   - "data"
   - "integration"
   status: "stable"
-  config: "quarkus.jberet."
+  config:
+  - "quarkus.jberet."
