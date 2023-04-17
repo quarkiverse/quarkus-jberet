@@ -10,7 +10,7 @@
 
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet-parent</artifactId>
-  <version>2.0.1-SNAPSHOT</version>
+  <version>2.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Quarkus - JBeret - Parent</name>
@@ -18,7 +18,7 @@
   <properties>
     <surefire.plugin.version>3.0.0-M7</surefire.plugin.version>
 
-    <quarkus.version>3.0.0.Alpha4</quarkus.version>
+    <quarkus.version>3.0.0.CR1</quarkus.version>
     <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
     <jberet.version>2.1.1.Final</jberet.version>
     <jberet-rest.version>2.0.0.Final</jberet-rest.version>
@@ -58,9 +58,9 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${surefire.plugin.version}</version>
           <configuration>
-            <systemProperties>
+            <systemPropertyVariables>
               <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-            </systemProperties>
+            </systemPropertyVariables>
           </configuration>
         </plugin>
       </plugins>
