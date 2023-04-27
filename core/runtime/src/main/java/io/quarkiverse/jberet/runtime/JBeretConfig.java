@@ -29,6 +29,11 @@ public interface JBeretConfig {
      */
     Repository repository();
 
+    /**
+     *
+     */
+    Optional<Integer> maxAsync();
+
     interface JobConfig {
         /**
          *
