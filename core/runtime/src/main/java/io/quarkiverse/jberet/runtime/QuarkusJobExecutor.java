@@ -14,7 +14,7 @@ class QuarkusJobExecutor extends JobExecutor {
     public QuarkusJobExecutor(Executor delegate, final ThreadPoolConfig threadPoolConfig, final JBeretConfig config) {
         super(delegate);
         this.maxPoolSize = config.maxAsync().map(maxAsync -> {
-            if(maxAsync < 1){
+            if (maxAsync < 1) {
                 Log.error("max-async value must be 1 or greater if set.");
                 return null;
             }
