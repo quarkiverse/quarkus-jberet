@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.quarkiverse</groupId>
     <artifactId>quarkiverse-parent</artifactId>
-    <version>13</version>
+    <version>15</version>
   </parent>
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet-parent</artifactId>
@@ -12,8 +12,8 @@
   <packaging>pom</packaging>
   <name>Quarkus - JBeret - Parent</name>
   <properties>
-    <surefire.plugin.version>3.0.0-M7</surefire.plugin.version>
-    <quarkus.version>3.1.0.Final</quarkus.version>
+    <surefire.plugin.version>3.1.2</surefire.plugin.version>
+    <quarkus.version>3.1.1.Final</quarkus.version>
     <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
     <jberet.version>2.1.1.Final</jberet.version>
     <jberet-rest.version>2.0.0.Final</jberet-rest.version>
