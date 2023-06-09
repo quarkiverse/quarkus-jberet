@@ -1,23 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>io.quarkiverse</groupId>
     <artifactId>quarkiverse-parent</artifactId>
     <version>15</version>
   </parent>
-
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet-parent</artifactId>
   <version>2.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
-
   <name>Quarkus - JBeret - Parent</name>
-
   <properties>
     <surefire.plugin.version>3.1.2</surefire.plugin.version>
-
     <quarkus.version>3.1.1.Final</quarkus.version>
     <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
     <jberet.version>2.1.1.Final</jberet.version>
@@ -25,7 +20,11 @@
     <jberet-schedule.version>2.0.0.Final</jberet-schedule.version>
     <jberet-jpa.version>2.1.4.Final</jberet-jpa.version>
   </properties>
-
+  <scm>
+    <connection>:git:git@github.com:quarkiverse/quarkus-jberet.git</connection>
+    <developerConnection>scm:git:git@github.com:quarkiverse/quarkus-jberet.git</developerConnection>
+    <url>https://github.com/quarkiverse/quarkus-jberet</url>
+  </scm>
   <modules>
     <module>core</module>
     <module>rest/deployment</module>
@@ -34,7 +33,6 @@
     <module>integration-tests</module>
     <module>release</module>
   </modules>
-
   <build>
     <pluginManagement>
       <plugins>
@@ -49,10 +47,10 @@
           <version>${quarkus.version}</version>
         </plugin>
         <plugin>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-maven-plugin</artifactId>
-            <version>${quarkus.version}</version>
-        </plugin>        
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-maven-plugin</artifactId>
+          <version>${quarkus.version}</version>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -66,7 +64,6 @@
       </plugins>
     </pluginManagement>
   </build>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -76,71 +73,60 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-
       <dependency>
         <groupId>jakarta.batch</groupId>
         <artifactId>jakarta.batch-api</artifactId>
         <version>${jakarta.batch-api.version}</version>
       </dependency>
-
       <dependency>
         <groupId>org.jberet</groupId>
         <artifactId>jberet-core</artifactId>
         <version>${jberet.version}</version>
       </dependency>
-
       <dependency>
         <groupId>org.jberet</groupId>
         <artifactId>jberet-rest-api</artifactId>
         <version>${jberet-rest.version}</version>
       </dependency>
-
       <dependency>
         <groupId>org.jberet</groupId>
         <artifactId>jberet-schedule-executor</artifactId>
         <version>${jberet-schedule.version}</version>
       </dependency>
-
       <dependency>
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet</artifactId>
         <version>${project.version}</version>
       </dependency>
-      
       <dependency>
         <groupId>org.jberet</groupId>
         <artifactId>jberet-jpa-repository</artifactId>
         <version>${jberet-jpa.version}</version>
       </dependency>
-
       <dependency>
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet-deployment</artifactId>
         <version>${project.version}</version>
       </dependency>
-
       <dependency>
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet-rest</artifactId>
         <version>${project.version}</version>
       </dependency>
-
       <dependency>
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet-deployment-rest</artifactId>
         <version>${project.version}</version>
       </dependency>
-      
       <dependency>
-          <groupId>io.quarkiverse.jberet</groupId>
-          <artifactId>quarkus-jberet-jpa</artifactId>
-          <version>${project.version}</version>
+        <groupId>io.quarkiverse.jberet</groupId>
+        <artifactId>quarkus-jberet-jpa</artifactId>
+        <version>${project.version}</version>
       </dependency>
-
       <dependency>
-          <groupId>io.quarkiverse.jberet</groupId>
-          <artifactId>quarkus-jberet-jpa-deployment</artifactId>
-          <version>${project.version}</version>
+        <groupId>io.quarkiverse.jberet</groupId>
+        <artifactId>quarkus-jberet-jpa-deployment</artifactId>
+        <version>${project.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
