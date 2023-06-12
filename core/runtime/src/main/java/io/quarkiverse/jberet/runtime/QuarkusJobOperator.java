@@ -42,7 +42,7 @@ public class QuarkusJobOperator extends AbstractJobOperator {
             final TransactionManager transactionManager,
             final JBeretData data) {
 
-        QuarkusJobExecutor jobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig);
+        QuarkusJobExecutor jobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig, config);
         this.batchEnvironment = new QuarkusBatchEnvironment(config, jobExecutor, transactionManager, data);
         this.jobs = data.getJobs().stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
         this.config = config;

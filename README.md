@@ -32,14 +32,15 @@ The Batch API and Runtime will be available out of the box. Please refer to the
 
 The JBeret Quarkus extension supports the following configuration:
 
- | Name  | Type  | Default  |
- |---|---|---|
+ | Name                                                                                                                       | Type  | Default  |
+----------------------------------------------------------------------------------------------------------------------------|---|---|---|
  | `quarkus.jberet.repository`<br>The repository type to store JBeret and Job data. A `jdbc` type requires a JDBC datasource. | `in-memory`, `jdbc`  | `in-memory` |
- | `quarkus.jberet.repository.jdbc.datasource`<br>The datasource name. | string  | `<default>` |
- | `quarkus.jberet.jobs.includes`<br>A list of patterns to match batch files to include.  | list of string  | |
- | `quarkus.jberet.jobs.excludes`<br>A list of patterns to match batch files to exclude. | list of string  | |
- | `quarkus.jberet.job."job-name".cron`<br>A cron style expression in Quartz format to schedule the job. | string  | |
- | `quarkus.jberet.job."job-name".params."param-key"`<br>A parameter to start a job. | string  | |
+ | `quarkus.jberet.repository.jdbc.datasource`<br>The datasource name.                                                        | string  | `<default>` |
+ | `quarkus.jberet.jobs.includes`<br>A list of patterns to match batch files to include.                                      | list of string  | |
+ | `quarkus.jberet.jobs.excludes`<br>A list of patterns to match batch files to exclude.                                      | list of string  | |
+ | `quarkus.jberet.job."job-name".cron`<br>A cron style expression in Quartz format to schedule the job.                      | string  | |
+ | `quarkus.jberet.job."job-name".params."param-key"`<br>A parameter to start a job.                                          | string  | |
+ | `quarkus.jberet.max-async"`<br>A parameter control the number of Threads that can be used by JBeret. An additional Thread for JBeret coordination is always added. Thus setting 1 will proide one thread for job executions. | string              | `Based on available cores` |
  
 ## Non-standard Features
 
