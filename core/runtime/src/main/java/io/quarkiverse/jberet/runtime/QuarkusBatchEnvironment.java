@@ -94,7 +94,7 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
         public Object create(String ref, Class<?> cls, ClassLoader classLoader) {
             BeanManager bm = Arc.container().beanManager();
             Bean<?> bean = bm.resolve(bm.getBeans(aliases.getOrDefault(ref, ref)));
-            return bean == null ? null : bm.getReference(bean, bean.getBeanClass(), bm.createCreationalContext(bean));
+            return bean == null ? null : bm.getReference(bean, Object.class, bm.createCreationalContext(bean));
         }
 
         @Override
