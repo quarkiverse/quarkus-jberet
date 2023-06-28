@@ -106,8 +106,15 @@ public class ChunkTest {
         }
     }
 
-    @Named
-    @Dependent
+    @ApplicationScoped
+    public static class PeopleProcessorProducer {
+        @Dependent
+        @Named
+        public PeopleProcessor peopleProcessor() {
+            return new PeopleProcessor();
+        }
+    }
+
     public static class PeopleProcessor implements ItemProcessor {
         @Override
         public Object processItem(Object item) {
@@ -115,7 +122,6 @@ public class ChunkTest {
             person.setPassword(UUID.randomUUID().toString());
             return person;
         }
-
     }
 
     @Dependent
