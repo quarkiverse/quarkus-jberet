@@ -18,6 +18,7 @@ import org.jberet.spi.JobXmlResolver;
 
 import io.quarkiverse.jberet.runtime.JBeretDataHolder.JBeretData;
 import io.quarkus.arc.Arc;
+import io.quarkus.arc.InjectableBean;
 
 class QuarkusBatchEnvironment implements BatchEnvironment {
     private final ArtifactFactory artifactFactory;
@@ -101,7 +102,7 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
         public Class<?> getArtifactClass(String ref, ClassLoader classLoader) {
             BeanManager bm = Arc.container().beanManager();
             Bean<?> bean = bm.resolve(bm.getBeans(aliases.getOrDefault(ref, ref)));
-            return bean == null ? null : bean.getBeanClass();
+            return bean == null ? null : ((InjectableBean<?>) bean).getImplementationClass();
         }
     }
 }

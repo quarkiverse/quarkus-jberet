@@ -29,7 +29,9 @@ import jakarta.batch.runtime.BatchRuntime;
 import jakarta.batch.runtime.BatchStatus;
 import jakarta.batch.runtime.JobExecution;
 import jakarta.batch.runtime.Metric;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -95,8 +97,16 @@ public class BatchListenersTest {
         }
     }
 
-    @Named
-    @Dependent
+    @ApplicationScoped
+    public static class StepListenerProducer {
+        @Named
+        @Dependent
+        @Produces
+        public StepListener stepListener() {
+            return new StepListener();
+        }
+    }
+
     public static class StepListener extends AbstractStepListener {
         @Override
         public void beforeStep() {
@@ -180,8 +190,16 @@ public class BatchListenersTest {
         }
     }
 
-    @Named
-    @Dependent
+    @ApplicationScoped
+    public static class ListenerItemReaderProducer {
+        @Named
+        @Dependent
+        @Produces
+        public ListenerItemReader listenerItemReader() {
+            return new ListenerItemReader();
+        }
+    }
+
     public static class ListenerItemReader extends AbstractItemReader {
         private final PrimitiveIterator.OfInt intStream = IntStream.rangeClosed(1, 10).iterator();
 
