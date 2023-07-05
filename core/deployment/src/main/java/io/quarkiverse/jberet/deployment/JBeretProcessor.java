@@ -53,6 +53,7 @@ import com.cronutils.parser.CronParser;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
+import io.quarkiverse.jberet.runtime.JBeretConfigSourceFactoryBuilder;
 import io.quarkiverse.jberet.runtime.JBeretInMemoryJobRepositoryProducer;
 import io.quarkiverse.jberet.runtime.JBeretJdbcJobRepositoryProducer;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
@@ -75,7 +76,7 @@ import io.quarkus.deployment.builditem.CapabilityBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
-import io.quarkus.deployment.builditem.RunTimeConfigurationSourceValueBuildItem;
+import io.quarkus.deployment.builditem.RunTimeConfigBuilderBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
@@ -102,6 +103,11 @@ public class JBeretProcessor {
     @BuildStep
     public RuntimeInitializedClassBuildItem runtimeInitializedDefaultHolder() {
         return new RuntimeInitializedClassBuildItem("org.jberet.spi.JobOperatorContext$DefaultHolder");
+    }
+
+    @BuildStep
+    public void config(BuildProducer<RunTimeConfigBuilderBuildItem> runTimeConfigBuilder) {
+        runTimeConfigBuilder.produce(new RunTimeConfigBuilderBuildItem(JBeretConfigSourceFactoryBuilder.class.getName()));
     }
 
     @BuildStep
@@ -248,12 +254,6 @@ public class JBeretProcessor {
 
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
-    public RunTimeConfigurationSourceValueBuildItem config(JBeretRecorder recorder) {
-        return new RunTimeConfigurationSourceValueBuildItem(recorder.config());
-    }
-
-    @BuildStep
-    @Record(ExecutionTime.RUNTIME_INIT)
     ServiceStartBuildItem init(JBeretRecorder recorder,
             JBeretConfig config,
             ThreadPoolConfig threadPoolConfig,
@@ -279,8 +279,9 @@ public class JBeretProcessor {
                     .filter(Predicate.not(String::isEmpty))
                     .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
         }
-        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, false, false, QuarkusJobScheduler.class));
-        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, true, true, JobInstanceImpl.class));
+        reflectiveClasses.produce(ReflectiveClassBuildItem.builder(QuarkusJobScheduler.class).methods().build());
+        reflectiveClasses
+                .produce(ReflectiveClassBuildItem.builder(JobInstanceImpl.class).constructors().methods().fields().build());
     }
 
     private static void registerNonDefaultConstructors(RecorderContext recorderContext) throws Exception {
