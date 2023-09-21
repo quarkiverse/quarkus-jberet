@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.enterprise.inject.AmbiguousResolutionException;
 import jakarta.inject.Named;
 
 import org.jberet.creation.ArchiveXmlLoader;
@@ -44,6 +45,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
 
 import com.cronutils.model.Cron;
@@ -58,6 +60,7 @@ import io.quarkiverse.jberet.runtime.JBeretInMemoryJobRepositoryProducer;
 import io.quarkiverse.jberet.runtime.JBeretJdbcJobRepositoryProducer;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
+import io.quarkiverse.jberet.runtime.JobsProducer;
 import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
 import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
 import io.quarkus.arc.Unremovable;
@@ -65,6 +68,8 @@ import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.BeanDiscoveryFinishedBuildItem;
+import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
+import io.quarkus.arc.deployment.ValidationPhaseBuildItem.ValidationErrorBuildItem;
 import io.quarkus.arc.processor.AnnotationsTransformer;
 import io.quarkus.arc.processor.BeanInfo;
 import io.quarkus.arc.processor.DotNames;
@@ -90,6 +95,8 @@ import io.quarkus.util.GlobUtil;
 public class JBeretProcessor {
 
     private static final Logger log = Logger.getLogger("io.quarkiverse.jberet");
+
+    private static final DotName JOB = DotName.createSimple(Job.class);
 
     @BuildStep
     public void registerExtension(BuildProducer<FeatureBuildItem> feature, BuildProducer<CapabilityBuildItem> capability) {
@@ -120,6 +127,7 @@ public class JBeretProcessor {
 
         additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
+        additionalBeans.produce(new AdditionalBeanBuildItem(JobsProducer.class));
 
         switch (normalize(config.repository().type())) {
             case JBeretInMemoryJobRepositoryProducer.TYPE:
@@ -204,8 +212,15 @@ public class JBeretProcessor {
     @BuildStep
     public void loadJobs(
             JBeretConfig config,
+            ValidationPhaseBuildItem validationPhase,
             BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles,
-            BuildProducer<BatchJobBuildItem> batchJobs) throws Exception {
+            BuildProducer<BatchJobBuildItem> batchJobs,
+            BuildProducer<ValidationErrorBuildItem> validationErrors) throws Exception {
+
+        Map<String, BeanInfo> jobBeans = new HashMap<>();
+        for (BeanInfo beanInfo : validationPhase.getBeanResolver().resolveBeans(Type.create(JOB, Type.Kind.CLASS))) {
+            jobBeans.put(beanInfo.getName(), beanInfo);
+        }
 
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         MetaInfBatchJobsJobXmlResolver jobXmlResolver = new MetaInfBatchJobsJobXmlResolver();
@@ -216,6 +231,10 @@ public class JBeretProcessor {
             List<Job> loadedJobs = new ArrayList<>();
 
             batchFilesNames.forEach(jobXmlName -> {
+                if (jobBeans.containsKey(jobXmlName)) {
+                    validationErrors.produce(new ValidationErrorBuildItem(new AmbiguousResolutionException(
+                            "Beans: " + List.of(jobBeans.get(jobXmlName).toString(), path + "/" + jobXmlName))));
+                }
                 Job job = ArchiveXmlLoader.loadJobXml(jobXmlName, contextClassLoader, loadedJobs, jobXmlResolver);
                 job.setJobXmlName(jobXmlName);
                 JobConfig jobConfig = config.job().get(jobXmlName);
@@ -234,7 +253,8 @@ public class JBeretProcessor {
             JBeretRecorder recorder,
             JBeretConfig config,
             List<BatchJobBuildItem> batchJobs,
-            List<BatchArtifactBuildItem> batchArtifacts) throws Exception {
+            List<BatchArtifactBuildItem> batchArtifacts,
+            BeanContainerBuildItem beanContainer) throws Exception {
         registerNonDefaultConstructors(recorderContext);
 
         // TODO - Record JobSchedulerConfig - Need changes in the original class.
@@ -249,7 +269,7 @@ public class JBeretProcessor {
             artifactsAliases.put(batchArtifact.getAlias(), batchArtifact.getNamed());
         }
 
-        recorder.registerJobs(jobs, artifactsAliases);
+        recorder.registerJobs(jobs, artifactsAliases, beanContainer.getValue());
     }
 
     @BuildStep
