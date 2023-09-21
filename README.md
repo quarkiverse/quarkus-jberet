@@ -84,6 +84,24 @@ void start() {
 }
 ```
 
+It is possible to provide a `Job` definition via a CDI producer (instead of using XML):
+
+```java
+@ApplicationScoped
+public static class JobProducer {
+    @Produces
+    @Named
+    public Job job() {
+        return new JobBuilder("job")
+                .step(new StepBuilder("step").batchlet("batchlet", new String[] {}).build())
+                .build();
+    }
+}
+```
+
+A `Job` registered with CDI will be named by the name provided in the `@Named` annotation or by the method name. The 
+`@Named` annotations is required regardless.
+
 #### Additional Beans
 
 Specific Quarkus implementation is available in `QuarkusJobOperator`, which can be also injected directly:

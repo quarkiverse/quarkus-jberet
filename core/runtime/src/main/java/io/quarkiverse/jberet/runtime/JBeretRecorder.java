@@ -8,7 +8,6 @@ import jakarta.transaction.TransactionManager;
 
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.jberet.job.model.Job;
-import org.jberet.job.model.Properties;
 import org.jberet.repository.JobRepository;
 import org.jberet.schedule.JobScheduleConfig;
 import org.jberet.schedule.JobScheduleConfigBuilder;
@@ -29,7 +28,9 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class JBeretRecorder {
-    public void registerJobs(List<Job> jobs, Map<String, String> batchArtifactsAliases) {
+    public void registerJobs(List<Job> jobs, Map<String, String> batchArtifactsAliases, BeanContainer beanContainer) {
+        JobsProducer jobsProducer = beanContainer.beanInstance(JobsProducer.class);
+        jobs.addAll(jobsProducer.getJobs());
         JBeretDataHolder.registerJobs(jobs, batchArtifactsAliases);
     }
 
