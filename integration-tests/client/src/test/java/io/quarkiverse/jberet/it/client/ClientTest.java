@@ -12,8 +12,6 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.Header;
 
 @QuarkusTest
@@ -25,10 +23,7 @@ class ClientTest {
                     requestSpec.header(new Header(CONTENT_TYPE, APPLICATION_JSON));
                     requestSpec.header(new Header(ACCEPT, APPLICATION_JSON));
                     return ctx.next(requestSpec, responseSpec);
-                },
-                new RequestLoggingFilter(),
-                new ResponseLoggingFilter());
-
+                });
     }
 
     @AfterAll

@@ -21,8 +21,6 @@ import org.junit.jupiter.api.Test;
 import io.quarkiverse.jberet.it.chunk.BatchResource.JobData;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.Header;
 
 @QuarkusTest
@@ -33,10 +31,7 @@ class AuctionsJobTest {
                 (requestSpec, responseSpec, ctx) -> {
                     requestSpec.header(new Header(ACCEPT, APPLICATION_JSON));
                     return ctx.next(requestSpec, responseSpec);
-                },
-                new RequestLoggingFilter(),
-                new ResponseLoggingFilter());
-
+                });
     }
 
     @AfterAll

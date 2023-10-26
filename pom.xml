@@ -6,13 +6,16 @@
     <artifactId>quarkiverse-parent</artifactId>
     <version>15</version>
   </parent>
+
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet-parent</artifactId>
   <version>2.1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Quarkus - JBeret - Parent</name>
+
   <properties>
-    <surefire.plugin.version>3.1.2</surefire.plugin.version>
+    <version.install.plugin>3.1.1</version.install.plugin>
+
     <quarkus.version>3.5.0</quarkus.version>
     <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
     <jberet.version>2.1.1.Final</jberet.version>
@@ -20,12 +23,14 @@
     <jberet-schedule.version>2.0.0.Final</jberet-schedule.version>
     <jberet-jpa.version>2.1.4.Final</jberet-jpa.version>
   </properties>
+
   <scm>
-    <connection>:git:git@github.com:quarkiverse/quarkus-jberet.git</connection>
+    <connection>scm:git:git@github.com:quarkiverse/quarkus-jberet.git</connection>
     <developerConnection>scm:git:git@github.com:quarkiverse/quarkus-jberet.git</developerConnection>
     <url>https://github.com/quarkiverse/quarkus-jberet</url>
     <tag>HEAD</tag>
   </scm>
+
   <modules>
     <module>core</module>
     <module>rest/deployment</module>
@@ -34,6 +39,7 @@
     <module>integration-tests</module>
     <module>release</module>
   </modules>
+
   <build>
     <pluginManagement>
       <plugins>
@@ -55,16 +61,22 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>${surefire.plugin.version}</version>
+          <version>${version.surefire.plugin}</version>
           <configuration>
             <systemPropertyVariables>
               <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             </systemPropertyVariables>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>${version.install.plugin}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
+
   <dependencyManagement>
     <dependencies>
       <dependency>

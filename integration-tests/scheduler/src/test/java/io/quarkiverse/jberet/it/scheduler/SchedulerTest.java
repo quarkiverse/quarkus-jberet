@@ -16,13 +16,12 @@ import jakarta.batch.runtime.BatchStatus;
 
 import org.jberet.rest.client.BatchClient;
 import org.jberet.rest.entity.JobExecutionEntity;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.Header;
 
 @QuarkusTest
@@ -34,10 +33,12 @@ class SchedulerTest {
                     requestSpec.header(new Header(ACCEPT, APPLICATION_JSON));
                     requestSpec.header(new Header(CONTENT_TYPE, APPLICATION_JSON));
                     return ctx.next(requestSpec, responseSpec);
-                },
-                new RequestLoggingFilter(),
-                new ResponseLoggingFilter());
+                });
+    }
 
+    @AfterAll
+    static void afterAll() {
+        RestAssured.reset();
     }
 
     @Test

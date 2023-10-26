@@ -19,7 +19,9 @@ public class JBeretJdbcJobRepositoryProducer implements Supplier<JobRepository> 
     public final static String TYPE = "JDBC";
 
     @Inject
-    protected JBeretConfig config;
+    JBeretConfig config;
+    @Inject
+    DataSources dataSources;
 
     @Override
     @Produces
@@ -30,7 +32,7 @@ public class JBeretJdbcJobRepositoryProducer implements Supplier<JobRepository> 
         addJdbcProperty(config.repository().jdbc().ddlFileName(), JdbcRepository.DDL_FILE_NAME_KEY, configProperties);
         addJdbcProperty(config.repository().jdbc().dbTablePrefix(), JdbcRepository.DB_TABLE_PREFIX_KEY, configProperties);
         addJdbcProperty(config.repository().jdbc().dbTableSuffix(), JdbcRepository.DB_TABLE_SUFFIX_KEY, configProperties);
-        return new JdbcRepository(DataSources.fromName(config.repository().jdbc().datasource()), configProperties);
+        return new JdbcRepository(dataSources.getDataSource(config.repository().jdbc().datasource()), configProperties);
     }
 
     private void addJdbcProperty(Optional<String> value, String jberetPropertyName,
