@@ -1,7 +1,8 @@
 package io.quarkiverse.jberet.runtime;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,8 +36,8 @@ public class QuarkusJobScheduler extends JobScheduler {
 
     @Override
     public JobSchedule schedule(final JobScheduleConfig scheduleConfig) {
-        final JobSchedule jobSchedule = new JobSchedule(String.valueOf(ids.getAndIncrement()), scheduleConfig);
-        final JobTask task = new JobTask(jobSchedule);
+        JobSchedule jobSchedule = new JobSchedule(String.valueOf(ids.getAndIncrement()), scheduleConfig);
+        JobTask task = new JobTask(jobSchedule);
 
         if (scheduleConfig.getInterval() <= 0 && scheduleConfig.getAfterDelay() <= 0) {
             executorService.schedule(task, scheduleConfig.getInitialDelay(), timeUnit);
@@ -52,12 +53,14 @@ public class QuarkusJobScheduler extends JobScheduler {
     }
 
     public JobSchedule schedule(final JobScheduleConfig scheduleConfig, final Cron cron) {
-        final JobSchedule jobSchedule = new JobSchedule(String.valueOf(ids.getAndIncrement()), scheduleConfig);
-        final CronJobTask task = new CronJobTask(jobSchedule, cron);
-
-        executorService.scheduleAtFixedRate(task, 0, 1, TimeUnit.SECONDS);
+        JobSchedule jobSchedule = new JobSchedule(String.valueOf(ids.getAndIncrement()), scheduleConfig);
+        ExecutionTime executionTime = ExecutionTime.forCron(cron);
+        Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(ZonedDateTime.now().truncatedTo(SECONDS));
+        if (nextExecution.isPresent()) {
+            CronJobTask task = new CronJobTask(jobSchedule, executionTime, nextExecution.get());
+            executorService.scheduleAtFixedRate(task, 0, 1, TimeUnit.SECONDS);
+        }
         schedules.put(jobSchedule.getId(), jobSchedule);
-
         return jobSchedule;
     }
 
@@ -98,29 +101,21 @@ public class QuarkusJobScheduler extends JobScheduler {
 
     static class CronJobTask extends JobTask {
         private final ExecutionTime executionTime;
+        private transient ZonedDateTime nextExecution;
 
-        private transient ZonedDateTime lastExecution = null;
-
-        public CronJobTask(final JobSchedule jobSchedule, final Cron cron) {
+        public CronJobTask(final JobSchedule jobSchedule, final ExecutionTime executionTime,
+                final ZonedDateTime nextExecution) {
             super(jobSchedule);
-            this.executionTime = ExecutionTime.forCron(cron);
+            this.executionTime = executionTime;
+            this.nextExecution = nextExecution;
         }
 
         @Override
         public void run() {
-            final ZonedDateTime now = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-            final Optional<ZonedDateTime> lastExecution = executionTime.lastExecution(now);
-
-            if (lastExecution.isPresent()) {
-                final ZonedDateTime cron = lastExecution.get().truncatedTo(ChronoUnit.SECONDS);
-                if (this.lastExecution != null && cron.isEqual(this.lastExecution)) {
-                    return;
-                }
-
-                if (now.isAfter(cron)) {
-                    this.lastExecution = cron;
-                    super.run();
-                }
+            ZonedDateTime now = ZonedDateTime.now().truncatedTo(SECONDS);
+            if (nextExecution != null && now.isAfter(nextExecution)) {
+                nextExecution = executionTime.nextExecution(now).orElse(null);
+                super.run();
             }
         }
     }
