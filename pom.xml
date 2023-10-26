@@ -15,6 +15,7 @@
 
   <properties>
     <version.install.plugin>3.1.1</version.install.plugin>
+    <version.sundrio.plugin>0.101.0</version.sundrio.plugin>
 
     <quarkus.version>3.5.0</quarkus.version>
     <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
@@ -33,8 +34,7 @@
 
   <modules>
     <module>core</module>
-    <module>rest/deployment</module>
-    <module>rest/runtime</module>
+    <module>rest</module>
     <module>jpa</module>
     <module>integration-tests</module>
     <module>release</module>
@@ -75,6 +75,35 @@
         </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>io.sundr</groupId>
+        <artifactId>sundr-maven-plugin</artifactId>
+        <version>${version.sundrio.plugin}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate-bom</goal>
+            </goals>
+            <configuration>
+              <boms>
+                <bom>
+                  <artifactId>quarkus-jberet-bom</artifactId>
+                  <name>Quarkus - JBeret - BOM</name>
+                  <description>Centralized dependencyManagement for Quarkus JBeret</description>
+                  <modules>
+                    <excludes>
+                      <exclude>*:*integration-tests*</exclude>
+                      <exclude>*:*tck</exclude>
+                    </excludes>
+                  </modules>
+                </bom>
+              </boms>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
   <dependencyManagement>
