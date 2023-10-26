@@ -12,7 +12,7 @@
   <packaging>pom</packaging>
   <name>Quarkus - JBeret - Parent</name>
   <properties>
-    <surefire.plugin.version>3.1.2</surefire.plugin.version>
+    <surefire.plugin.version>3.2.1</surefire.plugin.version>
     <quarkus.version>3.5.0</quarkus.version>
     <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
     <jberet.version>2.1.1.Final</jberet.version>
