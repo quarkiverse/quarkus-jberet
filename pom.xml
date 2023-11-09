@@ -15,7 +15,7 @@
 
   <properties>
     <version.install.plugin>3.1.1</version.install.plugin>
-    <version.sundrio.plugin>0.101.0</version.sundrio.plugin>
+    <version.sundrio.plugin>0.101.3</version.sundrio.plugin>
 
     <quarkus.version>3.5.1</quarkus.version>
     <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
