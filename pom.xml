@@ -14,6 +14,9 @@
   <name>Quarkus - JBeret - Parent</name>
 
   <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+
     <version.install.plugin>3.1.1</version.install.plugin>
     <version.sundrio.plugin>0.103.1</version.sundrio.plugin>
 
