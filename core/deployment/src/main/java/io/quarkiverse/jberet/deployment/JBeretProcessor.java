@@ -25,6 +25,9 @@ import java.util.stream.Stream;
 import jakarta.enterprise.inject.AmbiguousResolutionException;
 import jakarta.inject.Named;
 
+import org.jberet.cdi.JobScoped;
+import org.jberet.cdi.PartitionScoped;
+import org.jberet.cdi.StepScoped;
 import org.jberet.creation.ArchiveXmlLoader;
 import org.jberet.creation.BatchBeanProducer;
 import org.jberet.job.model.BatchArtifacts;
@@ -62,12 +65,17 @@ import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
 import io.quarkiverse.jberet.runtime.JobsProducer;
 import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
+import io.quarkiverse.jberet.runtime.scope.QuarkusJobScopedContextImpl;
+import io.quarkiverse.jberet.runtime.scope.QuarkusPartitionScopedContextImpl;
+import io.quarkiverse.jberet.runtime.scope.QuarkusStepScopedContextImpl;
 import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.BeanDiscoveryFinishedBuildItem;
+import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem;
+import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem.ValidationErrorBuildItem;
 import io.quarkus.arc.processor.AnnotationsTransformer;
@@ -110,6 +118,14 @@ public class JBeretProcessor {
     @BuildStep
     public RuntimeInitializedClassBuildItem runtimeInitializedDefaultHolder() {
         return new RuntimeInitializedClassBuildItem("org.jberet.spi.JobOperatorContext$DefaultHolder");
+    }
+
+    @BuildStep
+    public void batchScopes(ContextRegistrationPhaseBuildItem c, BuildProducer<ContextConfiguratorBuildItem> v) {
+        v.produce(new ContextConfiguratorBuildItem(
+                c.getContext().configure(JobScoped.class).contextClass(QuarkusJobScopedContextImpl.class),
+                c.getContext().configure(StepScoped.class).contextClass(QuarkusStepScopedContextImpl.class),
+                c.getContext().configure(PartitionScoped.class).contextClass(QuarkusPartitionScopedContextImpl.class)));
     }
 
     @BuildStep
