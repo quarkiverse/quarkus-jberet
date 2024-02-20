@@ -25,7 +25,7 @@ To use the extension, add the dependency to the target project:
 </dependency>
 ```
 
-:information_source: **Recommended Quarkus version: `3.7.0` or higher**
+:information_source: **Recommended Quarkus version: `3.9.0` or higher**
 
 The Batch API and Runtime will be available out of the box. Please refer to the
 [Batch documentation](https://jcp.org/en/jsr/detail?id=352), or the

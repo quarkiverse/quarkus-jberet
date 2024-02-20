@@ -17,7 +17,7 @@ import io.quarkus.hibernate.orm.runtime.PersistenceUnitUtil;
 @Transactional
 public class JBeretJpaJobRepository extends AbstractDelegatingJobRepository<JpaRepository> {
 
-    public final static String TYPE = "JPA";
+    public final static String TYPE = "jpa";
 
     @Inject
     protected JBeretJpaJobRepositoryConfig config;

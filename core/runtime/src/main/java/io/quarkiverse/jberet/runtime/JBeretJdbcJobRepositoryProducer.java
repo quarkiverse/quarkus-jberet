@@ -16,7 +16,7 @@ import io.quarkus.agroal.runtime.DataSources;
 
 public class JBeretJdbcJobRepositoryProducer implements Supplier<JobRepository> {
 
-    public final static String TYPE = "JDBC";
+    public final static String TYPE = "jdbc";
 
     @Inject
     JBeretConfig config;
