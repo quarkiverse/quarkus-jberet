@@ -4,9 +4,6 @@ import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static io.restassured.RestAssured.given;
 import static jakarta.batch.runtime.BatchStatus.COMPLETED;
 import static jakarta.batch.runtime.BatchStatus.FAILED;
-import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
-import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
@@ -14,12 +11,8 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.Properties;
 
-import jakarta.enterprise.inject.Alternative;
-
 import org.jberet.rest.client.BatchClient;
 import org.jberet.rest.entity.JobExecutionEntity;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -28,30 +21,11 @@ import org.junit.jupiter.api.TestMethodOrder;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
-import io.restassured.http.Header;
 
 @QuarkusTest
 @QuarkusTestResource(H2DatabaseTestResource.class)
 @TestMethodOrder(OrderAnnotation.class)
-@Alternative
 class JpaRepositoryTest {
-
-    @BeforeAll
-    static void beforeAll() {
-        RestAssured.filters(
-                (requestSpec, responseSpec, ctx) -> {
-                    requestSpec.header(new Header(ACCEPT, APPLICATION_JSON));
-                    requestSpec.header(new Header(CONTENT_TYPE, APPLICATION_JSON));
-                    return ctx.next(requestSpec, responseSpec);
-                });
-    }
-
-    @AfterAll
-    static void afterAll() {
-        RestAssured.reset();
-    }
-
     @Test
     @Order(1)
     void jpa() throws Exception {

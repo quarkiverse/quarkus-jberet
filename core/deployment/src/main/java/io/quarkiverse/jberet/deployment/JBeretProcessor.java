@@ -1,6 +1,5 @@
 package io.quarkiverse.jberet.deployment;
 
-import static io.quarkiverse.jberet.runtime.JBeretRepositoryTypeUtil.normalize;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.jandex.AnnotationTarget.Kind.CLASS;
@@ -145,7 +144,7 @@ public class JBeretProcessor {
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JobsProducer.class));
 
-        switch (normalize(config.repository().type())) {
+        switch (config.repository().type()) {
             case JBeretInMemoryJobRepositoryProducer.TYPE:
                 additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretInMemoryJobRepositoryProducer.class));
                 break;
@@ -196,7 +195,7 @@ public class JBeretProcessor {
             JBeretConfig config,
             BeanDiscoveryFinishedBuildItem beanDiscoveryFinishedBuildItem,
             List<JdbcDataSourceBuildItem> datasources) {
-        switch (normalize(config.repository().type())) {
+        switch (config.repository().type()) {
             case JBeretJdbcJobRepositoryProducer.TYPE:
                 final String datasource = config.repository().jdbc().datasource();
                 if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
@@ -307,7 +306,7 @@ public class JBeretProcessor {
             JBeretConfig config) {
         resources.produce(new NativeImageResourceBuildItem("sql/jberet-sql.properties"));
         resources.produce(new NativeImageResourceBuildItem("sql/jberet.ddl"));
-        if (JBeretJdbcJobRepositoryProducer.TYPE.equals(normalize(config.repository().type()))) {
+        if (JBeretJdbcJobRepositoryProducer.TYPE.equals(config.repository().type())) {
             config.repository().jdbc().ddlFileName().map(String::trim)
                     .filter(Predicate.not(String::isEmpty))
                     .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
