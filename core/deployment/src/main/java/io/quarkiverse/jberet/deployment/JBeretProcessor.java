@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.batch.operations.BatchRuntimeException;
 import jakarta.enterprise.inject.AmbiguousResolutionException;
 import jakarta.inject.Named;
 
@@ -318,6 +319,22 @@ public class JBeretProcessor {
         reflectiveClasses.produce(ReflectiveClassBuildItem.builder(QuarkusJobScheduler.class).methods().build());
         reflectiveClasses
                 .produce(ReflectiveClassBuildItem.builder(JobInstanceImpl.class).constructors().methods().fields().build());
+
+        // Exception Serialization for persistence
+        Set<String> serializationClasses = Set.of(
+                Error.class.getName(),
+                Throwable.class.getName(),
+                Exception.class.getName(),
+                RuntimeException.class.getName(),
+                StackTraceElement.class.getName(),
+                BatchRuntimeException.class.getName(),
+                String.class.getName(),
+                "java.util.Collections$EmptyList",
+                "com.oracle.svm.core.jdk.UnsupportedFeatureError");
+
+        for (String serializationClass : serializationClasses) {
+            reflectiveClasses.produce(ReflectiveClassBuildItem.builder(serializationClass).serialization().build());
+        }
     }
 
     private static void registerNonDefaultConstructors(RecorderContext recorderContext) throws Exception {
