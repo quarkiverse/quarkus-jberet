@@ -1,7 +1,6 @@
 package io.quarkiverse.jberet.runtime;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.transaction.TransactionManager;
@@ -28,10 +27,10 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class JBeretRecorder {
-    public void registerJobs(List<Job> jobs, Map<String, String> batchArtifactsAliases, BeanContainer beanContainer) {
+    public void registerJobs(List<Job> jobs, BeanContainer beanContainer) {
         JobsProducer jobsProducer = beanContainer.beanInstance(JobsProducer.class);
         jobs.addAll(jobsProducer.getJobs());
-        JBeretDataHolder.registerJobs(jobs, batchArtifactsAliases);
+        JBeretDataHolder.registerJobs(jobs);
     }
 
     public void initJobOperator(final JBeretConfig config, final ThreadPoolConfig threadPoolConfig,

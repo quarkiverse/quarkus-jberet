@@ -1,6 +1,5 @@
 package io.quarkiverse.jberet.runtime;
 
-import java.util.Map;
 import java.util.Properties;
 
 import jakarta.enterprise.inject.spi.Bean;
@@ -34,7 +33,7 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
             final TransactionManager transactionManager,
             final JBeretData data) {
 
-        this.artifactFactory = new QuarkusArtifactFactory(data.getBatchArtifactsAliases());
+        this.artifactFactory = new QuarkusArtifactFactory();
         this.jobExecutor = jobExecutor;
         this.jobRepository = jobRepository;
         this.transactionManager = transactionManager;
@@ -85,23 +84,17 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
     }
 
     static class QuarkusArtifactFactory extends AbstractArtifactFactory {
-        private final Map<String, String> aliases;
-
-        public QuarkusArtifactFactory(final Map<String, String> aliases) {
-            this.aliases = aliases;
-        }
-
         @Override
         public Object create(String ref, Class<?> cls, ClassLoader classLoader) {
             BeanManager bm = Arc.container().beanManager();
-            Bean<?> bean = bm.resolve(bm.getBeans(aliases.getOrDefault(ref, ref)));
+            Bean<?> bean = bm.resolve(bm.getBeans(ref));
             return bean == null ? null : bm.getReference(bean, Object.class, bm.createCreationalContext(bean));
         }
 
         @Override
         public Class<?> getArtifactClass(String ref, ClassLoader classLoader) {
             BeanManager bm = Arc.container().beanManager();
-            Bean<?> bean = bm.resolve(bm.getBeans(aliases.getOrDefault(ref, ref)));
+            Bean<?> bean = bm.resolve(bm.getBeans(ref));
             return bean == null ? null : ((InjectableBean<?>) bean).getImplementationClass();
         }
     }
