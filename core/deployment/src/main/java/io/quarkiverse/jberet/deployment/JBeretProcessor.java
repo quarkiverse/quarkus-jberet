@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -69,7 +70,6 @@ import io.quarkiverse.jberet.runtime.scope.QuarkusJobScopedContextImpl;
 import io.quarkiverse.jberet.runtime.scope.QuarkusPartitionScopedContextImpl;
 import io.quarkiverse.jberet.runtime.scope.QuarkusStepScopedContextImpl;
 import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
-import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
@@ -154,18 +154,16 @@ public class JBeretProcessor {
                 break;
         }
 
-        Map<String, String> batchArtifacts = getBatchArtifacts();
-        for (String artifact : batchArtifacts.keySet()) {
-            additionalBeans.produce(new AdditionalBeanBuildItem(artifact));
+        Map<String, String> artifacts = getBatchArtifacts();
+        Set<String> unnamedArtifacts = new HashSet<>();
+        for (String artifact : artifacts.keySet()) {
             ClassInfo classInfo = combinedIndex.getIndex().getClassByName(artifact);
             if (classInfo != null) {
-                String named = batchArtifacts.get(artifact);
-                String alias = named;
+                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(artifact));
                 AnnotationInstance namedAnnotation = classInfo.annotation(DotNames.NAMED);
-                if (namedAnnotation != null && namedAnnotation.value() != null) {
-                    alias = namedAnnotation.value().asString();
+                if (namedAnnotation == null || namedAnnotation.value() == null) {
+                    unnamedArtifacts.add(artifact);
                 }
-                batchArtifact.produce(new BatchArtifactBuildItem(artifact, named, alias));
             }
         }
 
@@ -178,10 +176,10 @@ public class JBeretProcessor {
             @Override
             public void transform(final TransformationContext context) {
                 String className = context.getTarget().asClass().name().toString();
-                if (batchArtifacts.containsKey(className)) {
-                    String named = batchArtifacts.get(className);
+                // Only add @Named if it does not present
+                if (unnamedArtifacts.contains(className)) {
+                    String named = artifacts.get(className);
                     context.transform()
-                            .add(Unremovable.class)
                             .add(Named.class, createStringValue("value", named))
                             .done();
                 }
@@ -269,7 +267,6 @@ public class JBeretProcessor {
             JBeretRecorder recorder,
             JBeretConfig config,
             List<BatchJobBuildItem> batchJobs,
-            List<BatchArtifactBuildItem> batchArtifacts,
             BeanContainerBuildItem beanContainer) throws Exception {
         registerNonDefaultConstructors(recorderContext);
 
@@ -280,12 +277,7 @@ public class JBeretProcessor {
             jobs.add(batchJob.getJob());
         }
 
-        Map<String, String> artifactsAliases = new HashMap<>();
-        for (BatchArtifactBuildItem batchArtifact : batchArtifacts) {
-            artifactsAliases.put(batchArtifact.getAlias(), batchArtifact.getNamed());
-        }
-
-        recorder.registerJobs(jobs, artifactsAliases, beanContainer.getValue());
+        recorder.registerJobs(jobs, beanContainer.getValue());
     }
 
     @BuildStep

@@ -5,12 +5,12 @@ import io.quarkus.builder.item.MultiBuildItem;
 public final class BatchArtifactBuildItem extends MultiBuildItem {
     private final String className;
     private final String named;
-    private final String alias;
+    private final String ref;
 
-    public BatchArtifactBuildItem(final String className, final String named, final String alias) {
+    public BatchArtifactBuildItem(final String className, final String named, final String ref) {
         this.className = className;
         this.named = named;
-        this.alias = alias;
+        this.ref = ref;
     }
 
     public String getClassName() {
@@ -21,7 +21,7 @@ public final class BatchArtifactBuildItem extends MultiBuildItem {
         return named;
     }
 
-    public String getAlias() {
-        return alias;
+    public String getRef() {
+        return ref;
     }
 }

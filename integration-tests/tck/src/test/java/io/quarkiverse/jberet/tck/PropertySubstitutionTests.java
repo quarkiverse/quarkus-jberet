@@ -25,6 +25,8 @@ import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -87,5 +89,12 @@ public class PropertySubstitutionTests extends com.ibm.jbatch.tck.tests.jslxml.P
     @Test
     public void testJavaSystemProperty() throws Exception {
         super.testJavaSystemProperty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "CDIDependentScopedBatchletPropsNonString", "dependentScopedBatchletPropsNonString",
+            "com.ibm.jbatch.tck.artifacts.cdi.DependentScopedBatchletPropsNonString" })
+    public void testCDIBatchPropsNonString(String refName) throws Exception {
+        super.testCDIBatchPropsNonString(refName);
     }
 }
