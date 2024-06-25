@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.quarkiverse.jberet</groupId>
+    <artifactId>quarkus-jberet-tck-parent</artifactId>
+    <version>2.3.2-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>quarkus-jberet-tck-runner</artifactId>
+  <name>Quarkus - JBeret - TCK Runner</name>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <junit.jupiter.extensions.autodetection.enabled>true</junit.jupiter.extensions.autodetection.enabled>
+          </systemPropertyVariables>
+          <dependenciesToScan>
+            <dependency>jakarta.batch:com.ibm.jbatch.tck</dependency>
+          </dependenciesToScan>
+          <excludes>
+            <!-- TODO - Fix these -->
+            <exclude>com.ibm.jbatch.tck.tests.jslxml.CDITests</exclude>
+            <exclude>InjectImplProvidedJobOperatorTests</exclude>
+            <!-- Requires EE Container -->
+            <exclude>com.ibm.jbatch.tck.tests.ee.TransactionTests</exclude>+
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.quarkiverse.jberet</groupId>
+      <artifactId>quarkus-jberet-tck</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.batch</groupId>
+      <artifactId>com.ibm.jbatch.tck</artifactId>
+      <version>${jakarta.batch-api.version}</version>
+    </dependency>
+  </dependencies>
+
+</project>
