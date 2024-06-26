@@ -2,23 +2,20 @@ package io.quarkiverse.jberet.deployment;
 
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
+import static org.jberet.spi.JobXmlResolver.DEFAULT_PATH;
 import static org.jboss.jandex.AnnotationTarget.Kind.CLASS;
 import static org.jboss.jandex.AnnotationValue.createStringValue;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,7 +41,8 @@ import org.jberet.job.model.Step;
 import org.jberet.job.model.Transition;
 import org.jberet.repository.JobRepository;
 import org.jberet.runtime.JobInstanceImpl;
-import org.jberet.tools.MetaInfBatchJobsJobXmlResolver;
+import org.jberet.spi.JobXmlResolver;
+import org.jberet.tools.ChainedJobXmlResolver;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -97,8 +95,6 @@ import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildI
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.runtime.ThreadPoolConfig;
 import io.quarkus.runtime.configuration.ConfigurationException;
-import io.quarkus.runtime.util.ClassPathUtils;
-import io.quarkus.util.GlobUtil;
 
 public class JBeretProcessor {
 
@@ -225,39 +221,39 @@ public class JBeretProcessor {
 
     @BuildStep
     public void loadJobs(
+            JBeretBuildTimeConfig buildTimeConfig,
             JBeretConfig config,
             ValidationPhaseBuildItem validationPhase,
             BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles,
             BuildProducer<BatchJobBuildItem> batchJobs,
             BuildProducer<ValidationErrorBuildItem> validationErrors) throws Exception {
 
+        List<Job> jobs = new ArrayList<>();
+
         Map<String, BeanInfo> jobBeans = new HashMap<>();
         for (BeanInfo beanInfo : validationPhase.getBeanResolver().resolveBeans(Type.create(JOB, Type.Kind.CLASS))) {
             jobBeans.put(beanInfo.getName(), beanInfo);
+            // TODO - Add CDI Jobs to the jobs maps so they can be merged with the ones coming from XML?
         }
 
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        MetaInfBatchJobsJobXmlResolver jobXmlResolver = new MetaInfBatchJobsJobXmlResolver();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        JobXmlResolver jobXmlResolver = new ChainedJobXmlResolver(ServiceLoader.load(JobXmlResolver.class, classLoader),
+                new QuarkusJobXmlResolver(buildTimeConfig, classLoader));
 
-        ClassPathUtils.consumeAsPaths("META-INF/batch-jobs", path -> {
-            Set<String> batchFilesNames = findBatchFilesFromPath(path, toPatterns(config.jobs().includes()),
-                    toPatterns(config.jobs().excludes()));
-            List<Job> loadedJobs = new ArrayList<>();
+        for (String jobXmlName : jobXmlResolver.getJobXmlNames(classLoader)) {
+            if (jobBeans.containsKey(jobXmlName)) {
+                validationErrors.produce(new ValidationErrorBuildItem(new AmbiguousResolutionException(
+                        "Beans: " + List.of(jobBeans.get(jobXmlName).toString(), DEFAULT_PATH + jobXmlName + ".xml"))));
+            }
 
-            batchFilesNames.forEach(jobXmlName -> {
-                if (jobBeans.containsKey(jobXmlName)) {
-                    validationErrors.produce(new ValidationErrorBuildItem(new AmbiguousResolutionException(
-                            "Beans: " + List.of(jobBeans.get(jobXmlName).toString(), path + "/" + jobXmlName))));
-                }
-                Job job = ArchiveXmlLoader.loadJobXml(jobXmlName, contextClassLoader, loadedJobs, jobXmlResolver);
-                job.setJobXmlName(jobXmlName);
-                JobConfig jobConfig = config.job().get(jobXmlName);
-                watchedFiles.produce(new HotDeploymentWatchedFileBuildItem("META-INF/batch-jobs/" + jobXmlName + ".xml"));
-                watchJobScripts(job, watchedFiles);
-                batchJobs.produce(new BatchJobBuildItem(job, parseCron(job, jobConfig)));
-                log.debug("Processed job with ID " + job.getId() + "  from file " + jobXmlName);
-            });
-        });
+            Job job = ArchiveXmlLoader.loadJobXml(jobXmlName, classLoader, jobs, jobXmlResolver);
+            job.setJobXmlName(jobXmlName);
+            JobConfig jobConfig = config.job().get(jobXmlName);
+            watchedFiles.produce(new HotDeploymentWatchedFileBuildItem(DEFAULT_PATH + jobXmlName + ".xml"));
+            watchJobScripts(job, watchedFiles);
+            batchJobs.produce(new BatchJobBuildItem(job, parseCron(job, jobConfig)));
+            log.debug("Processed job with ID " + job.getId() + "  from file " + jobXmlName);
+        }
     }
 
     @BuildStep
@@ -364,34 +360,6 @@ public class JBeretProcessor {
                                 script.getSrc() != null ? script.getContent(Thread.currentThread().getContextClassLoader())
                                         : script.getContent())
                         .collect(toList()));
-    }
-
-    private static Set<String> findBatchFilesFromPath(Path path, List<Pattern> includes, List<Pattern> excludes) {
-        try {
-            Stream<String> filePaths = Files.walk(path)
-                    .filter(Files::isRegularFile)
-                    .map(file -> file.getFileName().toString())
-                    .filter(file -> file.endsWith(".xml"));
-
-            if (!includes.isEmpty()) {
-                filePaths = filePaths
-                        .filter(filePath -> includes.stream().allMatch(pattern -> pattern.matcher(filePath).matches()));
-            }
-
-            if (!excludes.isEmpty()) {
-                filePaths = filePaths
-                        .filter(filePath -> excludes.stream().noneMatch(pattern -> pattern.matcher(filePath).matches()));
-            }
-
-            return filePaths.map(file -> file.substring(0, file.length() - 4)).collect(Collectors.toSet());
-        } catch (IOException e) {
-            return Collections.emptySet();
-        }
-    }
-
-    private static List<Pattern> toPatterns(Optional<List<String>> pattern) {
-        return pattern.map(patterns -> patterns.stream().map(GlobUtil::toRegexPattern).map(Pattern::compile).collect(toList()))
-                .orElseGet(ArrayList::new);
     }
 
     private static String parseCron(Job job, JobConfig jobConfig) {
