@@ -1,6 +1,5 @@
 package io.quarkiverse.jberet.runtime;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -15,17 +14,12 @@ import io.smallrye.config.WithName;
 @ConfigMapping(prefix = JBeretConfig.PREFIX)
 @ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public interface JBeretConfig {
-    public static final String PREFIX = "quarkus.jberet";
+    String PREFIX = "quarkus.jberet";
 
     /**
      *
      */
     Map<String, JobConfig> job();
-
-    /**
-     *
-     */
-    JobsConfig jobs();
 
     /**
      *
@@ -47,18 +41,6 @@ public interface JBeretConfig {
          *
          */
         Map<String, String> params();
-    }
-
-    interface JobsConfig {
-        /**
-         *
-         */
-        Optional<List<String>> includes();
-
-        /**
-         *
-         */
-        Optional<List<String>> excludes();
     }
 
     interface Repository {
