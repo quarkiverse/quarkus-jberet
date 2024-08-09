@@ -20,7 +20,7 @@
     <version.install.plugin>3.1.2</version.install.plugin>
     <version.sundrio.plugin>0.200.0</version.sundrio.plugin>
 
-    <quarkus.version>3.12.2</quarkus.version>
+    <quarkus.version>3.13.2</quarkus.version>
     <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
     <jberet.version>2.2.1.Final</jberet.version>
     <jberet-rest.version>2.0.0.Final</jberet-rest.version>
