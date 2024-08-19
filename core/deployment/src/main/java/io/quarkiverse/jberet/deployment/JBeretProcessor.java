@@ -373,7 +373,6 @@ public class JBeretProcessor {
             cron.validate();
             return jobConfig.cron().get();
         } catch (Exception e) {
-            e.printStackTrace();
             throw new ConfigurationException(
                     String.format("The cron expression %s configured in %s is not valid", jobConfig.cron().get(),
                             "quarkus.jberet.job." + job.getJobXmlName() + ".cron"));
