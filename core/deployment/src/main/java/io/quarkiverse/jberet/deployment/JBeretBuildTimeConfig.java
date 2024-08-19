@@ -17,18 +17,18 @@ import io.smallrye.config.WithConverter;
 @ConfigRoot(phase = ConfigPhase.BUILD_TIME)
 public interface JBeretBuildTimeConfig {
     /**
-     *
+     * The JBeret Jobs configuration.
      */
     JobsConfig jobs();
 
     interface JobsConfig {
         /**
-         *
+         * A regex pattern of Job names to exclude.
          */
         Optional<List<@WithConverter(RegexPatternConverter.class) Pattern>> includes();
 
         /**
-         *
+         * A regex pattern of Job names to include.
          */
         Optional<List<@WithConverter(RegexPatternConverter.class) Pattern>> excludes();
 

@@ -12,21 +12,20 @@ import io.smallrye.config.WithName;
 @ConfigMapping(prefix = JBeretConfig.PREFIX)
 @ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public interface JBeretJpaJobRepositoryConfig {
-
     /**
-     *
+     * The JBeret Repository configuration.
      */
     Repository repository();
 
     interface Repository {
         /**
-         *
+         * The JBeret Repository JPA configuration.
          */
         Jpa jpa();
 
         interface Jpa {
             /**
-             * Persistence Unit Name used for JBeret entities
+             * The Persistence Unit Name for JBeret entities
              */
             @WithName("persistence-unit-name")
             @WithDefault(DEFAULT_PERSISTENCE_UNIT_NAME)

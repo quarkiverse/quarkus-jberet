@@ -3,10 +3,10 @@ package io.quarkiverse.jberet.runtime;
 import java.util.concurrent.Executor;
 
 import org.jberet.spi.JobExecutor;
-import org.wildfly.common.cpu.ProcessorInfo;
 
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.ThreadPoolConfig;
+import io.smallrye.common.cpu.ProcessorInfo;
 
 class QuarkusJobExecutor extends JobExecutor {
     private final int maxPoolSize;

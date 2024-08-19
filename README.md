@@ -21,7 +21,7 @@ To use the extension, add the dependency to the target project:
 <dependency>
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet</artifactId>
-  <version>2.2.0</version>
+  <version>2.3.1</version>
 </dependency>
 ```
 
@@ -35,15 +35,19 @@ The Batch API and Runtime will be available out of the box. Please refer to the
 
 The JBeret Quarkus extension supports the following configuration:
 
-| Name                                                                                                                                                                                                                         | Type                | Default                    |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------- |
-| `quarkus.jberet.repository`<br>The repository type to store JBeret and Job data. A `jdbc` type requires a JDBC datasource.                                                                                                   | `in-memory`, `jdbc` | `in-memory`                |
-| `quarkus.jberet.repository.jdbc.datasource`<br>The datasource name.                                                                                                                                                          | string              | `<default>`                |
-| `quarkus.jberet.jobs.includes`<br>A list of patterns to match batch files to include.                                                                                                                                        | list of string      |                            |
-| `quarkus.jberet.jobs.excludes`<br>A list of patterns to match batch files to exclude.                                                                                                                                        | list of string      |                            |
-| `quarkus.jberet.job."job-name".cron`<br>A cron style expression in Quartz format to schedule the job.                                                                                                                        | string              |                            |
-| `quarkus.jberet.job."job-name".params."param-key"`<br>A parameter to start a job.                                                                                                                                            | string              |                            |
-| `quarkus.jberet.max-async"`<br>A parameter control the number of Threads that can be used by JBeret. An additional Thread for JBeret coordination is always added. Thus setting 1 will proide one thread for job executions. | string              | `Based on available cores` |
+| Name                                                                                                                                                                                              | Type                | Default                    |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|----------------------------|
+| `quarkus.jberet.repository`<br>The repository type to store JBeret and Job data. A `jdbc` type requires a JDBC datasource.                                                                        | `in-memory`, `jdbc` | `in-memory`                |
+| `quarkus.jberet.repository.jdbc.datasource`<br>The datasource name.                                                                                                                               | string              | `<default>`                |
+| `quarkus.jberet.repository.jdbc.ddl-file`<br>Custom DDL file resource for JBeret tables creation; if using `custom table names` please also set `sql-filename` property to propagate table names. | string              |                            |
+| `quarkus.jberet.repository.jdbc.sql-file`<br>Custom queries to be used to query JBeret tables; this is mandatory if custom table names are used in custom DDL filename.                           | string              |                            |
+| `quarkus.jberet.repository.jdbc.db-tables-prefix`<br>JBeret tables name prefix.                                                                                                                   | string              |                            |
+| `quarkus.jberet.repository.jdbc.db-tables-suffix`<br>JBeret tables name prefix.                                                                                                                   | string              |                            |
+| `quarkus.jberet.jobs.includes`<br>A regex pattern of Job names to include.                                                                                                                        | list of string      |                            |
+| `quarkus.jberet.jobs.excludes`<br>A regex pattern of Job names to exclude.                                                                                                                        | list of string      |                            |
+| `quarkus.jberet.job."job-name".cron`<br>The Job schedule in Cron format, see <a href="https://en.wikipedia.org/wiki/Cron">cron</a>.                                                               | string              |                            |
+| `quarkus.jberet.job."job-name".params."param-key"`<br>The Job parameters                                                                                                                          | string              |                            |
+| `quarkus.jberet.max-async"`<br>The maximum number of threads allowed to be executed.                                                                                                              | int                 | `Based on available cores` |
 
 ## Non-standard Features
 
