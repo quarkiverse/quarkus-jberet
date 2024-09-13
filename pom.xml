@@ -22,7 +22,7 @@
 
     <quarkus.version>3.14.3</quarkus.version>
     <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
-    <jberet.version>2.2.1.Final</jberet.version>
+    <jberet.version>3.0.0.Final</jberet.version>
     <jberet-rest.version>2.0.0.Final</jberet-rest.version>
     <jberet-schedule.version>2.0.0.Final</jberet-schedule.version>
     <jberet-jpa.version>2.1.4.Final</jberet-jpa.version>
