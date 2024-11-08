@@ -1,4 +1,4 @@
-name: Quarkiverse Pre Release
+name: Quarkiverse Review Release
 
 on:
   pull_request:
