@@ -174,9 +174,10 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <profiles>
     <profile>
-      <id>it</id>
+      <id>unpublished</id>
       <activation>
         <property>
           <name>performRelease</name>
