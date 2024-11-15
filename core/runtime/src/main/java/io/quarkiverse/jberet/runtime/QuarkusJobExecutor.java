@@ -20,7 +20,7 @@ class QuarkusJobExecutor extends JobExecutor {
                 return null;
             }
             return maxAsync + 1; // Adapt for the fact that JBeret requires one thread for coordination.
-        }).orElse(threadPoolConfig.maxThreads.orElse(Math.max(8 * ProcessorInfo.availableProcessors(), 200)));
+        }).orElse(threadPoolConfig.maxThreads().orElse(Math.max(8 * ProcessorInfo.availableProcessors(), 200)));
     }
 
     @Override
