@@ -2,7 +2,7 @@
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
-[![Build](https://github.com/quarkiverse/quarkiverse-jberet/workflows/Build/badge.svg?branch=main)](https://github.com/quarkiverse/quarkiverse-jberet/actions?query=workflow%3ABuild)
+[![Build](https://github.com/quarkiverse/quarkus-jberet/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/quarkiverse/quarkus-jberet/actions/workflows/build.yml)
 [![License](https://img.shields.io/github/license/quarkiverse/quarkiverse-jberet.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Central](https://img.shields.io/maven-central/v/io.quarkiverse.jberet/quarkus-jberet-parent?color=green)](https://search.maven.org/search?q=a:quarkus-jberet-parent)
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-green.svg)](#contributors-)
