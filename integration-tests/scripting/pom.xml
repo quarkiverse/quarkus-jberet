@@ -11,16 +11,20 @@
 
     <name>Quarkus - JBeret - Integrations Tests - Scripting</name>
 
+    <properties>
+        <version.groovy>3.0.23</version.groovy>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-jsr223</artifactId>
-            <version>3.0.23</version>
+            <version>${version.groovy}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>3.0.23</version>
+            <version>${version.groovy}</version>
         </dependency>
     </dependencies>
 
