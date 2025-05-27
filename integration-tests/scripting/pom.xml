@@ -12,7 +12,7 @@
     <name>Quarkus - JBeret - Integrations Tests - Scripting</name>
 
     <properties>
-        <version.groovy>3.0.24</version.groovy>
+        <version.groovy>3.0.25</version.groovy>
     </properties>
 
     <dependencies>
