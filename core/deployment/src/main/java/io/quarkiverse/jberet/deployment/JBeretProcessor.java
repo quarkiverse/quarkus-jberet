@@ -93,7 +93,6 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
-import io.quarkus.runtime.ThreadPoolConfig;
 import io.quarkus.runtime.configuration.ConfigurationException;
 
 public class JBeretProcessor {
@@ -261,7 +260,6 @@ public class JBeretProcessor {
     public void registerJobs(
             RecorderContext recorderContext,
             JBeretRecorder recorder,
-            JBeretConfig config,
             List<BatchJobBuildItem> batchJobs,
             BeanContainerBuildItem beanContainer) throws Exception {
         registerNonDefaultConstructors(recorderContext);
@@ -279,12 +277,10 @@ public class JBeretProcessor {
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
     ServiceStartBuildItem init(JBeretRecorder recorder,
-            JBeretConfig config,
-            ThreadPoolConfig threadPoolConfig,
             BeanContainerBuildItem beanContainer) {
 
-        recorder.initJobOperator(config, threadPoolConfig, beanContainer.getValue());
-        recorder.initScheduler(config);
+        recorder.initJobOperator(beanContainer.getValue());
+        recorder.initScheduler();
 
         return new ServiceStartBuildItem("jberet");
     }
