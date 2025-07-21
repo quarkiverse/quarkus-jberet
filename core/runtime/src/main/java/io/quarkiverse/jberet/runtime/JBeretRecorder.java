@@ -22,26 +22,34 @@ import com.cronutils.parser.CronParser;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
 import io.quarkus.arc.runtime.BeanContainer;
+import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.ThreadPoolConfig;
 import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class JBeretRecorder {
+    private final JBeretConfig config;
+    private final RuntimeValue<ThreadPoolConfig> threadPoolConfig;
+
+    public JBeretRecorder(JBeretConfig config, RuntimeValue<ThreadPoolConfig> threadPoolConfig) {
+        this.config = config;
+        this.threadPoolConfig = threadPoolConfig;
+    }
+
     public void registerJobs(List<Job> jobs, BeanContainer beanContainer) {
         JobsProducer jobsProducer = beanContainer.beanInstance(JobsProducer.class);
         jobs.addAll(jobsProducer.getJobs());
         JBeretDataHolder.registerJobs(jobs);
     }
 
-    public void initJobOperator(final JBeretConfig config, final ThreadPoolConfig threadPoolConfig,
-            final BeanContainer beanContainer) {
+    public void initJobOperator(final BeanContainer beanContainer) {
         ManagedExecutor managedExecutor = beanContainer.beanInstance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.beanInstance(TransactionManager.class);
 
         JobRepository jobRepository = beanContainer.beanInstance(
                 JobRepository.class);
 
-        JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig, config);
+        JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig.getValue(), config);
 
         JBeretDataHolder.JBeretData data = JBeretDataHolder.getData();
 
@@ -59,7 +67,7 @@ public class JBeretRecorder {
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
     }
 
-    public void initScheduler(final JBeretConfig config) {
+    public void initScheduler() {
         if (config.job().values().stream().noneMatch(jobConfig -> jobConfig.cron().isPresent())) {
             return;
         }
