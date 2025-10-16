@@ -1,0 +1,50 @@
+<job id="ref-artifact-job" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <listeners>
+        <listener ref="refArtifactJobListener"/>
+    </listeners>
+    <step id="batchlet-step" next="chunk-step">
+        <listeners>
+            <listener ref="refArtifactStepListener"/>
+        </listeners>
+        <batchlet ref="refArtifactBatchlet"/>
+    </step>
+    <step id="chunk-step" next="another-step">
+        <listeners>
+            <listener ref="refArtifactChunkListener"/>
+            <listener ref="refArtifactItemReadListener"/>
+            <listener ref="refArtifactItemProcessListener"/>
+            <listener ref="refArtifactItemWriteListener"/>
+            <listener ref="refArtifactRetryReadListener"/>
+            <listener ref="refArtifactRetryProcessListener"/>
+            <listener ref="refArtifactRetryWriteListener"/>
+            <listener ref="refArtifactSkipReadListener"/>
+            <listener ref="refArtifactSkipProcessListener"/>
+            <listener ref="refArtifactSkipWriteListener"/>
+        </listeners>
+        <chunk checkpoint-policy="custom">
+            <reader ref="refArtifactItemReader"/>
+            <processor ref="refArtifactItemProcessor"/>
+            <writer ref="refArtifactItemWriter"/>
+            <checkpoint-algorithm ref="refArtifactCheckpoint"/>
+        </chunk>
+        <partition>
+            <plan partitions="2"/>
+            <collector ref="refArtifactCollector"/>
+            <analyzer ref="refArtifactAnalyzer"/>
+            <reducer ref="refArtifactReducer"/>
+        </partition>
+    </step>
+    <step id="another-step" next="decider">
+        <chunk>
+            <reader ref="refArtifactItemReader"/>
+            <processor ref="refArtifactItemProcessor"/>
+            <writer ref="refArtifactItemWriter"/>
+        </chunk>
+        <partition>
+            <mapper ref="refArtifactMapper"/>
+        </partition>
+    </step>
+    <decision id="decider" ref="refArtifactDecider">
+        <end on="exit"/>
+    </decision>
+</job>
