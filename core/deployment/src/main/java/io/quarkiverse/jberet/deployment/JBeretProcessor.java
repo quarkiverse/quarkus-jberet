@@ -239,10 +239,22 @@ class JBeretProcessor {
 
     @BuildStep
     void validateJobs(
+            JBeretConfig config,
             List<BatchJobBuildItem> batchJobs,
             List<RefArtifactBuildItem> refArtifacts,
             ValidationPhaseBuildItem validationPhase,
             BuildProducer<ValidationErrorBuildItem> validationErrors) {
+
+        // Validate Job Config
+        Set<String> jobNames = batchJobs.stream().map(BatchJobBuildItem::getJob).map(Job::getJobXmlName)
+                .collect(Collectors.toSet());
+        for (String jobName : config.job().keySet()) {
+            if (!jobNames.contains(jobName)) {
+                log.warn("Configured job name " + jobName
+                        + " does not exist. Please check if a Job definition XML file exists with the job name " + jobName
+                        + " in META-INF/batch-jobs");
+            }
+        }
 
         BeanResolver beanResolver = validationPhase.getBeanResolver();
 
