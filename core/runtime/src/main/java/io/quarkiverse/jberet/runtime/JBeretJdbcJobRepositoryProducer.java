@@ -12,27 +12,32 @@ import jakarta.inject.Singleton;
 import org.jberet.repository.JdbcRepository;
 import org.jberet.repository.JobRepository;
 
-import io.quarkus.agroal.runtime.DataSources;
+import io.agroal.api.AgroalDataSource;
+import io.quarkiverse.jberet.runtime.JBeretConfig.Repository.Jdbc;
+import io.quarkus.agroal.runtime.AgroalDataSourceUtil;
 
 public class JBeretJdbcJobRepositoryProducer implements Supplier<JobRepository> {
-
     public final static String TYPE = "jdbc";
 
     @Inject
     JBeretConfig config;
-    @Inject
-    DataSources dataSources;
 
     @Override
     @Produces
     @Singleton
     public JobRepository get() {
-        final Properties configProperties = new Properties();
-        addJdbcProperty(config.repository().jdbc().sqlFileName(), JdbcRepository.SQL_FILE_NAME_KEY, configProperties);
-        addJdbcProperty(config.repository().jdbc().ddlFileName(), JdbcRepository.DDL_FILE_NAME_KEY, configProperties);
-        addJdbcProperty(config.repository().jdbc().dbTablePrefix(), JdbcRepository.DB_TABLE_PREFIX_KEY, configProperties);
-        addJdbcProperty(config.repository().jdbc().dbTableSuffix(), JdbcRepository.DB_TABLE_SUFFIX_KEY, configProperties);
-        return new JdbcRepository(dataSources.getDataSource(config.repository().jdbc().datasource()), configProperties);
+        Properties configProperties = new Properties();
+        Jdbc jdbc = config.repository().jdbc();
+        addJdbcProperty(jdbc.sqlFileName(), JdbcRepository.SQL_FILE_NAME_KEY, configProperties);
+        addJdbcProperty(jdbc.ddlFileName(), JdbcRepository.DDL_FILE_NAME_KEY, configProperties);
+        addJdbcProperty(jdbc.dbTablePrefix(), JdbcRepository.DB_TABLE_PREFIX_KEY, configProperties);
+        addJdbcProperty(jdbc.dbTableSuffix(), JdbcRepository.DB_TABLE_SUFFIX_KEY, configProperties);
+
+        Optional<AgroalDataSource> dataSource = AgroalDataSourceUtil.dataSourceIfActive(jdbc.datasource());
+        if (dataSource.isEmpty()) {
+            throw new IllegalStateException("No configured datasource " + jdbc.datasource() + " could be found.");
+        }
+        return new JdbcRepository(dataSource.get(), configProperties);
     }
 
     private void addJdbcProperty(Optional<String> value, String jberetPropertyName,
