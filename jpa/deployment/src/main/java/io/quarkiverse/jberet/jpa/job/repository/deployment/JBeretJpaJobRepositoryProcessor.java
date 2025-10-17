@@ -2,6 +2,7 @@ package io.quarkiverse.jberet.jpa.job.repository.deployment;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
 
 import org.jberet.jpa.repository.PropertiesConverter;
 import org.jberet.jpa.repository.entity.JobExecutionJpa;
@@ -72,7 +73,7 @@ public class JBeretJpaJobRepositoryProcessor {
         }
 
         ENTITY_CLASSES.forEach(entityClass -> additionalJpaModelBuildItemsBuildProducer
-                .produce(new AdditionalJpaModelBuildItem(entityClass.getName())));
+                .produce(new AdditionalJpaModelBuildItem(entityClass.getName(), Set.of(persistenceUnitName))));
     }
 
     @BuildStep

@@ -18,7 +18,7 @@ import io.quarkus.test.junit.TestProfile;
 @QuarkusTest
 @QuarkusTestResource(H2DatabaseTestResource.class)
 @TestProfile(Profile.class)
-class JdbcRepositoryTablesPrefixSuffixTest extends JdbcRepositoryTest {
+class JdbcRepositoryTablesPrefixSuffixTest {
     public static class Profile implements QuarkusTestProfile {
         @Override
         public Map<String, String> getConfigOverrides() {

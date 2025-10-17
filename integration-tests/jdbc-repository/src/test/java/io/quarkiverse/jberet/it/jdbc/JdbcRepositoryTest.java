@@ -14,8 +14,6 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.Properties;
 
-import jakarta.enterprise.inject.Alternative;
-
 import org.jberet.rest.client.BatchClient;
 import org.jberet.rest.entity.JobExecutionEntity;
 import org.junit.jupiter.api.AfterAll;
@@ -34,7 +32,6 @@ import io.restassured.http.Header;
 @QuarkusTest
 @QuarkusTestResource(H2DatabaseTestResource.class)
 @TestMethodOrder(OrderAnnotation.class)
-@Alternative
 class JdbcRepositoryTest {
 
     @BeforeAll
