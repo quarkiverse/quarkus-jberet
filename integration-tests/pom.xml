@@ -71,6 +71,7 @@
     <module>client</module>
     <module>scripting</module>
     <module>scopes</module>
+    <module>mailer</module>
     <module>tck</module>
   </modules>
 

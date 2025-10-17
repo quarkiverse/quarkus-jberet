@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="mailer" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <listeners>
+        <listener ref="mailerJobListener"/>
+    </listeners>
+    <step id="mailerStep">
+        <batchlet ref="mailerBatchlet"/>
+    </step>
+</job>
