@@ -39,7 +39,6 @@
     <module>core</module>
     <module>rest</module>
     <module>jpa</module>
-    <module>release</module>
   </modules>
 
   <build>
