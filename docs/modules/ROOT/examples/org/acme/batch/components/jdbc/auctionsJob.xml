@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+	<step id="processAuctions">
+		<chunk item-count="100">
+			<reader ref="jdbcItemReader">
+				<!--1-->
+				<properties>
+					<!--2-->
+					<property name="sql"
+						value="SELECT itemId, sum(quantity), sum(bid), sum(buyout), min(bid / quantity), min(buyout / quantity), max(bid / quantity), max(buyout / quantity) FROM Auctions GROUP BY itemId ORDER BY itemId" />
+					<!--3-->
+					<property name="rowMapper" value="auctionStatisticsRowMapper" />
+				</properties>
+			</reader>
+			<writer ref="jdbcItemWriter">
+				<!--4-->
+				<properties>
+					<!--5-->
+					<property name="sql"
+						value="INSERT INTO AuctionStatistics (id, itemId, quantity, bid, minBid, maxBid, buyout, minBuyout, maxBuyout, avgBid, avgBuyout, timestamp) VALUES (nextval('auction_statistics_id'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" />
+					<!--6-->
+					<property name="parameterSetter" value="auctionStatisticsParameterSetter" />
+				</properties>
+			</writer>
+		</chunk>
+	</step>
+</job>

@@ -1,0 +1,170 @@
+include::./includes/attributes.adoc[]
+
+= Quarkus JBeret Components
+
+The Quarkus JBeret Components provides reusable, batch components for common data processing tasks.
+
+== Installation
+
+To use the JBeret Components module, add the `io.quarkiverse.jberet:quarkus-jberet-components` extension to your
+build file:
+
+[source,xml,subs=attributes+,role="primary asciidoc-tabs-target-sync-cli asciidoc-tabs-target-sync-maven"]
+.pom.xml
+----
+<dependency>
+    <groupId>io.quarkiverse.jberet</groupId>
+    <artifactId>quarkus-jberet-components</artifactId>
+    <version>{project-version}</version>
+</dependency>
+----
+
+[source,gradle,subs=attributes+,role="secondary asciidoc-tabs-target-sync-gradle"]
+.build.gradle
+----
+implementation("io.quarkiverse.jberet:quarkus-jberet-components:{project-version}")
+----
+
+== Read and Write Data through JDBC
+
+The JDBC components provide efficient reading and writing of database records using JDBC Cursors and Batch processing.
+These components are ideal for:
+
+- Processing large database tables without loading all data into memory
+- Migrating data between databases
+- Generating aggregated statistics from database records
+- Bulk insert/update operations with optimal performance
+
+=== JdbcCursorItemReader
+
+The `JdbcCursorItemReader` reads data from a database using a JDBC cursor, meaning that it will read every resulting
+row from the supplied sql statement one row at a time without loading the entire result set into memory.
+
+.JdbcCursorItemReader
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/jdbc/AuctionJdbcCursorItemReaderProducer.java[]
+----
+
+The `JdbcCursorItemReader` requires:
+
+- A `DataSource` to read the data
+- A SQL query to execute to retrieve the data
+- A `RowMapper` to convert each `ResultSet` row into a custom POJO
+
+=== RowMapper
+
+The `RowMapper` is a functional interface that maps a JDBC `ResultSet` row to a POJO:
+
+.RowMapper
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/jdbc/AuctionStatisticsRowMapper.java[]
+----
+
+.AuctionStatistics
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/jdbc/AuctionStatistics.java[]
+----
+
+The `RowMapper` retrieves values from the `ResultSet` by column index and constructs the `AuctionStatistics` object.
+
+=== JdbcBatchItemWriter
+
+The `JdbcBatchItemWriter` writes data to a database using JDBC batch processing. Instead of executing one SQL
+statement per item, it groups multiple statements together and executes them in a single database operation.
+
+.JdbcBatchItemWriter
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/jdbc/AuctionJdbcBatchItemWriterProducer.java[]
+----
+
+The `JdbcBatchItemWriter` requires:
+
+- A `DataSource` to write the data
+- A parameterized SQL statement to execute for each item to write
+- A `ParameterSetter` to map objects into SQL parameters
+
+=== ParameterSetter
+
+The `ParameterSetter` is a functional interface that sets `PreparedStatement` parameters from a POJO:
+
+.ParameterSetter
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/jdbc/AuctionStatisticsParameterSetter.java[]
+----
+
+The `ParameterSetter` extracts values from an object and sets them as `PreparedStatement` parameters by index in
+`Parameters`.
+
+=== The Job
+
+All JDBC components must be assembled in a Job definition:
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+    <step id="processAuctions">
+        <chunk>
+            <reader ref="auctionsItemReader"/>    <!--1-->
+            <writer ref="auctionsItemWriter"/>    <!--2-->
+        </chunk>
+    </step>
+</job>
+----
+
+<1> The `auctionsItemReader` is the CDI bean name of the `JdbcCursorItemReader` produced by the `AuctionJdbcCursorItemReaderProducer`
+<2> The `auctionsItemWriter` is the CDI bean name of the `JdbcBatchItemWriter` produced by the `AuctionJdbcBatchItemWriterProducer`
+
+To execute this Job:
+
+[source,java]
+----
+@Inject
+JobOperator jobOperator;
+
+void execute() {
+    long executionId = jobOperator.start("auctionsJob", new Properties());
+}
+----
+
+=== Configuration with Batch Properties
+
+Instead of using CDI producers, the `JdbcCursorItemReader` and `JdbcBatchItemWriter` and can be configured directly
+in the Job XML using batch properties and their built-in reference names `jdbcItemReader` and `jdbcItemWriter`:
+
+.auctionsJob.xml
+[source,xml]
+----
+include::{examples-dir}/org/acme/batch/components/jdbc/auctionsJob.xml[]
+----
+
+<1> Reference the built-in `jdbcItemReader` `JdbcCursorItemReader`
+<2> Specify the SQL query to execute to retrieve the data
+<3> Specify the CDI bean name of the `RowMapper`
+<4> Reference the built-in `jdbcItemWriter` `JdbcBatchItemWriter`
+<5> Specify SQL statement to execute for each item to write
+<6> Specify the CDI bean name of the `ParameterSetter`
+
+[NOTE]
+====
+When using batch properties, the `dataSource` property is optional. If not specified, the default (unnamed) datasource
+is used. For named datasources, use: `<property name="dataSource" value="namedDatasource"/>`
+====
+
+==== Fetch Size
+
+The `fetchSize` property hints to the JDBC driver how many rows to fetch from the database:
+
+[source,xml]
+----
+<property name="fetchSize" value="1"/>
+----
+
+Higher fetch sizes reduce network overhead but increase memory usage. The optimal value depends on your network
+latency and row size.
