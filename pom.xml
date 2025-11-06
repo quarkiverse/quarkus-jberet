@@ -39,6 +39,7 @@
     <module>core</module>
     <module>rest</module>
     <module>jpa</module>
+    <module>docs</module>
   </modules>
 
   <build>
