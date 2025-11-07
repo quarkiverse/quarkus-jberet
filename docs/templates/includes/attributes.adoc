@@ -1,0 +1,1 @@
+:project-version: ${release.current-version}

@@ -1,0 +1,210 @@
+= Quarkus JBeret
+
+include::./includes/attributes.adoc[]
+
+The Quarkus JBeret Extension adds support for
+https://jakarta.ee/specifications/batch/[JSR-352 Batch Applications for the Java Platform].
+https://github.com/jberet[JBeret] is an implementation of the JSR-352.
+
+== Installation
+
+If you want to use this extension, you need to add the `io.quarkiverse.jberet:quarkus-jberet` extension first to
+your build file:
+
+[source,xml,role="primary asciidoc-tabs-target-sync-cli asciidoc-tabs-target-sync-maven"]
+.pom.xml
+----
+<dependency>
+    <groupId>io.quarkiverse.jberet</groupId>
+    <artifactId>quarkus-jberet</artifactId>
+    <version>{project-version}</version>
+</dependency>
+----
+
+[source,gradle,role="secondary asciidoc-tabs-target-sync-gradle"]
+.build.gradle
+----
+implementation("io.quarkiverse.jberet:quarkus-jberet:{project-version}")
+----
+
+[IMPORTANT]
+====
+Recommended Quarkus version: `3.28.1` or higher
+====
+
+The Batch API and Runtime will be available out of the box. Please refer to the
+Java Batch https://jakarta.ee/specifications/batch/[documentation], or the
+JBeret https://jberet.gitbooks.io/jberet-user-guide/content/[documentation] to learn more about Batch Applications.
+
+== Simplified Configuration
+
+The Batch API requires the `@BatchProperty` annotation to inject the specific configuration from the batch definition
+file. Instead, you can use the `@ConfigProperty` annotation, which is used to inject configuration properties in
+Quarkus using the MicroProfile Config API and keep consistency:
+
+[source,java]
+----
+@Inject
+@BatchProperty(name = "job.config.name")
+String batchConfig;
+
+// This is equivalent to @BatchProperty injection
+@ConfigProperty(name = "job.config.name")
+Optional<String> mpConfig;
+----
+
+[IMPORTANT]
+====
+Although, there is a slight limitation: since job configuration is mostly dynamic and only injected on job execution,
+Quarkus may fail to start due to invalid configuration (cannot find the Job configuration values). In this case,
+configuration injection points with the `@ConfigProperty` annotation must set a default value or use an `Optional`.
+====
+
+== CDI Beans
+
+The Batch APIs `JobOperator` and `JobRepository` are available as CDI beans, so they can be injected directly into any
+code:
+
+[source,java]
+----
+@Inject
+JobOperator jobOperator;
+@Inject
+JobRepository jobRepository;
+
+void start() {
+    long executionId = jobOperator.start("batchlet", new Properties());
+    JobExecution jobExecution = jobRepository.getJobExecution(executionId);
+}
+----
+
+A specific Quarkus implementation is available in `QuarkusJobOperator`, which can be also injected directly:
+
+[source,java]
+----
+@Inject
+QuarkusJobOperator jobOperator;
+
+void start() {
+    Job job = new JobBuilder("programmatic")
+            .step(new StepBuilder("programmaticStep")
+                    .batchlet("programmaticBatchlet")
+                    .build())
+            .build();
+
+    long executionId = jobOperator.start(job, new Properties());
+    JobExecution jobExecution = jobOperator.getJobExecution(executionId);
+}
+----
+
+With `QuarkusJobOperator` it is possible to define and start programmatic Jobs, with the
+https://jberet.gitbooks.io/jberet-user-guide/content/programmatic_job_definition_with_java/[JBeret Programmatic Job Definition].
+
+It is possible to provide a `Job` definition via a CDI producer (instead of using XML):
+
+[source,java]
+----
+@ApplicationScoped
+public static class JobProducer {
+    @Produces
+    @Named
+    public Job job() {
+        return new JobBuilder("job")
+                .step(new StepBuilder("step").batchlet("batchlet", new String[] {}).build())
+                .build();
+    }
+}
+----
+
+A `Job` registered with CDI will be named by the `@Named#value` attribute or by the method name. The
+`@Named` annotation is required regardless. This is the named used by `JobOperator` to locate and execute a `Job`.
+
+== Scheduler
+
+The https://github.com/jberet/jberet-schedule[JBeret Scheduler] is integrated out of the box in this extension.
+
+To schedule a Job execution, please refer to the `quarkus.jberet.job."job-name".cron` and
+`quarkus.jberet.job."job-name".params."param-key"` configurations.
+
+A Job can also be scheduled programmatically, using the `JobScheduler` API and the Quarkus startup event:
+
+[source,java]
+----
+@ApplicationScoped
+public class Scheduler {
+    @Inject
+    JobScheduler jobScheduler;
+
+    void onStart(@Observes StartupEvent startupEvent) {
+        final JobScheduleConfig scheduleConfig = JobScheduleConfigBuilder.newInstance()
+                .jobName("scheduler")
+                .initialDelay(0)
+                .build();
+
+        jobScheduler.schedule(scheduleConfig);
+    }
+}
+----
+
+[NOTE]
+====
+The `JobScheduler` does not support persistent schedules.
+====
+
+== REST API
+
+The https://github.com/jberet/jberet-rest[JBeret REST] is integrated as separate extension that can be easily added
+to your build file:
+
+[source,xml,role="primary asciidoc-tabs-target-sync-cli asciidoc-tabs-target-sync-maven"]
+.pom.xml
+----
+<dependency>
+    <groupId>io.quarkiverse.jberet</groupId>
+    <artifactId>quarkus-jberet-rest</artifactId>
+    <version>{project-version}</version>
+</dependency>
+----
+
+[source,gradle,role="secondary asciidoc-tabs-target-sync-gradle"]
+.build.gradle
+----
+implementation("io.quarkiverse.jberet:quarkus-jberet-rest:{project-version}")
+----
+
+The https://github.com/jberet/jberet-rest[JBeret REST] API, provides REST resources to several operations around the
+Batch API: starting and stopping jobs, querying the status of a job, schedule a job, and more. The extension
+includes a REST client to simplify the REST API calls:
+
+[source,java]
+----
+@Inject
+BatchClient batchClient;
+
+void start() throws Exception {
+    JobExecutionEntity jobExecutionEntity = batchClient.startJob("batchlet", new Properties());
+}
+----
+
+== Example Applications
+
+Example applications can be found inside the `integration-tests` folder:
+
+- `chunk` - A simple Job that reads, processes, and stores data from a file.
+- `jdbc-repository` - A Job that uses a `jdbc` datasource to store JBeret and Job metadata.
+- `scheduler` - Schedule a Job to run every 10 seconds
+
+Or take a look into the https://github.com/radcortez/wow-auctions[World of Warcraft Auctions - Batch Application]. It
+downloads the World of Warcraft Auction House data and provides statistics about items prices.
+
+== Native Image Limitations
+
+The Quakus JBeret Extension fully supports the Graal VM Native Image with the following exceptions:
+
+- https://jberet.gitbooks.io/jberet-user-guide/content/develop_batch_artifacts_in_script_languages/[Scripting Languages]. While `Javascript` should work, it is unlikely that other scripting languages will be supported in
+https://github.com/oracle/graaljs/blob/master/docs/user/ScriptEngine.md[Graal] via JSR-223.
+
+[[extension-configuration-reference]]
+== Extension Configuration Reference
+
+include::includes/quarkus-jberet.adoc[leveloffset=+1, opts=optional]
