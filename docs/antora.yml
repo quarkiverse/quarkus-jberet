@@ -1,5 +1,5 @@
 name: quarkus-jberet
-title: Quarkus JBeret
+title: JBeret
 version: dev
 nav:
   - modules/ROOT/nav.adoc
