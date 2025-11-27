@@ -40,10 +40,9 @@ public class ChunkTest {
     @RegisterExtension
     static QuarkusUnitTest TEST = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addClasses(PeopleReader.class, PeopleWriter.class, PeopleProcessor.class,
-                            PeopleDatabase.class, Person.class)
                     .addAsResource("people.txt")
-                    .addAsManifestResource("chunk.xml", "batch-jobs/chunk.xml"));
+                    .addAsManifestResource("chunk.xml", "batch-jobs/chunk.xml"))
+            .overrideRuntimeConfigKey("quarkus.transaction-manager.default-transaction-timeout", "10s");
 
     @Inject
     PeopleDatabase database;
