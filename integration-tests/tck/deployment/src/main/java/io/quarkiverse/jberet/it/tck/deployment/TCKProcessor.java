@@ -18,14 +18,10 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
-import io.quarkus.resteasy.common.spi.ResteasyJaxrsProviderBuildItem;
 
 public class TCKProcessor {
     @BuildStep
-    public void tck(
-            BuildProducer<IndexDependencyBuildItem> indexDependency,
-            BuildProducer<ResteasyJaxrsProviderBuildItem> providers) {
-
+    public void tck(BuildProducer<IndexDependencyBuildItem> indexDependency) {
         indexDependency.produce(new IndexDependencyBuildItem("jakarta.batch", "com.ibm.jbatch.tck"));
     }
 
