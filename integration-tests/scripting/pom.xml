@@ -1,31 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>io.quarkiverse.jberet</groupId>
-        <artifactId>quarkus-jberet-integration-tests</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
-    </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.quarkiverse.jberet</groupId>
+    <artifactId>quarkus-jberet-integration-tests</artifactId>
+    <version>2.7.1-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>quarkus-jberet-integration-tests-scripting</artifactId>
+  <artifactId>quarkus-jberet-integration-tests-scripting</artifactId>
+  <name>Quarkus - JBeret - Integrations Tests - Scripting</name>
 
-    <name>Quarkus - JBeret - Integrations Tests - Scripting</name>
+  <properties>
+    <version.groovy>3.0.25</version.groovy>
+  </properties>
 
-    <properties>
-        <version.groovy>3.0.25</version.groovy>
-    </properties>
+  <dependencies>
+    <dependency>
+      <groupId>io.quarkiverse.jberet</groupId>
+      <artifactId>quarkus-jberet-rest</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest-jackson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest-client-jackson</artifactId>
+    </dependency>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-jsr223</artifactId>
-            <version>${version.groovy}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-            <version>${version.groovy}</version>
-        </dependency>
-    </dependencies>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-jsr223</artifactId>
+      <version>${version.groovy}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy</artifactId>
+      <version>${version.groovy}</version>
+    </dependency>
+  </dependencies>
 
 </project>

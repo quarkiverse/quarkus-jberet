@@ -172,6 +172,32 @@ to your build file:
 implementation("io.quarkiverse.jberet:quarkus-jberet-rest:{project-version}")
 ----
 
+https://github.com/jberet/jberet-rest[JBeret REST] requires either
+https://quarkus.io/version/main/guides/rest[Quarkus REST] (recommended) or
+https://quarkus.io/version/main/guides/resteasy[Quarkus RESTEasy Classic]. If any of these are not yet available in
+the project, one must be added:
+
+[source,xml,role="primary asciidoc-tabs-target-sync-cli asciidoc-tabs-target-sync-maven"]
+.pom.xml
+----
+<dependency>
+  <groupId>io.quarkus</groupId>
+  <artifactId>quarkus-rest-jackson</artifactId>
+</dependency>
+
+<dependency>
+  <groupId>io.quarkus</groupId>
+  <artifactId>quarkus-rest-client-jackson</artifactId>
+</dependency>
+----
+
+[source,gradle,role="secondary asciidoc-tabs-target-sync-gradle"]
+.build.gradle
+----
+implementation("io.quarkus:quarkus-rest-jackson")
+implementation("io.quarkus:quarkus-rest-client-jackson")
+----
+
 The https://github.com/jberet/jberet-rest[JBeret REST] API, provides REST resources to several operations around the
 Batch API: starting and stopping jobs, querying the status of a job, schedule a job, and more. The extension
 includes a REST client to simplify the REST API calls:
@@ -201,7 +227,8 @@ downloads the World of Warcraft Auction House data and provides statistics about
 
 The Quakus JBeret Extension fully supports the Graal VM Native Image with the following exceptions:
 
-- https://jberet.gitbooks.io/jberet-user-guide/content/develop_batch_artifacts_in_script_languages/[Scripting Languages]. While `Javascript` should work, it is unlikely that other scripting languages will be supported in
+- https://jberet.gitbooks.io/jberet-user-guide/content/develop_batch_artifacts_in_script_languages/[Scripting Languages].
+While `Javascript` should work, it is unlikely that other scripting languages will be supported in
 https://github.com/oracle/graaljs/blob/master/docs/user/ScriptEngine.md[Graal] via JSR-223.
 
 [[extension-configuration-reference]]
