@@ -15,7 +15,6 @@ import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobTask;
 import org.jberet.spi.JobXmlResolver;
 
-import io.quarkiverse.jberet.runtime.JBeretDataHolder.JBeretData;
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.InjectableBean;
 
@@ -30,8 +29,7 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
     public QuarkusBatchEnvironment(
             final JobRepository jobRepository,
             final JobExecutor jobExecutor,
-            final TransactionManager transactionManager,
-            final JBeretData data) {
+            final TransactionManager transactionManager) {
 
         this.artifactFactory = new QuarkusArtifactFactory();
         this.jobExecutor = jobExecutor;
