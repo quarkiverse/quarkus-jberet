@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,9 +30,7 @@ import org.jberet.creation.ArchiveXmlLoader;
 import org.jberet.creation.BatchBeanProducer;
 import org.jberet.job.model.Decision;
 import org.jberet.job.model.Flow;
-import org.jberet.job.model.InheritableJobElement;
 import org.jberet.job.model.Job;
-import org.jberet.job.model.JobElement;
 import org.jberet.job.model.RefArtifact;
 import org.jberet.job.model.Script;
 import org.jberet.job.model.Split;
@@ -59,6 +58,8 @@ import io.quarkiverse.jberet.runtime.JBeretInMemoryJobRepositoryProducer;
 import io.quarkiverse.jberet.runtime.JBeretJdbcJobRepositoryProducer;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
+import io.quarkiverse.jberet.runtime.JobProcessor;
+import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
 import io.quarkiverse.jberet.runtime.JobsProducer;
 import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
 import io.quarkiverse.jberet.runtime.scope.QuarkusJobScopedContextImpl;
@@ -216,8 +217,24 @@ class JBeretProcessor {
             refsInfos.putAll(getRefsClassInfos(combinedIndex.getIndex().getAllKnownImplementations(component)));
         }
 
+        JobProcessor jobProcessor = new JobProcessorBuilder()
+                .refArtifactConsumer(new Consumer<RefArtifact>() {
+                    @Override
+                    public void accept(RefArtifact refArtifact) {
+                        if (refArtifact.getRef() != null && !refArtifact.getRef().isEmpty()) {
+                            // May not be able to resolve an artifact, if the ref is a job parameter expression
+                            ClassInfo resolvedArtifact = refsInfos.get(refArtifact.getRef());
+                            refArtifacts.produce(new RefArtifactBuildItem(refArtifact, resolvedArtifact));
+                        }
+                        if (refArtifact.getScript() != null && refArtifact.getScript().getSrc() != null) {
+                            watchedFiles.produce(new HotDeploymentWatchedFileBuildItem(refArtifact.getScript().getSrc()));
+                        }
+                    }
+                })
+                .build();
+
         for (BatchJobBuildItem batchJob : batchJobs) {
-            processJob(batchJob.getJob(), refsInfos, refArtifacts, watchedFiles);
+            jobProcessor.processJob(batchJob.getJob());
         }
     }
 
@@ -428,91 +445,5 @@ class JBeretProcessor {
             }
         }
         return refNames;
-    }
-
-    private static void processJob(
-            Job job,
-            Map<String, ClassInfo> refsInfos,
-            BuildProducer<RefArtifactBuildItem> refArtifacts,
-            BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles) {
-
-        if (job.getListeners() != null) {
-            for (RefArtifact listener : job.getListeners().getListeners()) {
-                processJob(listener, refsInfos, refArtifacts, watchedFiles);
-            }
-        }
-
-        for (JobElement jobElement : job.getJobElements()) {
-            processJob(jobElement, refsInfos, refArtifacts, watchedFiles);
-        }
-
-        for (InheritableJobElement inheritingJobElement : job.getInheritingJobElements()) {
-            processJob(inheritingJobElement, refsInfos, refArtifacts, watchedFiles);
-        }
-    }
-
-    private static void processJob(
-            JobElement jobElement,
-            Map<String, ClassInfo> refsInfos,
-            BuildProducer<RefArtifactBuildItem> refArtifacts,
-            BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles) {
-
-        if (jobElement instanceof Step step) {
-            processJob(step.getBatchlet(), refsInfos, refArtifacts, watchedFiles);
-
-            if (step.getListeners() != null) {
-                for (RefArtifact listener : step.getListeners().getListeners()) {
-                    processJob(listener, refsInfos, refArtifacts, watchedFiles);
-                }
-            }
-
-            if (step.getChunk() != null) {
-                processJob(step.getChunk().getReader(), refsInfos, refArtifacts, watchedFiles);
-                processJob(step.getChunk().getProcessor(), refsInfos, refArtifacts, watchedFiles);
-                processJob(step.getChunk().getWriter(), refsInfos, refArtifacts, watchedFiles);
-                processJob(step.getChunk().getCheckpointAlgorithm(), refsInfos, refArtifacts, watchedFiles);
-            }
-
-            if (step.getPartition() != null) {
-                processJob(step.getPartition().getMapper(), refsInfos, refArtifacts, watchedFiles);
-                processJob(step.getPartition().getCollector(), refsInfos, refArtifacts, watchedFiles);
-                processJob(step.getPartition().getAnalyzer(), refsInfos, refArtifacts, watchedFiles);
-                processJob(step.getPartition().getReducer(), refsInfos, refArtifacts, watchedFiles);
-            }
-        }
-
-        if (jobElement instanceof Flow flow) {
-            for (JobElement flowElement : flow.getJobElements()) {
-                processJob(flowElement, refsInfos, refArtifacts, watchedFiles);
-            }
-        }
-
-        if (jobElement instanceof Split split) {
-            for (Flow flow : split.getFlows()) {
-                processJob(flow, refsInfos, refArtifacts, watchedFiles);
-            }
-        }
-
-        if (jobElement instanceof Decision decision) {
-            processJob(new RefArtifact(decision.getRef()), refsInfos, refArtifacts, watchedFiles);
-        }
-    }
-
-    private static void processJob(
-            RefArtifact refArtifact,
-            Map<String, ClassInfo> refsInfos,
-            BuildProducer<RefArtifactBuildItem> refArtifacts,
-            BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles) {
-
-        if (refArtifact != null) {
-            if (refArtifact.getRef() != null && !refArtifact.getRef().isEmpty()) {
-                // May not be able to resolve an artifact, if the ref is a job parameter expression
-                ClassInfo resolvedArtifact = refsInfos.get(refArtifact.getRef());
-                refArtifacts.produce(new RefArtifactBuildItem(refArtifact, resolvedArtifact));
-            }
-            if (refArtifact.getScript() != null && refArtifact.getScript().getSrc() != null) {
-                watchedFiles.produce(new HotDeploymentWatchedFileBuildItem(refArtifact.getScript().getSrc()));
-            }
-        }
     }
 }
