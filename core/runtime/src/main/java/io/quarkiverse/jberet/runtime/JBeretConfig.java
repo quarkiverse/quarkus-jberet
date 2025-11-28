@@ -1,16 +1,28 @@
 package io.quarkiverse.jberet.runtime;
 
-import static io.quarkus.datasource.common.runtime.DataSourceUtil.*;
+import static io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig.DEFAULT;
+import static io.quarkus.datasource.common.runtime.DataSourceUtil.DEFAULT_DATASOURCE_NAME;
+import static java.util.Collections.emptyList;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
+import org.jberet.job.model.Job;
+import org.jberet.job.model.Listeners;
+import org.jberet.job.model.RefArtifact;
+import org.jberet.job.model.Step;
+
+import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithConverter;
 import io.smallrye.config.WithDefault;
+import io.smallrye.config.WithDefaults;
 import io.smallrye.config.WithName;
+import io.smallrye.config.WithUnnamedKey;
 
 @ConfigMapping(prefix = JBeretConfig.PREFIX)
 @ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
@@ -20,6 +32,8 @@ public interface JBeretConfig {
     /**
      * The JBeret Jobs configuration by name.
      */
+    @WithUnnamedKey(DEFAULT)
+    @WithDefaults
     Map<String, JobConfig> job();
 
     /**
@@ -33,6 +47,8 @@ public interface JBeretConfig {
     Optional<Integer> maxAsync();
 
     interface JobConfig {
+        String DEFAULT = "<default>";
+
         /**
          * The Job schedule in Cron format, see <a href="https://en.wikipedia.org/wiki/Cron">cron</a>.
          */
@@ -42,6 +58,45 @@ public interface JBeretConfig {
          * The Job parameters.
          */
         Map<String, String> params();
+
+        /**
+         * A list of {@link jakarta.batch.api.listener.JobListener} bean names or FQNs to execute with the Job.
+         * <p>
+         * The unnamed configuration <code>quarkus.jberet.job.job-listeners</code>, applies to all configured jobs.
+         */
+        Optional<List<RefArtifact>> jobListeners();
+
+        /**
+         * A list of {@link jakarta.batch.api.listener.StepListener} bean names or FQNs to execute with the Job.
+         * <p>
+         * The unnamed configuration <code>quarkus.jberet.job.step-listeners</code>, applies to all configured jobs.
+         */
+        Optional<List<RefArtifact>> stepListeners();
+
+        default JobProcessor listeners() {
+            return new JobProcessorBuilder()
+                    .jobConsumer(new Consumer<Job>() {
+                        @Override
+                        public void accept(Job job) {
+                            List<RefArtifact> listeners = jobListeners().orElse(emptyList());
+                            if (job.getListeners() == null) {
+                                job.setListeners(new Listeners());
+                            }
+                            job.getListeners().getListeners().addAll(listeners);
+                        }
+                    })
+                    .stepConsumer(new Consumer<Step>() {
+                        @Override
+                        public void accept(Step step) {
+                            List<RefArtifact> listeners = stepListeners().orElse(emptyList());
+                            if (step.getListeners() == null) {
+                                step.setListeners(new Listeners());
+                            }
+                            step.getListeners().getListeners().addAll(listeners);
+                        }
+                    })
+                    .build();
+        }
     }
 
     interface Repository {

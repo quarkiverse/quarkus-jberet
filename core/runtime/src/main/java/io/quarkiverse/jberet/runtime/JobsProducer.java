@@ -1,34 +1,41 @@
 package io.quarkiverse.jberet.runtime;
 
-import java.util.ArrayList;
+import static io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig.DEFAULT;
+
 import java.util.List;
-import java.util.Set;
+import java.util.function.Function;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
-import jakarta.enterprise.inject.spi.Bean;
-import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.inject.Inject;
 
 import org.jberet.job.model.Job;
 
+import io.quarkus.arc.InjectableInstance;
+import io.quarkus.arc.InstanceHandle;
 import io.quarkus.arc.Unremovable;
 
 @Unremovable
 @ApplicationScoped
 public class JobsProducer {
     @Inject
-    BeanManager beanManager;
+    JBeretConfig config;
+    @Inject
+    @Any
+    InjectableInstance<Job> jobs;
 
     public List<Job> getJobs() {
-        List<Job> jobs = new ArrayList<>();
-        Set<Bean<?>> beans = beanManager.getBeans(Job.class, Any.Literal.INSTANCE);
-        for (Bean<?> bean : beans) {
-            String name = bean.getName();
-            Job job = (Job) beanManager.getReference(bean, Job.class, beanManager.createCreationalContext(bean));
-            job.setJobXmlName(name);
-            jobs.add(job);
-        }
-        return jobs;
+        JobProcessor globalListeners = config.job().get(DEFAULT).listeners();
+        return jobs.handlesStream()
+                .map(new Function<InstanceHandle<Job>, Job>() {
+                    @Override
+                    public Job apply(InstanceHandle<Job> jobInstanceHandle) {
+                        Job job = jobInstanceHandle.get();
+                        job.setJobXmlName(jobInstanceHandle.getBean().getName());
+                        globalListeners.processJob(job);
+                        config.job().get(jobInstanceHandle.getBean().getName()).listeners().processJob(job);
+                        return job;
+                    }
+                }).toList();
     }
 }

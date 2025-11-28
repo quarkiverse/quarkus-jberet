@@ -3,6 +3,7 @@ package io.quarkiverse.jberet.deployment;
 import static io.quarkiverse.jberet.deployment.DotNames.JOB;
 import static io.quarkiverse.jberet.deployment.DotNames.JOB_ELEMENTS;
 import static io.quarkiverse.jberet.deployment.DotNames.JOB_REPOSITORY;
+import static io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig.DEFAULT;
 import static java.util.stream.Collectors.toList;
 import static org.jberet.spi.JobXmlResolver.DEFAULT_PATH;
 
@@ -195,12 +196,17 @@ class JBeretProcessor {
         JobXmlResolver jobXmlResolver = new ChainedJobXmlResolver(ServiceLoader.load(JobXmlResolver.class, classLoader),
                 new QuarkusJobXmlResolver(buildTimeConfig, classLoader));
 
+        JobProcessor globalListeners = config.job().get(DEFAULT).listeners();
         for (String jobXmlName : jobXmlResolver.getJobXmlNames(classLoader)) {
             Job job = ArchiveXmlLoader.loadJobXml(jobXmlName, classLoader, jobs, jobXmlResolver);
             job.setJobXmlName(jobXmlName);
-            JobConfig jobConfig = config.job().get(jobXmlName);
+            globalListeners.processJob(job);
+
             watchedFiles.produce(new HotDeploymentWatchedFileBuildItem(DEFAULT_PATH + jobXmlName + ".xml"));
-            batchJobs.produce(new BatchJobBuildItem(job, parseCron(job, jobConfig)));
+
+            config.job().get(jobXmlName).listeners().processJob(job);
+            batchJobs.produce(new BatchJobBuildItem(job, parseCron(job, config.job().get(jobXmlName))));
+
             log.debug("Processed job with ID " + job.getId() + "  from file " + jobXmlName);
         }
     }
@@ -412,7 +418,7 @@ class JBeretProcessor {
     }
 
     private static String parseCron(Job job, JobConfig jobConfig) {
-        if (jobConfig == null || jobConfig.cron().isEmpty()) {
+        if (jobConfig.cron().isEmpty()) {
             return null;
         }
 
