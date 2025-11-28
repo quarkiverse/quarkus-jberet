@@ -1,0 +1,8 @@
+<job id="global-listeners-job" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+  <step id="step" next="anotherStep">
+    <batchlet ref="batchlet"/>
+  </step>
+  <step id="anotherStep">
+    <batchlet ref="batchlet"/>
+  </step>
+</job>
