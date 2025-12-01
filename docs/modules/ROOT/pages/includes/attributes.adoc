@@ -1,2 +1,2 @@
-:project-version: 2.7.0
+:project-version: 2.8.0
 :quarkus-minimum-version: 3.28.1
