@@ -15,6 +15,8 @@ import org.jberet.job.model.RefArtifact;
 import org.jberet.job.model.Step;
 
 import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
+import io.quarkus.runtime.annotations.ConfigDocMapKey;
+import io.quarkus.runtime.annotations.ConfigDocSection;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
@@ -34,11 +36,13 @@ public interface JBeretConfig {
      */
     @WithUnnamedKey(DEFAULT)
     @WithDefaults
+    @ConfigDocMapKey("job-name")
     Map<String, JobConfig> job();
 
     /**
      * The JBeret Repository configuration.
      */
+    @ConfigDocSection(generated = true)
     Repository repository();
 
     /**
@@ -101,7 +105,7 @@ public interface JBeretConfig {
 
     interface Repository {
         /**
-         * The repository type to store JBeret and Job data. A <code>jdbc</code>jdbc type requires a JDBC datasource.
+         * The repository type to store JBeret and Job data. A <code>jdbc</code> jdbc type requires a JDBC datasource.
          */
         @WithConverter(SkewerConverter.class)
         @WithDefault(JBeretInMemoryJobRepositoryProducer.TYPE)
@@ -114,7 +118,7 @@ public interface JBeretConfig {
 
         interface Jdbc {
             /**
-             * The datasource name for the JBeret Repository.
+             * The datasource name for the JBeret Repository. By default, it uses the default (unnamed) datasource.
              */
             @WithDefault(DEFAULT_DATASOURCE_NAME)
             String datasource();
@@ -129,6 +133,10 @@ public interface JBeretConfig {
             /**
              * Custom queries to be used to query JBeret tables; this is mandatory if custom table names are used
              * in custom DDL filename.
+             * <p>
+             * The file must be of type <code>properties</code>, and must follow the exact template as defined in
+             * <a href=
+             * "https://raw.githubusercontent.com/jberet/jsr352/refs/tags/3.1.0.Final/jberet-core/src/main/resources/sql/jberet-sql.properties">jberet.properties</a>
              */
             @WithName("sql-file")
             Optional<String> sqlFileName();
@@ -140,7 +148,7 @@ public interface JBeretConfig {
             Optional<String> dbTablePrefix();
 
             /**
-             * IJBeret tables name suffix.
+             * JBeret tables name suffix.
              */
             @WithName("db-table-suffix")
             Optional<String> dbTableSuffix();

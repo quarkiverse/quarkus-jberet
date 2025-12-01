@@ -49,6 +49,139 @@ endif::add-copy-button-to-env-var[]
 |list of link:https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html[Pattern]
 |
 
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-max-async]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-max-async[`quarkus.jberet.max-async`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.max-async+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+The maximum number of threads allowed to be executed.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_MAX_ASYNC+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_MAX_ASYNC+++`
+endif::add-copy-button-to-env-var[]
+--
+|int
+|
+
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-cron]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-cron[`quarkus.jberet.job.cron`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.job.cron+++[]
+endif::add-copy-button-to-config-props[]
+
+
+`quarkus.jberet.job."job-name".cron`
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.job."job-name".cron+++[]
+endif::add-copy-button-to-config-props[]
+
+[.description]
+--
+The Job schedule in Cron format, see link:https://en.wikipedia.org/wiki/Cron[cron].
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB_CRON+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_JOB_CRON+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|
+
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-params-params]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-params-params[`quarkus.jberet.job.params."params"`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.job.params."params"+++[]
+endif::add-copy-button-to-config-props[]
+
+
+`quarkus.jberet.job."job-name".params."params"`
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.job."job-name".params."params"+++[]
+endif::add-copy-button-to-config-props[]
+
+[.description]
+--
+The Job parameters.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB_PARAMS__PARAMS_+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_JOB_PARAMS__PARAMS_+++`
+endif::add-copy-button-to-env-var[]
+--
+|Map<String,String>
+|
+
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-job-listeners]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-job-listeners[`quarkus.jberet.job.job-listeners`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.job.job-listeners+++[]
+endif::add-copy-button-to-config-props[]
+
+
+`quarkus.jberet.job."job-name".job-listeners`
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.job."job-name".job-listeners+++[]
+endif::add-copy-button-to-config-props[]
+
+[.description]
+--
+A list of `jakarta.batch.api.listener.JobListener` bean names or FQNs to execute with the Job.
+
+The unnamed configuration `quarkus.jberet.job.job-listeners`, applies to all configured jobs.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB_JOB_LISTENERS+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_JOB_JOB_LISTENERS+++`
+endif::add-copy-button-to-env-var[]
+--
+|list of RefArtifact
+|
+
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-step-listeners]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-step-listeners[`quarkus.jberet.job.step-listeners`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.job.step-listeners+++[]
+endif::add-copy-button-to-config-props[]
+
+
+`quarkus.jberet.job."job-name".step-listeners`
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.job."job-name".step-listeners+++[]
+endif::add-copy-button-to-config-props[]
+
+[.description]
+--
+A list of `jakarta.batch.api.listener.StepListener` bean names or FQNs to execute with the Job.
+
+The unnamed configuration `quarkus.jberet.job.step-listeners`, applies to all configured jobs.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB_STEP_LISTENERS+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_JOB_STEP_LISTENERS+++`
+endif::add-copy-button-to-env-var[]
+--
+|list of RefArtifact
+|
+
+h|[[quarkus-jberet_section_quarkus-jberet-repository]] [.section-name.section-level0]##link:#quarkus-jberet_section_quarkus-jberet-repository[The JBeret Repository configuration]##
+h|Type
+h|Default
+
 a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository-type]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository-type[`quarkus.jberet.repository.type`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.repository.type+++[]
@@ -57,7 +190,7 @@ endif::add-copy-button-to-config-props[]
 
 [.description]
 --
-The repository type to store JBeret and Job data. A `jdbc`jdbc type requires a JDBC datasource.
+The repository type to store JBeret and Job data. A `jdbc` jdbc type requires a JDBC datasource.
 
 
 ifdef::add-copy-button-to-env-var[]
@@ -78,7 +211,7 @@ endif::add-copy-button-to-config-props[]
 
 [.description]
 --
-The datasource name for the JBeret Repository.
+The datasource name for the JBeret Repository. By default, it uses the default (unnamed) datasource.
 
 
 ifdef::add-copy-button-to-env-var[]
@@ -122,6 +255,8 @@ endif::add-copy-button-to-config-props[]
 --
 Custom queries to be used to query JBeret tables; this is mandatory if custom table names are used in custom DDL filename.
 
+The file must be of type `properties`, and must follow the exact template as defined in link:https://raw.githubusercontent.com/jberet/jsr352/refs/tags/3.1.0.Final/jberet-core/src/main/resources/sql/jberet-sql.properties[jberet.properties]
+
 
 ifdef::add-copy-button-to-env-var[]
 Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_REPOSITORY_JDBC_SQL_FILE+++[]
@@ -162,7 +297,7 @@ endif::add-copy-button-to-config-props[]
 
 [.description]
 --
-IJBeret tables name suffix.
+JBeret tables name suffix.
 
 
 ifdef::add-copy-button-to-env-var[]
@@ -175,134 +310,6 @@ endif::add-copy-button-to-env-var[]
 |string
 |
 
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-max-async]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-max-async[`quarkus.jberet.max-async`]##
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.max-async+++[]
-endif::add-copy-button-to-config-props[]
-
-
-[.description]
---
-The maximum number of threads allowed to be executed.
-
-
-ifdef::add-copy-button-to-env-var[]
-Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_MAX_ASYNC+++[]
-endif::add-copy-button-to-env-var[]
-ifndef::add-copy-button-to-env-var[]
-Environment variable: `+++QUARKUS_JBERET_MAX_ASYNC+++`
-endif::add-copy-button-to-env-var[]
---
-|int
-|
-
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-cron]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-cron[`quarkus.jberet.job.cron`]##
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job.cron+++[]
-endif::add-copy-button-to-config-props[]
-
-
-`quarkus.jberet.job."job".cron`
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job."job".cron+++[]
-endif::add-copy-button-to-config-props[]
-
-[.description]
---
-The Job schedule in Cron format, see link:https://en.wikipedia.org/wiki/Cron[cron].
-
-
-ifdef::add-copy-button-to-env-var[]
-Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB_CRON+++[]
-endif::add-copy-button-to-env-var[]
-ifndef::add-copy-button-to-env-var[]
-Environment variable: `+++QUARKUS_JBERET_JOB_CRON+++`
-endif::add-copy-button-to-env-var[]
---
-|string
-|
-
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-params-params]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-params-params[`quarkus.jberet.job.params."params"`]##
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job.params."params"+++[]
-endif::add-copy-button-to-config-props[]
-
-
-`quarkus.jberet.job."job".params."params"`
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job."job".params."params"+++[]
-endif::add-copy-button-to-config-props[]
-
-[.description]
---
-The Job parameters.
-
-
-ifdef::add-copy-button-to-env-var[]
-Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB_PARAMS__PARAMS_+++[]
-endif::add-copy-button-to-env-var[]
-ifndef::add-copy-button-to-env-var[]
-Environment variable: `+++QUARKUS_JBERET_JOB_PARAMS__PARAMS_+++`
-endif::add-copy-button-to-env-var[]
---
-|Map<String,String>
-|
-
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-job-listeners]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-job-listeners[`quarkus.jberet.job.job-listeners`]##
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job.job-listeners+++[]
-endif::add-copy-button-to-config-props[]
-
-
-`quarkus.jberet.job."job".job-listeners`
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job."job".job-listeners+++[]
-endif::add-copy-button-to-config-props[]
-
-[.description]
---
-A list of `jakarta.batch.api.listener.JobListener` bean names or FQNs to execute with the Job.
-
-The unnamed configuration `quarkus.jberet.job.job-listeners`, applies to all configured jobs.
-
-
-ifdef::add-copy-button-to-env-var[]
-Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB_JOB_LISTENERS+++[]
-endif::add-copy-button-to-env-var[]
-ifndef::add-copy-button-to-env-var[]
-Environment variable: `+++QUARKUS_JBERET_JOB_JOB_LISTENERS+++`
-endif::add-copy-button-to-env-var[]
---
-|list of RefArtifact
-|
-
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-step-listeners]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-step-listeners[`quarkus.jberet.job.step-listeners`]##
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job.step-listeners+++[]
-endif::add-copy-button-to-config-props[]
-
-
-`quarkus.jberet.job."job".step-listeners`
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job."job".step-listeners+++[]
-endif::add-copy-button-to-config-props[]
-
-[.description]
---
-A list of `jakarta.batch.api.listener.StepListener` bean names or FQNs to execute with the Job.
-
-The unnamed configuration `quarkus.jberet.job.step-listeners`, applies to all configured jobs.
-
-
-ifdef::add-copy-button-to-env-var[]
-Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB_STEP_LISTENERS+++[]
-endif::add-copy-button-to-env-var[]
-ifndef::add-copy-button-to-env-var[]
-Environment variable: `+++QUARKUS_JBERET_JOB_STEP_LISTENERS+++`
-endif::add-copy-button-to-env-var[]
---
-|list of RefArtifact
-|
 
 |===
 
