@@ -49,7 +49,7 @@ endif::add-copy-button-to-env-var[]
 |list of link:https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html[Pattern]
 |
 
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-max-async]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-max-async[`quarkus.jberet.max-async`]##
+a| [[quarkus-jberet_quarkus-jberet-max-async]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-max-async[`quarkus.jberet.max-async`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.max-async+++[]
 endif::add-copy-button-to-config-props[]
@@ -68,58 +68,6 @@ Environment variable: `+++QUARKUS_JBERET_MAX_ASYNC+++`
 endif::add-copy-button-to-env-var[]
 --
 |int
-|
-
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-cron]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-cron[`quarkus.jberet.job.cron`]##
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job.cron+++[]
-endif::add-copy-button-to-config-props[]
-
-
-`quarkus.jberet.job."job-name".cron`
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job."job-name".cron+++[]
-endif::add-copy-button-to-config-props[]
-
-[.description]
---
-The Job schedule in Cron format, see link:https://en.wikipedia.org/wiki/Cron[cron].
-
-
-ifdef::add-copy-button-to-env-var[]
-Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB_CRON+++[]
-endif::add-copy-button-to-env-var[]
-ifndef::add-copy-button-to-env-var[]
-Environment variable: `+++QUARKUS_JBERET_JOB_CRON+++`
-endif::add-copy-button-to-env-var[]
---
-|string
-|
-
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-params-params]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-params-params[`quarkus.jberet.job.params."params"`]##
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job.params."params"+++[]
-endif::add-copy-button-to-config-props[]
-
-
-`quarkus.jberet.job."job-name".params."params"`
-ifdef::add-copy-button-to-config-props[]
-config_property_copy_button:+++quarkus.jberet.job."job-name".params."params"+++[]
-endif::add-copy-button-to-config-props[]
-
-[.description]
---
-The Job parameters.
-
-
-ifdef::add-copy-button-to-env-var[]
-Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB_PARAMS__PARAMS_+++[]
-endif::add-copy-button-to-env-var[]
-ifndef::add-copy-button-to-env-var[]
-Environment variable: `+++QUARKUS_JBERET_JOB_PARAMS__PARAMS_+++`
-endif::add-copy-button-to-env-var[]
---
-|Map<String,String>
 |
 
 a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-job-listeners]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-job-listeners[`quarkus.jberet.job.job-listeners`]##
@@ -176,6 +124,50 @@ Environment variable: `+++QUARKUS_JBERET_JOB_STEP_LISTENERS+++`
 endif::add-copy-button-to-env-var[]
 --
 |list of RefArtifact
+|
+
+a| [[quarkus-jberet_quarkus-jberet-job-job-name-cron]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-job-name-cron[`quarkus.jberet.job."job-name".cron`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.job."job-name".cron+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+The Job schedule in Cron format.
+
+The syntax used for Cron expressions is based on Quartz. See link:https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html[Cron Trigger].
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB__JOB_NAME__CRON+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_JOB__JOB_NAME__CRON+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|
+
+a| [[quarkus-jberet_quarkus-jberet-job-job-name-params-params]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-job-name-params-params[`quarkus.jberet.job."job-name".params."params"`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.job."job-name".params."params"+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+The Job parameters.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_JOB__JOB_NAME__PARAMS__PARAMS_+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_JOB__JOB_NAME__PARAMS__PARAMS_+++`
+endif::add-copy-button-to-env-var[]
+--
+|Map<String,String>
 |
 
 h|[[quarkus-jberet_section_quarkus-jberet-repository]] [.section-name.section-level0]##link:#quarkus-jberet_section_quarkus-jberet-repository[The JBeret Repository configuration]##

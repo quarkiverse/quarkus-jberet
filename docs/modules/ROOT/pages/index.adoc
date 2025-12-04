@@ -119,14 +119,13 @@ public static class JobProducer {
 A `Job` registered with CDI will be named by the `@Named#value` attribute or by the method name. The
 `@Named` annotation is required regardless. This is the named used by `JobOperator` to locate and execute a `Job`.
 
+// TODO - Rewrite
 == Scheduler
 
 The https://github.com/jberet/jberet-schedule[JBeret Scheduler] is integrated out of the box in this extension.
 
-To schedule a Job execution, please refer to the `quarkus.jberet.job."job-name".cron` and
-`quarkus.jberet.job."job-name".params."param-key"` configurations.
-
-A Job can also be scheduled programmatically, using the `JobScheduler` API and the Quarkus startup event:
+To schedule a Job execution, please refer to the `quarkus.jberet.job."job-name".cron` configuration. A Job can also be
+scheduled programmatically, using the `JobScheduler` API and the Quarkus startup event:
 
 [source,java]
 ----
@@ -136,7 +135,7 @@ public class Scheduler {
     JobScheduler jobScheduler;
 
     void onStart(@Observes StartupEvent startupEvent) {
-        final JobScheduleConfig scheduleConfig = JobScheduleConfigBuilder.newInstance()
+        JobScheduleConfig scheduleConfig = JobScheduleConfigBuilder.newInstance()
                 .jobName("scheduler")
                 .initialDelay(0)
                 .build();

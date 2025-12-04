@@ -11,7 +11,8 @@ import io.smallrye.common.cpu.ProcessorInfo;
 class QuarkusJobExecutor extends JobExecutor {
     private final int maxPoolSize;
 
-    public QuarkusJobExecutor(Executor delegate, final ThreadPoolConfig threadPoolConfig, final JBeretConfig config) {
+    public QuarkusJobExecutor(final Executor delegate, final JBeretRuntimeConfig config,
+            final ThreadPoolConfig threadPoolConfig) {
         super(delegate);
 
         this.maxPoolSize = config.maxAsync().map(maxAsync -> {

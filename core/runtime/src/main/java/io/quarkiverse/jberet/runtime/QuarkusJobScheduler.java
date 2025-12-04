@@ -1,72 +1,119 @@
 package io.quarkiverse.jberet.runtime;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
-
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import jakarta.batch.operations.JobOperator;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import org.jberet.schedule.JobSchedule;
 import org.jberet.schedule.JobScheduleConfig;
+import org.jberet.schedule.JobScheduleConfigBuilder;
 import org.jberet.schedule.JobScheduler;
 
-import com.cronutils.model.Cron;
-import com.cronutils.model.time.ExecutionTime;
+import io.quarkiverse.jberet.runtime.JBeretRuntimeConfig.JobConfig;
+import io.quarkus.arc.Arc;
+import io.quarkus.arc.InjectableInstance;
+import io.quarkus.runtime.Startup;
+import io.quarkus.scheduler.ScheduledExecution;
+import io.quarkus.scheduler.Scheduler;
+import io.quarkus.scheduler.Scheduler.JobDefinition;
+import io.quarkus.scheduler.Trigger;
 
+@ApplicationScoped
 public class QuarkusJobScheduler extends JobScheduler {
-    private final ScheduledExecutorService executorService;
-    private final ConcurrentMap<String, JobSchedule> schedules = new ConcurrentHashMap<>();
+    private static final String TRIGGER_ID_PREFIX = "quarkus-jberet-";
+
     private final AtomicInteger ids = new AtomicInteger(1);
+    private final ConcurrentMap<String, JobSchedule> jobSchedules = new ConcurrentHashMap<>();
 
-    public QuarkusJobScheduler() {
-        this(Executors.newSingleThreadScheduledExecutor());
-    }
+    @Inject
+    JBeretRuntimeConfig config;
+    @Inject
+    InjectableInstance<Scheduler> scheduler;
+    @Inject
+    JobOperator jobOperator;
 
-    public QuarkusJobScheduler(final ScheduledExecutorService executorService) {
-        this.executorService = executorService;
+    @Startup
+    void schedule() {
+        for (String jobName : jobOperator.getJobNames()) {
+            JobConfig jobConfig = config.job().get(jobName);
+            if (jobConfig.cron().isPresent()) {
+                JobScheduleConfig scheduleConfig = JobScheduleConfigBuilder.newInstance()
+                        .jobName(jobName)
+                        .jobParameters(jobConfig.paramsAsProperties())
+                        .scheduleExpression(new ScheduleExpression())
+                        .build();
+                schedule(scheduleConfig);
+            }
+        }
     }
 
     @Override
     public JobSchedule schedule(final JobScheduleConfig scheduleConfig) {
-        JobSchedule jobSchedule = new JobSchedule(String.valueOf(ids.getAndIncrement()), scheduleConfig);
-        JobTask task = new JobTask(jobSchedule);
-
-        if (scheduleConfig.getInterval() <= 0 && scheduleConfig.getAfterDelay() <= 0) {
-            executorService.schedule(task, scheduleConfig.getInitialDelay(), timeUnit);
+        String scheduleId = generateScheduleId(scheduleConfig.getJobName());
+        JobSchedule jobSchedule = new JobSchedule(scheduleId, scheduleConfig);
+        JobDefinition<?> jobDefinition = scheduler.getActive().newJob(scheduleId);
+        if (scheduleConfig.getScheduleExpression() != null) {
+            JobConfig jobConfig = config.job().get(scheduleConfig.getJobName());
+            if (jobConfig.cron().isPresent()) {
+                jobDefinition.setCron(jobConfig.cron().get());
+            } else {
+                jobDefinition.setCron(toCronExpression(scheduleConfig.getScheduleExpression()));
+            }
+        } else if (scheduleConfig.getInterval() <= 0 && scheduleConfig.getAfterDelay() <= 0) {
+            jobDefinition.setDelayed(String.valueOf(scheduleConfig.getInitialDelay()));
         } else if (scheduleConfig.getInterval() > 0) {
-            executorService.scheduleAtFixedRate(
-                    task, scheduleConfig.getInitialDelay(), scheduleConfig.getInterval(), timeUnit);
+            jobDefinition.setDelayed(String.valueOf(scheduleConfig.getInitialDelay()));
+            jobDefinition.setInterval(String.valueOf(scheduleConfig.getInterval()));
         } else {
-            executorService.scheduleWithFixedDelay(
-                    task, scheduleConfig.getInitialDelay(), scheduleConfig.getAfterDelay(), timeUnit);
+            // TODO - Quarkus Scheduler does not support scheduleWithFixedDelay
+            throw new UnsupportedOperationException();
         }
-        schedules.put(jobSchedule.getId(), jobSchedule);
-        return jobSchedule;
-    }
-
-    public JobSchedule schedule(final JobScheduleConfig scheduleConfig, final Cron cron) {
-        JobSchedule jobSchedule = new JobSchedule(String.valueOf(ids.getAndIncrement()), scheduleConfig);
-        ExecutionTime executionTime = ExecutionTime.forCron(cron);
-        Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(ZonedDateTime.now().truncatedTo(SECONDS));
-        if (nextExecution.isPresent()) {
-            CronJobTask task = new CronJobTask(jobSchedule, executionTime, nextExecution.get());
-            executorService.scheduleAtFixedRate(task, 0, 1, TimeUnit.SECONDS);
-        }
-        schedules.put(jobSchedule.getId(), jobSchedule);
+        jobDefinition.setTask(new Consumer<ScheduledExecution>() {
+            @Override
+            public void accept(ScheduledExecution scheduledExecution) {
+                JobScheduleConfig jobScheduleConfig = jobSchedule.getJobScheduleConfig();
+                if (jobScheduleConfig.getJobExecutionId() == 0) {
+                    jobSchedule.addJobExecutionIds(
+                            jobOperator.start(scheduleConfig.getJobName(), scheduleConfig.getJobParameters()));
+                } else {
+                    // TODO - setJobExecutionId if the job fails to restart
+                    jobSchedule.addJobExecutionIds(
+                            jobOperator.restart(jobScheduleConfig.getJobExecutionId(), scheduleConfig.getJobParameters()));
+                }
+            }
+        });
+        jobSchedules.computeIfAbsent(scheduleId, new Function<String, JobSchedule>() {
+            @Override
+            public JobSchedule apply(String key) {
+                jobDefinition.schedule();
+                return jobSchedule;
+            }
+        });
         return jobSchedule;
     }
 
     @Override
     public List<JobSchedule> getJobSchedules() {
-        return Collections.unmodifiableList(new ArrayList<>(schedules.values()));
+        List<JobSchedule> jobSchedules = new ArrayList<>();
+        for (Trigger scheduledJob : scheduler.get().getScheduledJobs()) {
+            String id = scheduledJob.getId();
+            if (id.startsWith(TRIGGER_ID_PREFIX)) {
+                JobSchedule jobSchedule = this.jobSchedules.get(id);
+                if (jobSchedule != null) {
+                    jobSchedules.add(jobSchedule);
+                }
+            }
+        }
+        return jobSchedules;
     }
 
     @Override
@@ -76,47 +123,99 @@ public class QuarkusJobScheduler extends JobScheduler {
 
     @Override
     public JobSchedule getJobSchedule(final String scheduleId) {
-        return schedules.get(scheduleId);
+        for (Trigger scheduledJob : scheduler.get().getScheduledJobs()) {
+            if (scheduledJob.getId().equals(scheduleId)) {
+                JobSchedule jobSchedule = this.jobSchedules.get(scheduleId);
+                if (jobSchedule != null) {
+                    return jobSchedule;
+                }
+            }
+        }
+        return null;
     }
 
-    static class JobTask implements Runnable {
-        private final JobSchedule jobSchedule;
+    private String generateScheduleId(final String jobName) {
+        return TRIGGER_ID_PREFIX + jobName + "-" + ids.getAndIncrement();
+    }
 
-        public JobTask(final JobSchedule jobSchedule) {
-            this.jobSchedule = jobSchedule;
+    private String toCronExpression(final ScheduleExpression scheduleExpression) {
+        return scheduleExpression.getSecond() + " " +
+                scheduleExpression.getMinute() + " " +
+                scheduleExpression.getHour() + " " +
+                scheduleExpression.getDayOfMonth() + " " +
+                scheduleExpression.getMonth() + " " +
+                scheduleExpression.getDayOfWeek() + " " +
+                scheduleExpression.getYear();
+    }
+
+    public static class Delegate extends JobScheduler {
+        JobScheduler delegate;
+
+        public Delegate() {
+            InjectableInstance<JobScheduler> jobSchedulers = Arc.container().select(JobScheduler.class);
+            delegate = jobSchedulers.isUnsatisfied() ? new NoOpJobScheduler() : jobSchedulers.get();
         }
 
         @Override
-        public void run() {
-            final JobScheduleConfig config = jobSchedule.getJobScheduleConfig();
-            if (config.getJobExecutionId() > 0) {
-                jobSchedule.addJobExecutionIds(
-                        JobScheduler.getJobOperator().restart(config.getJobExecutionId(), config.getJobParameters()));
-            } else {
-                jobSchedule.addJobExecutionIds(
-                        JobScheduler.getJobOperator().start(config.getJobName(), config.getJobParameters()));
-            }
-        }
-    }
-
-    static class CronJobTask extends JobTask {
-        private final ExecutionTime executionTime;
-        private transient ZonedDateTime nextExecution;
-
-        public CronJobTask(final JobSchedule jobSchedule, final ExecutionTime executionTime,
-                final ZonedDateTime nextExecution) {
-            super(jobSchedule);
-            this.executionTime = executionTime;
-            this.nextExecution = nextExecution;
+        public String[] getFeatures() {
+            return delegate.getFeatures();
         }
 
         @Override
-        public void run() {
-            ZonedDateTime now = ZonedDateTime.now().truncatedTo(SECONDS);
-            if (nextExecution != null && now.isAfter(nextExecution)) {
-                nextExecution = executionTime.nextExecution(now).orElse(null);
-                super.run();
-            }
+        public void delete(String scheduleId) {
+            delegate.delete(scheduleId);
+        }
+
+        @Override
+        public JobSchedule schedule(JobScheduleConfig scheduleConfig) {
+            return delegate.schedule(scheduleConfig);
+        }
+
+        @Override
+        public List<JobSchedule> getJobSchedules() {
+            return delegate.getJobSchedules();
+        }
+
+        @Override
+        public boolean cancel(String scheduleId) {
+            return delegate.cancel(scheduleId);
+        }
+
+        @Override
+        public JobSchedule getJobSchedule(String scheduleId) {
+            return delegate.getJobSchedule(scheduleId);
+        }
+    }
+
+    private static class NoOpJobScheduler extends JobScheduler {
+        @Override
+        public String[] getFeatures() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void delete(String scheduleId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public JobSchedule schedule(JobScheduleConfig scheduleConfig) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<JobSchedule> getJobSchedules() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean cancel(String scheduleId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public JobSchedule getJobSchedule(String scheduleId) {
+            throw new UnsupportedOperationException();
         }
     }
 }
