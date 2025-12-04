@@ -47,13 +47,7 @@ import org.jboss.jandex.Type;
 import org.jboss.jandex.Type.Kind;
 import org.jboss.logging.Logger;
 
-import com.cronutils.model.Cron;
-import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.parser.CronParser;
-
 import io.quarkiverse.jberet.runtime.JBeretConfig;
-import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfigSourceFactoryBuilder;
 import io.quarkiverse.jberet.runtime.JBeretInMemoryJobRepositoryProducer;
 import io.quarkiverse.jberet.runtime.JBeretJdbcJobRepositoryProducer;
@@ -81,12 +75,12 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
-import io.quarkus.deployment.builditem.CapabilityBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigBuilderBuildItem;
+import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
@@ -98,7 +92,7 @@ class JBeretProcessor {
     private static final Logger log = Logger.getLogger("io.quarkiverse.jberet");
 
     @BuildStep
-    void registerExtension(BuildProducer<FeatureBuildItem> feature, BuildProducer<CapabilityBuildItem> capability) {
+    void registerExtension(BuildProducer<FeatureBuildItem> feature) {
         feature.produce(new FeatureBuildItem("jberet"));
     }
 
@@ -138,6 +132,7 @@ class JBeretProcessor {
         additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JobsProducer.class));
+        additionalBeans.produce(new AdditionalBeanBuildItem(QuarkusJobScheduler.class));
 
         switch (config.repository().type()) {
             case JBeretInMemoryJobRepositoryProducer.TYPE:
@@ -189,7 +184,7 @@ class JBeretProcessor {
             JBeretBuildTimeConfig buildTimeConfig,
             JBeretConfig config,
             BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles,
-            BuildProducer<BatchJobBuildItem> batchJobs) throws Exception {
+            BuildProducer<JobBuildItem> batchJobs) throws Exception {
 
         List<Job> jobs = new ArrayList<>();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -205,7 +200,7 @@ class JBeretProcessor {
             watchedFiles.produce(new HotDeploymentWatchedFileBuildItem(DEFAULT_PATH + jobXmlName + ".xml"));
 
             config.job().get(jobXmlName).listeners().processJob(job);
-            batchJobs.produce(new BatchJobBuildItem(job, parseCron(job, config.job().get(jobXmlName))));
+            batchJobs.produce(new JobBuildItem(job));
 
             log.debug("Processed job with ID " + job.getId() + "  from file " + jobXmlName);
         }
@@ -214,7 +209,7 @@ class JBeretProcessor {
     @BuildStep
     void processRefArtifacts(
             CombinedIndexBuildItem combinedIndex,
-            List<BatchJobBuildItem> batchJobs,
+            List<JobBuildItem> batchJobs,
             BuildProducer<RefArtifactBuildItem> refArtifacts,
             BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles) {
 
@@ -239,7 +234,7 @@ class JBeretProcessor {
                 })
                 .build();
 
-        for (BatchJobBuildItem batchJob : batchJobs) {
+        for (JobBuildItem batchJob : batchJobs) {
             jobProcessor.processJob(batchJob.getJob());
         }
     }
@@ -263,13 +258,13 @@ class JBeretProcessor {
     @BuildStep
     void validateJobs(
             JBeretConfig config,
-            List<BatchJobBuildItem> batchJobs,
+            List<JobBuildItem> batchJobs,
             List<RefArtifactBuildItem> refArtifacts,
             ValidationPhaseBuildItem validationPhase,
             BuildProducer<ValidationErrorBuildItem> validationErrors) {
 
         // Validate Job Config
-        Set<String> jobNames = batchJobs.stream().map(BatchJobBuildItem::getJob).map(Job::getJobXmlName)
+        Set<String> jobNames = batchJobs.stream().map(JobBuildItem::getJob).map(Job::getJobXmlName)
                 .collect(Collectors.toSet());
         for (String jobName : config.job().keySet()) {
             if (!jobNames.contains(jobName)) {
@@ -288,7 +283,7 @@ class JBeretProcessor {
             // TODO - Add CDI Jobs to the jobs maps so they can be merged with the ones coming from XML?
         }
 
-        for (BatchJobBuildItem batchJob : batchJobs) {
+        for (JobBuildItem batchJob : batchJobs) {
             String jobXmlName = batchJob.getJob().getJobXmlName();
             if (jobBeans.containsKey(jobXmlName)) {
                 validationErrors.produce(new ValidationErrorBuildItem(new AmbiguousResolutionException(
@@ -315,18 +310,22 @@ class JBeretProcessor {
     }
 
     @BuildStep
+    void scheduler(BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfiguration) {
+        runTimeConfiguration.produce(new RunTimeConfigurationDefaultBuildItem("quarkus.scheduler.start-mode", "forced"));
+    }
+
+    @BuildStep
     @Record(ExecutionTime.STATIC_INIT)
     void registerJobs(
             RecorderContext recorderContext,
             JBeretRecorder recorder,
-            List<BatchJobBuildItem> batchJobs,
+            List<JobBuildItem> batchJobs,
             BeanContainerBuildItem beanContainer) throws Exception {
+
         registerNonDefaultConstructors(recorderContext);
 
-        // TODO - Record JobSchedulerConfig - Need changes in the original class.
-
         List<Job> jobs = new ArrayList<>();
-        for (BatchJobBuildItem batchJob : batchJobs) {
+        for (JobBuildItem batchJob : batchJobs) {
             jobs.add(batchJob.getJob());
         }
 
@@ -338,8 +337,7 @@ class JBeretProcessor {
     ServiceStartBuildItem init(JBeretRecorder recorder,
             BeanContainerBuildItem beanContainer) {
 
-        recorder.initJobOperator(beanContainer.getValue());
-        recorder.initScheduler();
+        recorder.init(beanContainer.getValue());
 
         return new ServiceStartBuildItem("jberet");
     }
@@ -358,9 +356,10 @@ class JBeretProcessor {
                     .filter(Predicate.not(String::isEmpty))
                     .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
         }
-        reflectiveClasses.produce(ReflectiveClassBuildItem.builder(QuarkusJobScheduler.class).methods().build());
         reflectiveClasses
                 .produce(ReflectiveClassBuildItem.builder(JobInstanceImpl.class).constructors().methods().fields().build());
+        reflectiveClasses
+                .produce(ReflectiveClassBuildItem.builder(QuarkusJobScheduler.Delegate.class).constructors().build());
 
         // Exception Serialization for persistence
         Set<String> serializationClasses = Set.of(
@@ -415,23 +414,6 @@ class JBeretProcessor {
                                 script.getSrc() != null ? script.getContent(Thread.currentThread().getContextClassLoader())
                                         : script.getContent())
                         .collect(toList()));
-    }
-
-    private static String parseCron(Job job, JobConfig jobConfig) {
-        if (jobConfig.cron().isEmpty()) {
-            return null;
-        }
-
-        try {
-            CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
-            Cron cron = parser.parse(jobConfig.cron().get());
-            cron.validate();
-            return jobConfig.cron().get();
-        } catch (Exception e) {
-            throw new ConfigurationException(
-                    String.format("The cron expression %s configured in %s is not valid", jobConfig.cron().get(),
-                            "quarkus.jberet.job." + job.getJobXmlName() + ".cron"));
-        }
     }
 
     private static Map<String, ClassInfo> getRefsClassInfos(Collection<ClassInfo> refArtifacts) {

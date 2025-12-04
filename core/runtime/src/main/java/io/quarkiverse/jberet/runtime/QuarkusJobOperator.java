@@ -2,10 +2,10 @@ package io.quarkiverse.jberet.runtime;
 
 import static org.jberet._private.BatchMessages.MESSAGES;
 
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import jakarta.batch.operations.JobExecutionAlreadyCompleteException;
 import jakarta.batch.operations.JobExecutionNotMostRecentException;
@@ -24,21 +24,25 @@ import org.jberet.runtime.JobExecutionImpl;
 import org.jberet.runtime.JobInstanceImpl;
 import org.jberet.spi.BatchEnvironment;
 
-import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
+import io.quarkiverse.jberet.runtime.JBeretRuntimeConfig.JobConfig;
 
 @Vetoed
 public class QuarkusJobOperator extends AbstractJobOperator {
     private final BatchEnvironment batchEnvironment;
     private final Map<String, Job> jobs;
-    private final JBeretConfig config;
+    private final JBeretRuntimeConfig config;
 
     public QuarkusJobOperator(
-            final JBeretConfig config,
+            final JBeretRuntimeConfig config,
             final BatchEnvironment batchEnvironment,
-            final Collection<Job> jobs) {
-        this.batchEnvironment = batchEnvironment;
-        this.jobs = jobs.stream().collect(Collectors.toMap(Job::getJobXmlName, job -> job));
+            final List<Job> jobs) {
         this.config = config;
+        this.batchEnvironment = batchEnvironment;
+        this.jobs = new HashMap<>(jobs.size());
+        for (Job job : jobs) {
+            this.jobs.put(job.getJobXmlName(), job);
+            getJobRepository().addJob(new ApplicationAndJobName(batchEnvironment.getApplicationName(), job.getId()), job);
+        }
     }
 
     @Override
@@ -50,20 +54,10 @@ public class QuarkusJobOperator extends AbstractJobOperator {
     @Override
     public long start(String jobXMLName, Properties jobParameters, String user)
             throws JobStartException, JobSecurityException {
-
-        // Add params for configuration. Don't override if already there.
-        JobConfig jobConfig = config.job().get(jobXMLName);
-        if (jobConfig != null && jobConfig.params() != null) {
-            for (Map.Entry<String, String> param : jobConfig.params().entrySet()) {
-                if (!jobParameters.containsKey(param.getKey())) {
-                    jobParameters.setProperty(param.getKey(), param.getValue());
-                }
-            }
-        }
-
         // for now, we assume that all job XML files were identified and parsed during build
         Job jobDefinition = jobs.get(jobXMLName);
         if (jobDefinition != null) {
+            setJobParametersFromConfig(jobParameters, config.job().get(jobXMLName));
             return super.start(jobDefinition, jobParameters, user);
         } else {
             throw new NoSuchJobException("Job with xml name " + jobXMLName + " was not found");
@@ -102,6 +96,7 @@ public class QuarkusJobOperator extends AbstractJobOperator {
         }
 
         if (jobDefinition != null) {
+            setJobParametersFromConfig(restartParameters, config.job().get(jobName));
             return super.restart(executionId, restartParameters, user);
         } else {
             throw new NoSuchJobException("Job with xml name " + jobName + " was not found");
@@ -111,5 +106,12 @@ public class QuarkusJobOperator extends AbstractJobOperator {
     @Override
     public BatchEnvironment getBatchEnvironment() {
         return batchEnvironment;
+    }
+
+    private static void setJobParametersFromConfig(final Properties jobParameters, final JobConfig jobConfig) {
+        // Add params for configuration. Don't override if already there.
+        for (Map.Entry<String, String> param : jobConfig.params().entrySet()) {
+            jobParameters.putIfAbsent(param.getKey(), param.getValue());
+        }
     }
 }

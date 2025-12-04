@@ -58,7 +58,7 @@ class MailerJobTest {
     @Order(1)
     void mailedJobScheduled() {
         given()
-                .get("/schedules/{scheduleId}/", "1")
+                .get("/schedules/{scheduleId}/", "quarkus-jberet-mailer-1")
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("SCHEDULED"));
@@ -66,7 +66,7 @@ class MailerJobTest {
         // TODO - Programmatic client is not serializing jobExecutionIds properly in JobSchedule
         await().atMost(35, TimeUnit.SECONDS).until(() -> {
             List<Integer> jobExecutionIds = given()
-                    .get("/schedules/{scheduleId}/", "1")
+                    .get("/schedules/{scheduleId}/", "quarkus-jberet-mailer-1")
                     .then()
                     .statusCode(200)
                     .extract()

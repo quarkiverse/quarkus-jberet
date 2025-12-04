@@ -45,23 +45,8 @@ public interface JBeretConfig {
     @ConfigDocSection(generated = true)
     Repository repository();
 
-    /**
-     * The maximum number of threads allowed to be executed.
-     */
-    Optional<Integer> maxAsync();
-
     interface JobConfig {
         String DEFAULT = "<default>";
-
-        /**
-         * The Job schedule in Cron format, see <a href="https://en.wikipedia.org/wiki/Cron">cron</a>.
-         */
-        Optional<String> cron();
-
-        /**
-         * The Job parameters.
-         */
-        Map<String, String> params();
 
         /**
          * A list of {@link jakarta.batch.api.listener.JobListener} bean names or FQNs to execute with the Job.

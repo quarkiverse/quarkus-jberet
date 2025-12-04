@@ -48,14 +48,14 @@ class SchedulerTest {
     @Test
     void schedule() {
         given()
-                .get("/schedules/{scheduleId}/", "1")
+                .get("/schedules/{scheduleId}/", "quarkus-jberet-scheduler-1")
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("SCHEDULED"));
 
         await().atMost(35, TimeUnit.SECONDS).until(() -> {
             List<Integer> jobExecutionIds = given()
-                    .get("/schedules/{scheduleId}/", "1")
+                    .get("/schedules/{scheduleId}/", "quarkus-jberet-scheduler-1")
                     .then()
                     .statusCode(200)
                     .extract()
@@ -64,7 +64,7 @@ class SchedulerTest {
         });
 
         List<Integer> jobExecutionIds = given()
-                .get("/schedules/{scheduleId}/", "1")
+                .get("/schedules/{scheduleId}/", "quarkus-jberet-scheduler-1")
                 .then()
                 .statusCode(200)
                 .extract().path("jobExecutionIds");

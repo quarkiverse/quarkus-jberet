@@ -308,7 +308,6 @@ the table names with prefixes and/or suffixes:
 include::includes/quarkus-jberet_quarkus.jberet.repository.adoc[leveloffset=+1, opts=optional]
 
 == Schedule a Job
-// TODO - Integrate with Quarkus Scheduler
 
 While a `Job` can be executed by calling `JobOperator.start`, the most common scenario is to configure each `Job` to
 execute on a schedule:

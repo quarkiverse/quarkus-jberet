@@ -13,19 +13,11 @@ import org.jberet.job.model.Job;
 import org.jberet.job.model.Properties;
 import org.jberet.job.model.Step;
 import org.jberet.repository.JobRepository;
-import org.jberet.schedule.JobScheduleConfig;
-import org.jberet.schedule.JobScheduleConfigBuilder;
 import org.jberet.schedule.JobScheduler;
 import org.jberet.spi.BatchEnvironment;
 import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobOperatorContext;
 
-import com.cronutils.model.Cron;
-import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.parser.CronParser;
-
-import io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig;
 import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.RuntimeValue;
@@ -37,10 +29,10 @@ import io.smallrye.config.SmallRyeConfig;
 
 @Recorder
 public class JBeretRecorder {
-    private final JBeretConfig config;
+    private final RuntimeValue<JBeretRuntimeConfig> config;
     private final RuntimeValue<ThreadPoolConfig> threadPoolConfig;
 
-    public JBeretRecorder(JBeretConfig config, RuntimeValue<ThreadPoolConfig> threadPoolConfig) {
+    public JBeretRecorder(RuntimeValue<JBeretRuntimeConfig> config, RuntimeValue<ThreadPoolConfig> threadPoolConfig) {
         this.config = config;
         this.threadPoolConfig = threadPoolConfig;
     }
@@ -51,48 +43,24 @@ public class JBeretRecorder {
         JBeretDataHolder.registerJobs(jobs);
     }
 
-    public void initJobOperator(final BeanContainer beanContainer) {
+    public void init(final BeanContainer beanContainer) {
         ManagedExecutor managedExecutor = beanContainer.beanInstance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.beanInstance(TransactionManager.class);
         JobRepository jobRepository = beanContainer.beanInstance(JobRepository.class);
-        JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, threadPoolConfig.getValue(), config);
+        JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, config.getValue(),
+                threadPoolConfig.getValue());
         BatchEnvironment batchEnvironment = new QuarkusBatchEnvironment(jobRepository, quarkusJobExecutor, transactionManager);
 
         JobProcessor jobProcessor = new JobProcessorBuilder().stepConsumer(new SetTransactionTimeout()).build();
         JBeretDataHolder.JBeretData data = JBeretDataHolder.getData();
         data.getJobs().forEach(jobProcessor::processJob);
 
-        QuarkusJobOperator operator = new QuarkusJobOperator(config, batchEnvironment, data.getJobs());
+        QuarkusJobOperator operator = new QuarkusJobOperator(config.getValue(), batchEnvironment, data.getJobs());
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
-    }
 
-    public void initScheduler() {
-        if (config.job().values().stream().noneMatch(jobConfig -> jobConfig.cron().isPresent())) {
-            return;
-        }
-
-        QuarkusJobScheduler jobScheduler = (QuarkusJobScheduler) JobScheduler.getJobScheduler(QuarkusJobScheduler.class,
-                new ConcurrentHashMap<>(), null);
-
-        // TODO - Record Cron
-        CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
-        for (Job job : JBeretDataHolder.getData().getJobs()) {
-            JobConfig jobConfig = config.job().get(job.getJobXmlName());
-            if (jobConfig != null && jobConfig.cron().isPresent()) {
-                Cron cron = parser.parse(jobConfig.cron().get());
-                java.util.Properties jobParameters = new java.util.Properties();
-                if (jobConfig.params() != null && !jobConfig.params().isEmpty()) {
-                    jobParameters.putAll(jobConfig.params());
-                }
-
-                JobScheduleConfig scheduleConfig = JobScheduleConfigBuilder.newInstance()
-                        .jobName(job.getJobXmlName())
-                        .jobParameters(jobParameters).build();
-
-                jobScheduler.schedule(scheduleConfig, cron);
-            }
-        }
+        beanContainer.beanInstance(JobScheduler.class);
+        JobScheduler.getJobScheduler(QuarkusJobScheduler.Delegate.class, new ConcurrentHashMap<>(), null);
     }
 
     private static class SetTransactionTimeout implements Consumer<Step> {
