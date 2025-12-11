@@ -108,7 +108,7 @@ All Batch components are CDI Beans.
 
 The `Batchlet` must be part of a `Job` definition to be executed:
 
-.Job XML Definition
+.fileCleanupJob.xml
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
@@ -126,7 +126,7 @@ The `Batchlet` must be part of a `Job` definition to be executed:
 
 [IMPORTANT]
 ====
-The Job XML Definition file must be placed in `src/main/resourncesMETA-INF/batch-jobs` so Quarkus can discover
+The Job XML Definition file must be placed in `src/main/resources/META-INF/batch-jobs` so Quarkus can discover
 the `Job`. The name of the `Job` is the file name without the extension: `fileCleanupJob`.
 ====
 
@@ -374,5 +374,4 @@ seconds if the condition is `false`, the wait is interrupted and the test fails.
 // TODO - Add links to advanced documentation when done
 // TODO - Listeners
 // TODO - Job and Step Context
-// TODO - Chunk Processing
 // TODO - Other components: Flow, Decider, Partitions
