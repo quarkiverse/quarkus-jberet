@@ -11,7 +11,7 @@ import java.util.Set;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
-import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepositoryConfig;
+import io.quarkiverse.jberet.jpa.job.repository.JpaJobRepositoryConfig;
 import io.quarkus.hibernate.orm.deployment.HibernateOrmConfig;
 import io.quarkus.hibernate.orm.deployment.HibernateOrmConfigPersistenceUnit;
 import io.quarkus.runtime.configuration.CharsetConverter;
@@ -27,12 +27,12 @@ public class JBeretJpaConfigSourceFactory implements ConfigSourceFactory {
         SmallRyeConfig config = new SmallRyeConfigBuilder()
                 .withSources(new ConfigSourceContext.ConfigSourceContextConfigSource(context))
                 .withConverter(Charset.class, 100, new CharsetConverter())
-                .withMapping(JBeretJpaJobRepositoryConfig.class)
+                .withMapping(JpaJobRepositoryConfig.class)
                 .withMapping(HibernateOrmConfig.class)
                 .withMappingIgnore("quarkus.**")
                 .build();
 
-        JBeretJpaJobRepositoryConfig jpaJobRepositoryConfig = config.getConfigMapping(JBeretJpaJobRepositoryConfig.class);
+        JpaJobRepositoryConfig jpaJobRepositoryConfig = config.getConfigMapping(JpaJobRepositoryConfig.class);
         HibernateOrmConfig hibernateOrmConfig = config.getConfigMapping(HibernateOrmConfig.class);
 
         Map<String, String> properties = new HashMap<>();

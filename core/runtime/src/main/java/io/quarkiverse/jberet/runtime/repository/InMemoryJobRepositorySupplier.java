@@ -1,22 +1,23 @@
-package io.quarkiverse.jberet.runtime;
+package io.quarkiverse.jberet.runtime.repository;
 
-import java.util.function.Supplier;
-
-import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
 
 import org.jberet.repository.InMemoryRepository;
 import org.jberet.repository.JobRepository;
 
-public class JBeretInMemoryJobRepositoryProducer implements Supplier<JobRepository> {
+import io.quarkiverse.jberet.runtime.JobRepositorySupplier;
 
+@Singleton
+public class InMemoryJobRepositorySupplier implements JobRepositorySupplier {
     public final static String TYPE = "in-memory";
 
     @Override
-    @Produces
-    @Singleton
     public JobRepository get() {
         return new InMemoryRepository();
     }
 
+    @Override
+    public String getName() {
+        return TYPE;
+    }
 }
