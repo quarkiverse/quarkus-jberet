@@ -8,8 +8,8 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
-import io.quarkiverse.jberet.components.item.jdbc.JdbcBatchItemWriter;
-import io.quarkiverse.jberet.components.item.jdbc.JdbcCursorItemReader;
+import io.quarkiverse.jberet.components.runtime.item.jdbc.JdbcBatchItemWriter;
+import io.quarkiverse.jberet.components.runtime.item.jdbc.JdbcCursorItemReader;
 
 @Singleton
 public class AuctionStatisticsProducer {

@@ -1,4 +1,4 @@
-package io.quarkiverse.jberet.components.item.memory;
+package io.quarkiverse.jberet.components.runtime.item.memory;
 
 import static java.util.Collections.unmodifiableList;
 

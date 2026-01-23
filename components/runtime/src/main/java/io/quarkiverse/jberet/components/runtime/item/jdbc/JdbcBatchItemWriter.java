@@ -1,7 +1,7 @@
-package io.quarkiverse.jberet.components.item.jdbc;
+package io.quarkiverse.jberet.components.runtime.item.jdbc;
 
-import static io.quarkiverse.jberet.components.item.jdbc.JdbcUtils.closeQuietly;
-import static io.quarkiverse.jberet.components.item.jdbc.JdbcUtils.getDataSource;
+import static io.quarkiverse.jberet.components.runtime.item.jdbc.JdbcUtils.closeQuietly;
+import static io.quarkiverse.jberet.components.runtime.item.jdbc.JdbcUtils.getDataSource;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

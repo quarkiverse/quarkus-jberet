@@ -1,4 +1,4 @@
-package io.quarkiverse.jberet.components.item.jdbc;
+package io.quarkiverse.jberet.components.runtime.item.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

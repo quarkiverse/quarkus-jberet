@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
-import io.quarkiverse.jberet.components.item.jdbc.RowMapper;
+import io.quarkiverse.jberet.components.runtime.item.jdbc.RowMapper;
 
 @Singleton
 @Named

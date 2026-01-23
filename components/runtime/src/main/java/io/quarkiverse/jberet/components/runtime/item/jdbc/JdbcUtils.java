@@ -1,4 +1,4 @@
-package io.quarkiverse.jberet.components.item.jdbc;
+package io.quarkiverse.jberet.components.runtime.item.jdbc;
 
 import static io.quarkus.agroal.runtime.AgroalDataSourceUtil.dataSourceIfActive;
 import static io.quarkus.datasource.common.runtime.DataSourceUtil.DEFAULT_DATASOURCE_NAME;
