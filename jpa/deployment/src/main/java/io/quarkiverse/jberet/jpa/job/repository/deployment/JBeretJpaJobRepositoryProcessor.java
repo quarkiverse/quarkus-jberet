@@ -59,7 +59,6 @@ public class JBeretJpaJobRepositoryProcessor {
             HibernateOrmConfig hibernateOrmConfig,
             BuildProducer<AdditionalJpaModelBuildItem> additionalJpaModelBuildItemsBuildProducer) {
 
-        // TODO - What to do?
         if (!JpaJobRepositorySupplier.TYPE.equals(config.repository().type())) {
             return;
         }

@@ -224,7 +224,7 @@ endif::add-copy-button-to-config-props[]
 
 [.description]
 --
-Custom DDL file resource for JBeret tables creation; if using *custom table names* please also set `sql-filename` property to propagate table names.
+Custom DDL file resource for JBeret tables creation; if using *custom table names* please also set `sql-file` property to propagate table names.
 
 
 ifdef::add-copy-button-to-env-var[]
@@ -260,7 +260,7 @@ endif::add-copy-button-to-env-var[]
 |string
 |
 
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository-jdbc-db-table-prefix]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository-jdbc-db-table-prefix[`quarkus.jberet.repository.jdbc.db-table-prefix`]##
+a| [[quarkus-jberet_quarkus-jberet-repository-jdbc-db-table-prefix]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository-jdbc-db-table-prefix[`quarkus.jberet.repository.jdbc.db-table-prefix`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.repository.jdbc.db-table-prefix+++[]
 endif::add-copy-button-to-config-props[]
@@ -281,7 +281,7 @@ endif::add-copy-button-to-env-var[]
 |string
 |
 
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository-jdbc-db-table-suffix]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository-jdbc-db-table-suffix[`quarkus.jberet.repository.jdbc.db-table-suffix`]##
+a| [[quarkus-jberet_quarkus-jberet-repository-jdbc-db-table-suffix]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository-jdbc-db-table-suffix[`quarkus.jberet.repository.jdbc.db-table-suffix`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.repository.jdbc.db-table-suffix+++[]
 endif::add-copy-button-to-config-props[]

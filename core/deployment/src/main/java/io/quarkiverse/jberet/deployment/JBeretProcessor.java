@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -298,19 +297,27 @@ class JBeretProcessor {
     }
 
     @BuildStep
-    void nativeImage(BuildProducer<NativeImageResourceBuildItem> resources,
+    void nativeImage(
+            BuildProducer<NativeImageResourceBuildItem> resources,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClasses,
             JBeretConfig config) {
         resources.produce(new NativeImageResourceBuildItem("sql/jberet-sql.properties"));
         resources.produce(new NativeImageResourceBuildItem("sql/jberet.ddl"));
-        if (JdbcJobRepositorySupplier.TYPE.equals(config.repository().type())) {
-            config.repository().jdbc().ddlFileName().map(String::trim)
-                    .filter(Predicate.not(String::isEmpty))
-                    .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
-            config.repository().jdbc().sqlFileName().map(String::trim)
-                    .filter(Predicate.not(String::isEmpty))
-                    .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
-        }
+        // See org.jberet.repository.JdbcRepository.getDDLLocation
+        resources.produce(new NativeImageResourceBuildItem("sql/jberet-mysql.ddl"));
+        resources.produce(new NativeImageResourceBuildItem("sql/jberet-oracle.ddl"));
+        resources.produce(new NativeImageResourceBuildItem("sql/jberet-postgresql.ddl"));
+        resources.produce(new NativeImageResourceBuildItem("sql/jberet-mssqlserver.ddl"));
+        resources.produce(new NativeImageResourceBuildItem("sql/jberet-db2.ddl"));
+        resources.produce(new NativeImageResourceBuildItem("sql/jberet-sybase.ddl"));
+        resources.produce(new NativeImageResourceBuildItem("sql/jberet-derby.ddl"));
+        resources.produce(new NativeImageResourceBuildItem("sql/jberet-firebird.ddl"));
+
+        config.repository().jdbc().ddlFileName()
+                .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
+        config.repository().jdbc().sqlFileName()
+                .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));
+
         reflectiveClasses
                 .produce(ReflectiveClassBuildItem.builder(JobInstanceImpl.class).constructors().methods().fields().build());
         reflectiveClasses
