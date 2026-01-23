@@ -17,6 +17,7 @@ The Quarkus JBeret Extension adds support for
 
 To use the extension, add the dependency to the target project:
 
+// TODO - Change this to use BOM
 ```xml
 <dependency>
   <groupId>io.quarkiverse.jberet</groupId>

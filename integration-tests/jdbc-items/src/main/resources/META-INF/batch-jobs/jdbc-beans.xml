@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="jdbc-beans" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <step id="jdbcStep">
+        <chunk item-count="3">
+            <reader ref="auctionsItemReader"/>
+            <writer ref="auctionsItemWriter"/>
+        </chunk>
+    </step>
+</job>
