@@ -3,12 +3,15 @@ package io.quarkiverse.jberet.runtime;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Supplier;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.batch.runtime.JobExecution;
 import jakarta.batch.runtime.JobInstance;
 import jakarta.batch.runtime.StepExecution;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.DeploymentException;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.transaction.Transactional;
 
 import org.jberet.job.model.Job;
 import org.jberet.repository.ApplicationAndJobName;
@@ -20,13 +23,26 @@ import org.jberet.runtime.JobInstanceImpl;
 import org.jberet.runtime.PartitionExecutionImpl;
 import org.jberet.runtime.StepExecutionImpl;
 
-public abstract class AbstractDelegatingJobRepository<T extends JobRepository> implements JobRepository, Supplier<T> {
+import io.quarkus.arc.Unremovable;
 
-    private T jobRepository;
+@Unremovable
+@Singleton
+@Transactional
+public class QuarkusJobRepository implements JobRepository {
+    private final JobRepository jobRepository;
 
-    @PostConstruct
-    private void init() {
-        jobRepository = get();
+    @Inject
+    public QuarkusJobRepository(JBeretConfig config, Instance<JobRepositorySupplier> jobRepositories) {
+        this.jobRepository = getJobRepository(config, jobRepositories);
+    }
+
+    private static JobRepository getJobRepository(JBeretConfig config, Instance<JobRepositorySupplier> jobRepositories) {
+        for (JobRepositorySupplier jobRepository : jobRepositories) {
+            if (config.repository().type().equals(jobRepository.getName())) {
+                return jobRepository.get();
+            }
+        }
+        throw new DeploymentException("No job repository found for " + config.repository().type());
     }
 
     @Override
@@ -175,5 +191,4 @@ public abstract class AbstractDelegatingJobRepository<T extends JobRepository> i
     public int savePersistentDataIfNotStopping(JobExecution jobExecution, AbstractStepExecution stepOrPartitionExecution) {
         return jobRepository.savePersistentDataIfNotStopping(jobExecution, stepOrPartitionExecution);
     }
-
 }

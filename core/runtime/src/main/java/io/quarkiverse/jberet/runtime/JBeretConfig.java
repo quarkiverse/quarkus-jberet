@@ -15,6 +15,7 @@ import org.jberet.job.model.RefArtifact;
 import org.jberet.job.model.Step;
 
 import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
+import io.quarkiverse.jberet.runtime.repository.InMemoryJobRepositorySupplier;
 import io.quarkus.runtime.annotations.ConfigDocMapKey;
 import io.quarkus.runtime.annotations.ConfigDocSection;
 import io.quarkus.runtime.annotations.ConfigPhase;
@@ -93,7 +94,7 @@ public interface JBeretConfig {
          * The repository type to store JBeret and Job data. A <code>jdbc</code> jdbc type requires a JDBC datasource.
          */
         @WithConverter(SkewerConverter.class)
-        @WithDefault(JBeretInMemoryJobRepositoryProducer.TYPE)
+        @WithDefault(InMemoryJobRepositorySupplier.TYPE)
         String type();
 
         /**

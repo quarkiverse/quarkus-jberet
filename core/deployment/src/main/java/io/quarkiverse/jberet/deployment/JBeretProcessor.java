@@ -2,7 +2,6 @@ package io.quarkiverse.jberet.deployment;
 
 import static io.quarkiverse.jberet.deployment.DotNames.JOB;
 import static io.quarkiverse.jberet.deployment.DotNames.JOB_ELEMENTS;
-import static io.quarkiverse.jberet.deployment.DotNames.JOB_REPOSITORY;
 import static io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig.DEFAULT;
 import static java.util.stream.Collectors.toList;
 import static org.jberet.spi.JobXmlResolver.DEFAULT_PATH;
@@ -49,21 +48,20 @@ import org.jboss.logging.Logger;
 
 import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfigSourceFactoryBuilder;
-import io.quarkiverse.jberet.runtime.JBeretInMemoryJobRepositoryProducer;
-import io.quarkiverse.jberet.runtime.JBeretJdbcJobRepositoryProducer;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
 import io.quarkiverse.jberet.runtime.JobProcessor;
 import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
 import io.quarkiverse.jberet.runtime.JobsProducer;
+import io.quarkiverse.jberet.runtime.QuarkusJobRepository;
 import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
+import io.quarkiverse.jberet.runtime.repository.InMemoryJobRepositorySupplier;
+import io.quarkiverse.jberet.runtime.repository.JdbcJobRepositorySupplier;
 import io.quarkiverse.jberet.runtime.scope.QuarkusJobScopedContextImpl;
 import io.quarkiverse.jberet.runtime.scope.QuarkusPartitionScopedContextImpl;
 import io.quarkiverse.jberet.runtime.scope.QuarkusStepScopedContextImpl;
-import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
-import io.quarkus.arc.deployment.BeanDiscoveryFinishedBuildItem;
 import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem;
 import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
@@ -86,7 +84,6 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
-import io.quarkus.runtime.configuration.ConfigurationException;
 
 class JBeretProcessor {
     private static final Logger log = Logger.getLogger("io.quarkiverse.jberet");
@@ -125,58 +122,16 @@ class JBeretProcessor {
     }
 
     @BuildStep
-    void additionalBeans(
-            JBeretConfig config,
-            BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
+    void additionalBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
 
         additionalBeans.produce(new AdditionalBeanBuildItem(BatchBeanProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JobsProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(QuarkusJobScheduler.class));
 
-        switch (config.repository().type()) {
-            case JBeretInMemoryJobRepositoryProducer.TYPE:
-                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretInMemoryJobRepositoryProducer.class));
-                break;
-            case JBeretJdbcJobRepositoryProducer.TYPE:
-                additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretJdbcJobRepositoryProducer.class));
-                break;
-        }
-    }
-
-    @BuildStep
-    @Record(ExecutionTime.STATIC_INIT)
-    void validateRepository(
-            JBeretRecorder recorder,
-            JBeretConfig config,
-            BeanDiscoveryFinishedBuildItem beanDiscoveryFinishedBuildItem,
-            List<JdbcDataSourceBuildItem> datasources) {
-        switch (config.repository().type()) {
-            case JBeretJdbcJobRepositoryProducer.TYPE:
-                final String datasource = config.repository().jdbc().datasource();
-                if (datasources.stream().noneMatch(item -> item.getName().equals(datasource))) {
-                    throw new ConfigurationException("Datasource name "
-                            + datasource
-                            + " does not exist. Available datasources: "
-                            + datasources.stream()
-                                    .map(JdbcDataSourceBuildItem::getName)
-                                    .collect(Collectors.joining(",")));
-                }
-
-                break;
-            case JBeretInMemoryJobRepositoryProducer.TYPE:
-                break;
-            default:
-                final List<BeanInfo> beanInfos = beanDiscoveryFinishedBuildItem.beanStream().filter(
-                        beanInfo -> beanInfo.hasType(JOB_REPOSITORY) && beanInfo.hasDefaultQualifiers()).collect();
-                if (beanInfos.isEmpty()) {
-                    throw new ConfigurationException("There is no injectable and @Default JobRepository bean");
-                } else if (beanInfos.size() > 1) {
-                    throw new ConfigurationException(
-                            "Multiple injectable and @Default JobRepository beans are not allowed : "
-                                    + beanInfos);
-                }
-        }
+        additionalBeans.produce(new AdditionalBeanBuildItem(QuarkusJobRepository.class));
+        additionalBeans.produce(new AdditionalBeanBuildItem(InMemoryJobRepositorySupplier.class));
+        additionalBeans.produce(new AdditionalBeanBuildItem(JdbcJobRepositorySupplier.class));
     }
 
     @BuildStep
@@ -348,7 +303,7 @@ class JBeretProcessor {
             JBeretConfig config) {
         resources.produce(new NativeImageResourceBuildItem("sql/jberet-sql.properties"));
         resources.produce(new NativeImageResourceBuildItem("sql/jberet.ddl"));
-        if (JBeretJdbcJobRepositoryProducer.TYPE.equals(config.repository().type())) {
+        if (JdbcJobRepositorySupplier.TYPE.equals(config.repository().type())) {
             config.repository().jdbc().ddlFileName().map(String::trim)
                     .filter(Predicate.not(String::isEmpty))
                     .ifPresent(v -> resources.produce(new NativeImageResourceBuildItem(v)));

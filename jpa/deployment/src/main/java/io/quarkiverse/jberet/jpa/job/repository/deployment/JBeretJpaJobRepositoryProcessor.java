@@ -14,8 +14,8 @@ import org.jberet.jpa.repository.entity.PartitionExecutionJpa_;
 import org.jberet.jpa.repository.entity.StepExecutionJpa;
 import org.jberet.jpa.repository.entity.StepExecutionJpa_;
 
-import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepository;
-import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepositoryConfig;
+import io.quarkiverse.jberet.jpa.job.repository.JpaJobRepositoryConfig;
+import io.quarkiverse.jberet.jpa.job.repository.JpaJobRepositorySupplier;
 import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -48,22 +48,19 @@ public class JBeretJpaJobRepositoryProcessor {
     }
 
     @BuildStep
-    public void additionalBeans(
-            JBeretConfig config,
-            BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
-        if (JBeretJpaJobRepository.TYPE.equals(config.repository().type())) {
-            additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JBeretJpaJobRepository.class));
-        }
+    public void additionalBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
+        additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(JpaJobRepositorySupplier.class));
     }
 
     @BuildStep
     public void additionalEntities(
             JBeretConfig config,
-            JBeretJpaJobRepositoryConfig jpaJobRepositoryConfig,
+            JpaJobRepositoryConfig jpaJobRepositoryConfig,
             HibernateOrmConfig hibernateOrmConfig,
             BuildProducer<AdditionalJpaModelBuildItem> additionalJpaModelBuildItemsBuildProducer) {
 
-        if (!JBeretJpaJobRepository.TYPE.equals(config.repository().type())) {
+        // TODO - What to do?
+        if (!JpaJobRepositorySupplier.TYPE.equals(config.repository().type())) {
             return;
         }
 

@@ -23,7 +23,7 @@ import org.jberet.jpa.repository.entity.JobInstanceJpa;
 import org.jberet.jpa.repository.entity.JobInstanceJpa_;
 import org.jberet.runtime.JobInstanceImpl;
 
-import io.quarkiverse.jberet.jpa.job.repository.JBeretJpaJobRepositoryConfig;
+import io.quarkiverse.jberet.jpa.job.repository.JpaJobRepositoryConfig;
 import io.quarkus.hibernate.orm.PersistenceUnit;
 import io.quarkus.hibernate.orm.runtime.PersistenceUnitUtil;
 
@@ -32,7 +32,7 @@ import io.quarkus.hibernate.orm.runtime.PersistenceUnitUtil;
 public class JpaResource {
 
     @Inject
-    protected JBeretJpaJobRepositoryConfig config;
+    protected JpaJobRepositoryConfig config;
 
     @Any
     @Inject

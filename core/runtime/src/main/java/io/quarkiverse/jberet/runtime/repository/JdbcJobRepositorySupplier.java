@@ -1,11 +1,9 @@
-package io.quarkiverse.jberet.runtime;
+package io.quarkiverse.jberet.runtime.repository;
 
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
-import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -13,18 +11,19 @@ import org.jberet.repository.JdbcRepository;
 import org.jberet.repository.JobRepository;
 
 import io.agroal.api.AgroalDataSource;
+import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfig.Repository.Jdbc;
+import io.quarkiverse.jberet.runtime.JobRepositorySupplier;
 import io.quarkus.agroal.runtime.AgroalDataSourceUtil;
 
-public class JBeretJdbcJobRepositoryProducer implements Supplier<JobRepository> {
+@Singleton
+public class JdbcJobRepositorySupplier implements JobRepositorySupplier {
     public final static String TYPE = "jdbc";
 
     @Inject
     JBeretConfig config;
 
     @Override
-    @Produces
-    @Singleton
     public JobRepository get() {
         Properties configProperties = new Properties();
         Jdbc jdbc = config.repository().jdbc();
@@ -45,5 +44,10 @@ public class JBeretJdbcJobRepositoryProducer implements Supplier<JobRepository> 
         value.map(String::trim)
                 .filter(Predicate.not(String::isEmpty))
                 .ifPresent(v -> jdbcRepositoryProperties.put(jberetPropertyName, v));
+    }
+
+    @Override
+    public String getName() {
+        return TYPE;
     }
 }

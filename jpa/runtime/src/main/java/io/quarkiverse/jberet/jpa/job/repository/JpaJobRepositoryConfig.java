@@ -11,7 +11,7 @@ import io.smallrye.config.WithName;
 
 @ConfigMapping(prefix = JBeretConfig.PREFIX)
 @ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
-public interface JBeretJpaJobRepositoryConfig {
+public interface JpaJobRepositoryConfig {
     /**
      * The JBeret Repository configuration.
      */
