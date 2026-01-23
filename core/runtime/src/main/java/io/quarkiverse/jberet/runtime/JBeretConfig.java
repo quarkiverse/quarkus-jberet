@@ -20,6 +20,7 @@ import io.quarkus.runtime.annotations.ConfigDocMapKey;
 import io.quarkus.runtime.annotations.ConfigDocSection;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.quarkus.runtime.configuration.TrimmedStringConverter;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithConverter;
 import io.smallrye.config.WithDefault;
@@ -43,7 +44,7 @@ public interface JBeretConfig {
     /**
      * The JBeret Repository configuration.
      */
-    @ConfigDocSection(generated = true)
+    @ConfigDocSection
     Repository repository();
 
     interface JobConfig {
@@ -111,9 +112,10 @@ public interface JBeretConfig {
 
             /**
              * Custom DDL file resource for JBeret tables creation; if using <b>custom table names</b> please
-             * also set <code>sql-filename</code> property to propagate table names.
+             * also set <code>sql-file</code> property to propagate table names.
              */
             @WithName("ddl-file")
+            @WithConverter(TrimmedStringConverter.class)
             Optional<String> ddlFileName();
 
             /**
@@ -125,19 +127,8 @@ public interface JBeretConfig {
              * "https://raw.githubusercontent.com/jberet/jsr352/refs/tags/3.1.0.Final/jberet-core/src/main/resources/sql/jberet-sql.properties">jberet.properties</a>
              */
             @WithName("sql-file")
+            @WithConverter(TrimmedStringConverter.class)
             Optional<String> sqlFileName();
-
-            /**
-             * JBeret tables name prefix.
-             */
-            @WithName("db-table-prefix")
-            Optional<String> dbTablePrefix();
-
-            /**
-             * JBeret tables name suffix.
-             */
-            @WithName("db-table-suffix")
-            Optional<String> dbTableSuffix();
         }
     }
 }
