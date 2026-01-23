@@ -32,7 +32,7 @@ The `ItemReader` purpose is to read data, one item at a time from a data source 
 .ItemReader
 [source,java]
 ----
-include::{examples-dir}/org/acme/batch/AuctionItemReader.java[]
+include::{examples-dir}/org/acme/batch/chunk/AuctionItemReader.java[]
 ----
 
 .auctions.json
@@ -65,7 +65,7 @@ The `ItemProcessor` is an optional component that executes after each item is re
 .ItemProcessor
 [source,java]
 ----
-include::{examples-dir}/org/acme/batch/AuctionItemProcessor.java[]
+include::{examples-dir}/org/acme/batch/chunk/AuctionItemProcessor.java[]
 ----
 
 <1> The `processItem` method takes an `Auction` from the `ItemReader` and validates some of its fields
@@ -82,7 +82,7 @@ other suitable destination:
 .ItemWriter
 [source,java]
 ----
-include::{examples-dir}/org/acme/batch/AuctionItemWriter.java[]
+include::{examples-dir}/org/acme/batch/chunk/AuctionItemWriter.java[]
 ----
 
 <1> An `open` method to get a database `Connection` and create a `PreparedStatement` with an insert query
@@ -118,7 +118,7 @@ the `Job`. The name of the `Job` is the file name without the extension: `auctio
 ====
 
 <1> The `auctionItemReader` is the reference name of the `AuctionItemReader`. By default, a Batch component's
-default name is its Fully Qualified Name (`org.acme.batch.AuctionItemReader`). When a Batch component is annotated
+default name is its Fully Qualified Name (`org.acme.batch.chunk.AuctionItemReader`). When a Batch component is annotated
 with `@Named`, its name is shortened to the component's simple name with the first letter lowercase
 (`auctionItemReader`).
 <2> The `auctionItemProcessor` reference name of the `AuctionItemProcessor`
@@ -301,7 +301,7 @@ A `custom` `checkpoint-policy` provides programmatic control over checkpoint dec
 .CheckpointAlgorithm
 [source,java]
 ----
-include::{examples-dir}/org/acme/batch/AuctionCheckpointAlgorithm.java[]
+include::{examples-dir}/org/acme/batch/chunk/AuctionCheckpointAlgorithm.java[]
 ----
 
 <1> Retrieves persistent data `AuctionCheckpointData` from the `StepContext`, which contains how many quantities of
@@ -337,7 +337,7 @@ you to inject custom logic before and after chunk operations:
 .ItemReadListener
 [source,java]
 ----
-include::{examples-dir}/org/acme/batch/AuctionCheckpointAlgorithm.java[]
+include::{examples-dir}/org/acme/batch/chunk/AuctionCheckpointAlgorithm.java[]
 ----
 
 Listeners may be configured at the `step` level where the `chunk` is defined:

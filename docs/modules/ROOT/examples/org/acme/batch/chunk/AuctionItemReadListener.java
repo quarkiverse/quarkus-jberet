@@ -1,4 +1,4 @@
-package org.acme.batch;
+package org.acme.batch.chunk;
 
 import jakarta.batch.api.chunk.listener.AbstractItemReadListener;
 import jakarta.inject.Named;

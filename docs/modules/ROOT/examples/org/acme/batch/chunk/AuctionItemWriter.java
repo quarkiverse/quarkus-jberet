@@ -1,4 +1,4 @@
-package org.acme.batch;
+package org.acme.batch.chunk;
 
 import java.io.Serializable;
 import java.sql.Connection;

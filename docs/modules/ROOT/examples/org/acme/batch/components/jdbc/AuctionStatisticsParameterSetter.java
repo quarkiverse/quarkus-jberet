@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
-import io.quarkiverse.jberet.components.item.jdbc.ParameterSetter;
+import io.quarkiverse.jberet.components.runtime.item.jdbc.ParameterSetter;
 
 @Singleton
 @Named
