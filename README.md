@@ -17,13 +17,23 @@ The Quarkus JBeret Extension adds support for
 
 To use the extension, add the dependency to the target project:
 
-// TODO - Change this to use BOM
 ```xml
-<dependency>
-  <groupId>io.quarkiverse.jberet</groupId>
-  <artifactId>quarkus-jberet</artifactId>
-  <version>2.8.0</version>
-</dependency>
+<dependencyManagement>
+    <dependency>
+      <groupId>io.quarkiverse.jberet</groupId>
+      <artifactId>quarkus-jberet-bom</artifactId>
+      <version>2.8.0</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>io.quarkiverse.jberet</groupId>
+        <artifactId>quarkus-jberet</artifactId>
+    </dependency>
+</dependencies>
 ```
 
 :information_source: **Recommended Quarkus version: `3.28.1` or higher**
