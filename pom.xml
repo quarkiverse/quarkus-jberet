@@ -38,7 +38,6 @@
   <modules>
     <module>core</module>
     <module>rest</module>
-    <module>jpa</module>
     <module>components</module>
     <module>docs</module>
   </modules>
@@ -144,11 +143,6 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.jberet</groupId>
-        <artifactId>jberet-jpa-repository</artifactId>
-        <version>${jberet-jpa.version}</version>
-      </dependency>
-      <dependency>
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet-deployment</artifactId>
         <version>${project.version}</version>
@@ -165,16 +159,6 @@
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.jberet</groupId>
-        <artifactId>quarkus-jberet-jpa</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkiverse.jberet</groupId>
-        <artifactId>quarkus-jberet-jpa-deployment</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet-components</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -182,6 +166,11 @@
         <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet-components-deployment</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jberet</groupId>
+        <artifactId>jberet-jpa-repository</artifactId>
+        <version>${jberet-jpa.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

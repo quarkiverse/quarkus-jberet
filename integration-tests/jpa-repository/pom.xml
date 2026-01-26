@@ -13,11 +13,15 @@
   <dependencies>
     <dependency>
       <groupId>io.quarkiverse.jberet</groupId>
-      <artifactId>quarkus-jberet-jpa</artifactId>
+      <artifactId>quarkus-jberet-components</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jdbc-h2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-orm</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkiverse.jberet</groupId>

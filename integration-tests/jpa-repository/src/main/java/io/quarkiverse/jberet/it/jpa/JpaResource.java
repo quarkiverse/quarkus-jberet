@@ -23,7 +23,7 @@ import org.jberet.jpa.repository.entity.JobInstanceJpa;
 import org.jberet.jpa.repository.entity.JobInstanceJpa_;
 import org.jberet.runtime.JobInstanceImpl;
 
-import io.quarkiverse.jberet.jpa.job.repository.JpaJobRepositoryConfig;
+import io.quarkiverse.jberet.components.runtime.repository.JobRepositoryConfig;
 import io.quarkus.hibernate.orm.PersistenceUnit;
 import io.quarkus.hibernate.orm.runtime.PersistenceUnitUtil;
 
@@ -32,7 +32,7 @@ import io.quarkus.hibernate.orm.runtime.PersistenceUnitUtil;
 public class JpaResource {
 
     @Inject
-    protected JpaJobRepositoryConfig config;
+    protected JobRepositoryConfig config;
 
     @Any
     @Inject
@@ -40,13 +40,12 @@ public class JpaResource {
 
     @GET
     @Path("/instances/{name}")
-    public Response instances(@PathParam("name") final String name) throws Exception {
+    public Response instances(@PathParam("name") final String name) {
+        String persistenceUnitName = config.repository().jpa().persistenceUnitName();
         EntityManager em = (PersistenceUnitUtil.DEFAULT_PERSISTENCE_UNIT_NAME
-                .equals(config.repository().jpa().persistenceUnitName())
+                .equals(persistenceUnitName)
                         ? entityManager.select()
-                        : entityManager.select(
-                                new PersistenceUnit.PersistenceUnitLiteral(
-                                        config.repository().jpa().persistenceUnitName())))
+                        : entityManager.select(new PersistenceUnit.PersistenceUnitLiteral(persistenceUnitName)))
                 .get();
 
         CriteriaBuilder cb = em.getCriteriaBuilder();

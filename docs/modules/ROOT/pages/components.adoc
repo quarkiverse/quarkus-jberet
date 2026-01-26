@@ -4,6 +4,7 @@ include::./includes/attributes.adoc[]
 
 The Quarkus JBeret Components provides reusable, batch components for common data processing tasks.
 
+[#installation]
 == Installation
 
 To use the JBeret Components module, add the `io.quarkiverse.jberet:quarkus-jberet-components` extension to your
@@ -168,3 +169,74 @@ The `fetchSize` property hints to the JDBC driver how many rows to fetch from th
 
 Higher fetch sizes reduce network overhead but increase memory usage. The optimal value depends on your network
 latency and row size.
+
+== Repositories
+
+=== JPARepository
+
+The JPA Repository stores batch job metadata (job instances, executions, and step executions) using JPA entities and
+https://quarkus.io/guides/hibernate-orm[https://xxx][Hibernate ORM]. This provides broader database support through
+JPA and can leverage first or second level caches for improved performance.
+
+To use the JPA Repository, add the Hibernate ORM extension to your build file:
+
+[source,xml,subs=attributes+,role="primary asciidoc-tabs-target-sync-cli asciidoc-tabs-target-sync-maven"]
+.pom.xml
+----
+<dependency>
+  <groupId>io.quarkus</groupId>
+  <artifactId>quarkus-hibernate-orm</artifactId>
+</dependency>
+----
+
+[source,gradle,subs=attributes+,role="secondary asciidoc-tabs-target-sync-gradle"]
+.build.gradle
+----
+implementation("io.quarkus:quarkus-hibernate-orm")
+----
+
+[NOTE]
+====
+It also requires the JBeret Component dependency. See <<installation,Installation>>.
+====
+
+==== Configuration
+
+To use the JPA Repository, set the repository type to `jpa` and configure a datasource:
+
+.application.properties
+[source,properties]
+----
+quarkus.datasource.db-kind=h2
+quarkus.datasource.jdbc.url=jdbc:h2:mem:test
+quarkus.jberet.repository.type=jpa
+----
+
+[NOTE]
+====
+The JPA Repository uses the default (unnamed) persistence unit by default.
+====
+
+For applications with multiple persistence units, specify which persistence unit to use for JBeret entities:
+
+[source,properties]
+----
+quarkus.datasource."batch".db-kind=postgresql
+quarkus.datasource."batch".username=<your username>
+quarkus.datasource."batch".password=<your password>
+quarkus.datasource."batch".jdbc.url=jdbc:postgresql://localhost:5432/batch
+
+quarkus.hibernate-orm."batch".datasource=batch
+
+quarkus.jberet.repository.type=jpa
+quarkus.jberet.repository.jpa.persistence-unit-name=batch
+----
+
+[NOTE]
+====
+The JBeret JPA entities are automatically registered with the specified persistence unit.
+====
+
+For more information, please check xref:batch.adoc#configuring_a_jobrepository[Configuring a JobRepository]
+
+include::includes/quarkus-jberet-components.adoc[leveloffset=+1, opts=optional]

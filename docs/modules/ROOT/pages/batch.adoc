@@ -241,6 +241,7 @@ The returned `JobExecution` from `JobOperator.getJobExecution` does not automati
 the `Job`. Invoke `JobOperator.getJobExecution` as many times as required to get updated information.
 ====
 
+[#configuring_a_jobrepository]
 == Configuring a JobRepository
 
 A `JobRepository` holds information about jobs currently running and jobs that have run in the past. The `JobOperator`
