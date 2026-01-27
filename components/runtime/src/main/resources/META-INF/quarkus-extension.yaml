@@ -1,0 +1,17 @@
+---
+name: "JBeret - Components"
+description: "Reusable Batch Components for common data processing tasks."
+metadata:
+  short-name: "jberet-components"
+  keywords:
+    - "batch"
+    - "jberet"
+    - "jsr352"
+    - "components"
+  guide: "https://docs.quarkiverse.io/quarkus-jberet/dev/components.html"
+  categories:
+    - "data"
+    - "integration"
+  status: "stable"
+  config:
+    - "quarkus.jberet"

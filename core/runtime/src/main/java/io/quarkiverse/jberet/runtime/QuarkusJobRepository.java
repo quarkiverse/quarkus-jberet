@@ -38,7 +38,7 @@ public class QuarkusJobRepository implements JobRepository {
 
     private static JobRepository getJobRepository(JBeretConfig config, Instance<JobRepositorySupplier> jobRepositories) {
         for (JobRepositorySupplier jobRepository : jobRepositories) {
-            if (config.repository().type().equals(jobRepository.getName())) {
+            if (config.repository().type().equalsIgnoreCase(jobRepository.getName())) {
                 return jobRepository.get();
             }
         }

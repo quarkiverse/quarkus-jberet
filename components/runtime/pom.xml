@@ -16,6 +16,25 @@
             <groupId>io.quarkiverse.jberet</groupId>
             <artifactId>quarkus-jberet</artifactId>
         </dependency>
+
+        <!-- For JPA -->
+        <dependency>
+            <groupId>org.jberet</groupId>
+            <artifactId>jberet-jpa-repository</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>
