@@ -9,9 +9,8 @@
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-The Quarkus JBeret Extension adds support for
-[JSR-352 Batch Applications for the Java Platform](https://jcp.org/en/jsr/detail?id=352).
-[JBeret](https://github.com/jberet) is an implementation of the JSR-352.
+The Quarkus JBeret Extension adds support for [Jakarta Batch](https://jakarta.ee/specifications/batch/). 
+[JBeret](https://github.com/jberet) is an implementation of Jakarta Batch.
 
 ## Usage
 
@@ -39,7 +38,7 @@ To use the extension, add the dependency to the target project:
 :information_source: **Recommended Quarkus version: `3.28.1` or higher**
 
 The Batch API and Runtime will be available out of the box. Please refer to the
-[Batch documentation](https://jcp.org/en/jsr/detail?id=352), or the
+[Jakarta Batch documentation](https://jakarta.ee/specifications/batch/2.1/jakarta-batch-spec-2.1), and
 [JBeret documentation](https://jberet.gitbooks.io/jberet-user-guide/content/) to learn about Batch Applications.
 
 Also, the [Quarkus JBeret Extension](https://docs.quarkiverse.io/quarkus-jberet/dev/index.html) adds features on top 
