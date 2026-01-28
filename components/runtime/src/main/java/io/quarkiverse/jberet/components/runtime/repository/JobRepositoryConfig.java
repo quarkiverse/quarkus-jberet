@@ -26,7 +26,8 @@ public interface JobRepositoryConfig {
             String TYPE = "jpa";
 
             /**
-             * The Persistence Unit Name for JBeret entities
+             * The Persistence Unit Name for JBeret entities. By default, it uses the default Persistence Unit Name
+             * from the Hibernate ORM Extension.
              */
             @WithName("persistence-unit-name")
             @WithDefault(DEFAULT_PERSISTENCE_UNIT_NAME)
