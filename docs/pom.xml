@@ -20,7 +20,7 @@
 
         <dependency>
             <groupId>io.quarkiverse.jberet</groupId>
-            <artifactId>quarkus-jberet-components</artifactId>
+            <artifactId>quarkus-jberet-components-deployment</artifactId>
         </dependency>
 
         <dependency>
