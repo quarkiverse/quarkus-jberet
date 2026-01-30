@@ -26,7 +26,7 @@ Environment variable: `+++QUARKUS_JBERET_REPOSITORY_JPA_PERSISTENCE_UNIT_NAME+++
 endif::add-copy-button-to-env-var[]
 --
 |string
-|`+++<default>+++`
+|<default>
 
 |===
 

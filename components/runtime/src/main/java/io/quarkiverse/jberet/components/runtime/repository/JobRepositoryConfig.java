@@ -1,5 +1,6 @@
 package io.quarkiverse.jberet.components.runtime.repository;
 
+import io.quarkus.runtime.annotations.ConfigDocDefault;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
@@ -31,6 +32,7 @@ public interface JobRepositoryConfig {
              */
             @WithName("persistence-unit-name")
             @WithDefault(DEFAULT_PERSISTENCE_UNIT_NAME)
+            @ConfigDocDefault(value = DEFAULT_PERSISTENCE_UNIT_NAME, escape = false)
             String persistenceUnitName();
         }
     }
