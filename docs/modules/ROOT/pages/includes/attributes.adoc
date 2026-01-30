@@ -1,4 +1,4 @@
-:project-version: 2.8.0
+:project-version: 2.9.0
 :quarkus-minimum-version: 3.28.1
 
 :examples-dir: ../examples
