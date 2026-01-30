@@ -44,7 +44,7 @@ public interface JBeretConfig {
     /**
      * The JBeret Repository configuration.
      */
-    @ConfigDocSection
+    @ConfigDocSection(generated = true)
     Repository repository();
 
     interface JobConfig {

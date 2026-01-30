@@ -1,0 +1,139 @@
+[.configuration-legend]
+icon:lock[title=Fixed at build time] Configuration property fixed at build time - All other configuration properties are overridable at runtime
+[.configuration-reference, cols="80,.^10,.^10"]
+|===
+
+h|[.header-title]##Configuration property##
+h|Type
+h|Default
+
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-type]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-type[`quarkus.jberet.repository.type`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.repository.type+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+The repository type to store JBeret and Job data. A `jdbc` jdbc type requires a JDBC datasource.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_REPOSITORY_TYPE+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_REPOSITORY_TYPE+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|`+++in-memory+++`
+
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-datasource]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-datasource[`quarkus.jberet.repository.jdbc.datasource`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.repository.jdbc.datasource+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+The datasource name for the JBeret Repository. By default, it uses the default (unnamed) datasource.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_REPOSITORY_JDBC_DATASOURCE+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_REPOSITORY_JDBC_DATASOURCE+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|`+++<default>+++`
+
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-ddl-file]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-ddl-file[`quarkus.jberet.repository.jdbc.ddl-file`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.repository.jdbc.ddl-file+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Custom DDL file resource for JBeret tables creation; if using *custom table names* please also set `sql-file` property to propagate table names.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_REPOSITORY_JDBC_DDL_FILE+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_REPOSITORY_JDBC_DDL_FILE+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|
+
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-sql-file]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-sql-file[`quarkus.jberet.repository.jdbc.sql-file`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.repository.jdbc.sql-file+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Custom queries to be used to query JBeret tables; this is mandatory if custom table names are used in custom DDL filename.
+
+The file must be of type `properties`, and must follow the exact template as defined in link:https://raw.githubusercontent.com/jberet/jsr352/refs/tags/3.1.0.Final/jberet-core/src/main/resources/sql/jberet-sql.properties[jberet.properties]
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_REPOSITORY_JDBC_SQL_FILE+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_REPOSITORY_JDBC_SQL_FILE+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|
+
+a| [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-prefix]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-prefix[`quarkus.jberet.repository.jdbc.db-table-prefix`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.repository.jdbc.db-table-prefix+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+JBeret tables name prefix.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_REPOSITORY_JDBC_DB_TABLE_PREFIX+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_REPOSITORY_JDBC_DB_TABLE_PREFIX+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|
+
+a| [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-suffix]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-suffix[`quarkus.jberet.repository.jdbc.db-table-suffix`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.repository.jdbc.db-table-suffix+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+JBeret tables name suffix.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_REPOSITORY_JDBC_DB_TABLE_SUFFIX+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_REPOSITORY_JDBC_DB_TABLE_SUFFIX+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|
+
+|===
+
