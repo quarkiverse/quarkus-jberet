@@ -77,10 +77,11 @@ public class JBeretRecorder {
                 if (configValue.getValue() != null
                         && !DefaultValuesConfigSource.NAME.equals(configValue.getConfigSourceName())) {
                     Duration transactionTimeout = config.getValue(QUARKUS_TRANSACTION_TIMEOUT, Duration.class);
-                    Properties overrideProperties = new Properties();
-                    overrideProperties.getNameValues().put(JAKARTA_TRANSACTION_TIMEOUT,
+                    if (properties == null) {
+                        step.setProperties(new Properties());
+                    }
+                    step.getProperties().getNameValues().put(JAKARTA_TRANSACTION_TIMEOUT,
                             String.valueOf(transactionTimeout.toSeconds()));
-                    step.setProperties(overrideProperties);
                 }
             }
         }
