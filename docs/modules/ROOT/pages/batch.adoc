@@ -248,8 +248,6 @@ A `JobRepository` holds information about jobs currently running and jobs that h
 interface provides access to this repository. The repository contains job instances, job executions, and step
 executions in a persistent way. By default, JBeret uses an `in-memory` `JobRepository`.
 
-// TODO - Add warning when executing in prod mode if the repository type is in-memory
-
 Using an `in-memory` `JobRepository` is far from ideal in real production environments. For that reason, it is
 recommended to change the repository to a persistent store that can store the batch metadata permanently after the
 batch application shuts down.

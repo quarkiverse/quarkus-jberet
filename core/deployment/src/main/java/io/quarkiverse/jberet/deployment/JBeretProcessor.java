@@ -68,6 +68,7 @@ import io.quarkus.arc.deployment.ValidationPhaseBuildItem.ValidationErrorBuildIt
 import io.quarkus.arc.processor.BeanInfo;
 import io.quarkus.arc.processor.BeanResolver;
 import io.quarkus.arc.processor.DotNames;
+import io.quarkus.deployment.IsProduction;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -260,6 +261,15 @@ class JBeretProcessor {
                 validationErrors.produce(new ValidationErrorBuildItem(new UnsatisfiedResolutionException(
                         "RefArtifact " + refArtifact.getResolvedArtifact().name() + " not found")));
             }
+        }
+    }
+
+    @BuildStep(onlyIf = IsProduction.class)
+    void validateRepository(
+            JBeretConfig config,
+            @SuppressWarnings("unused") BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfiguration) {
+        if (config.repository().type().equals(InMemoryJobRepositorySupplier.TYPE)) {
+            log.warn("Configured repository type " + config.repository().type() + " not recommended for production mode");
         }
     }
 
