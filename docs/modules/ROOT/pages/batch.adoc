@@ -336,6 +336,135 @@ JobScheduler jobScheduler;
 
 With the `JobScheduler`, it is possible to list, add or cancel scheduled jobs.
 
+== Listeners
+
+Listeners are callback components that intercept batch job execution at various points, allowing you to inject custom
+logic for cross-cutting concerns like logging, metrics collection, error handling, and notifications.
+
+=== `JobListener`
+
+The `JobListener` may intercept the Job execution before it starts and after it ends.
+
+.JobListener
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/listener/MailerJobListener.java[]
+----
+
+The `MailerJobListener` implements the `afterJob` method to send an email in case the Job execution fails.
+
+The listener must be registered in the Job XML definition:
+
+.jobWithListener.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="jobWithListener" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <listeners>
+      <listener ref="mailerJobListener"/>    <!--1-->
+  </listeners>
+</job>
+----
+
+<1> The `mailerJobListener` is the CDI bean name of the `JobListener`. When a Batch component is annotated
+with `@Named`, its name is shortened to the component's simple name with the first letter lowercase.
+
+Or with the programmatic API:
+
+[source,java]
+----
+new JobBuilder("jobWithListener")
+    .listener("mailerJobListener")
+    ...
+    .build();
+----
+
+Instead of configuring Job listeners in every Job XML definition, it is possible to configure global listeners that
+apply to all jobs or specific jobs via configuration:
+
+.Global listener for all jobs
+[source,properties]
+----
+quarkus.jberet.job.job-listeners=mailerJobListener,logJobListener
+----
+
+.Listener for specific jobs
+[source,properties]
+----
+quarkus.jberet.job."auctions".job-listeners=mailerJobListener
+quarkus.jberet.job."cleanup".job-listeners=mailerJobListener
+----
+
+[NOTE]
+====
+Global Job listeners are applied in addition to any listeners defined in the Job XML definition. The order in which
+job listeners execute is undefined.
+====
+
+=== `StepListener`
+
+The `StepListener` may intercept the Step execution before it starts and after it ends.
+
+.StepListener
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/listener/TimeStepListener.java[]
+----
+
+The `TimeStepListener` implements both `beforeStep` and `afterStep` methods to record the execution time of the Step.
+
+The listener must be registered in the Job XML definition:
+
+.jobWithListener.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="stepWithListener" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+    <step id="metricsStep">
+      <listeners>
+          <listener ref="timeStepListener"/>    <!--1-->
+      </listeners>
+  </step>
+</job>
+----
+
+<1> The `timeStepListener` is the CDI bean name of the `StepListener`. When a Batch component is annotated
+with `@Named`, its name is shortened to the component's simple name with the first letter lowercase. The listener is
+configured at the step level, not the job level.
+
+Or with the programmatic API:
+
+[source,java]
+----
+new JobBuilder("fileCleanupJob")
+        .step(new StepBuilder("cleanupStep")
+                    .listener("timeStepListener")
+                    ...
+    .build();
+----
+
+Instead of configuring Step listeners in every Job XML definition, it is possible to configure global listeners that
+apply to all steps or specific steps via configuration:
+
+.Global listener for all steps
+[source,properties]
+----
+quarkus.jberet.job.step-listeners=timeStepListener,logStepListener
+----
+
+.Listener for specific steps
+[source,properties]
+----
+quarkus.jberet.job."auctions".step-listeners=timeStepListener
+quarkus.jberet.job."cleanup".step-listeners=timeStepListener
+----
+
+[NOTE]
+====
+Global Step listeners are applied in addition to any listeners defined in the Job XML definition. The order in which
+Step listeners execute is undefined.
+====
+
 == Testing
 
 Since Batch Applications execute jobs asynchronously, the testing code must explicitly wait for the job to complete or
@@ -373,6 +502,5 @@ seconds if the condition is `false`, the wait is interrupted and the test fails.
 <3> Query `JobOperator` for the status of the `Job` and check if the `Job` reached a status of `BatchStatus.COMPLETED`
 
 // TODO - Add links to advanced documentation when done
-// TODO - Listeners
 // TODO - Job and Step Context
 // TODO - Other components: Flow, Decider, Partitions
