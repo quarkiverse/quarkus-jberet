@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Optional;
 
-import jakarta.batch.api.chunk.ItemReader;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -16,10 +15,12 @@ import jakarta.transaction.Transactional;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import io.quarkiverse.jberet.runtime.api.ItemReader;
+
 @Dependent
 @Named
 @Transactional
-public class AuctionItemReader implements ItemReader {
+public class AuctionItemReader implements ItemReader<Auction> {
     private JsonParser parser;
     private InputStream in;
 
@@ -41,7 +42,7 @@ public class AuctionItemReader implements ItemReader {
     }
 
     @Override
-    public Object readItem() {
+    public Auction read() {
         while (parser.hasNext()) {
             Auction auction = new Auction();
             if (readAuctionItem(auction)) {

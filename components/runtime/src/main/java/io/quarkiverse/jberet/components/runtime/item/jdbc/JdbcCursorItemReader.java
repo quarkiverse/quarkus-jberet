@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import javax.sql.DataSource;
 
 import jakarta.batch.api.BatchProperty;
-import jakarta.batch.api.chunk.ItemReader;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
@@ -20,6 +19,7 @@ import org.jberet.spi.ArtifactFactory;
 import io.agroal.pool.ConnectionHandler;
 import io.agroal.pool.ConnectionHandler.State;
 import io.agroal.pool.wrapper.ConnectionWrapper;
+import io.quarkiverse.jberet.runtime.api.ItemReader;
 
 /**
  * Reads data from a {@link DataSource} using a JDBC cursor.
@@ -45,7 +45,7 @@ import io.agroal.pool.wrapper.ConnectionWrapper;
  * @param <T> the read result type
  */
 @Named("jdbcItemReader")
-public class JdbcCursorItemReader<T> implements ItemReader {
+public class JdbcCursorItemReader<T> implements ItemReader<T> {
     private final DataSource dataSource;
     private final String sql;
     private final RowMapper<T> rowMapper;
@@ -116,7 +116,7 @@ public class JdbcCursorItemReader<T> implements ItemReader {
     }
 
     @Override
-    public Object readItem() throws Exception {
+    public T read() throws Exception {
         if (resultSet == null) {
             throw new IllegalStateException();
         }
