@@ -58,6 +58,11 @@ is equal to the configured item count for a Chunk, the list of `Auctions` is han
 the transaction is committed and a checkpoint created. The process repeats itself until `ItemReader.readItem`
 returns `null` and the last items are written by the `ItemWriter`.
 
+[TIP]
+====
+Use `io.quarkiverse.jberet.runtime.api.ItemReader<T>` which support generic data types
+====
+
 == ItemProcessor
 
 The `ItemProcessor` is an optional component that executes after each item is read:
@@ -73,6 +78,11 @@ include::{examples-dir}/org/acme/batch/chunk/AuctionItemProcessor.java[]
 Returning `null` effectively indicates that the item should not be processed further, meaning that it will not be
 included in the list of items to be handed over to the `ItemWriter`. The `ItemProcessor` may also change the
 `ItemReader` item type. The new item type will be the one being passed down to the `ItemWriter`.
+
+[TIP]
+====
+Use `io.quarkiverse.jberet.runtime.api.ItemProcessor<T, R>` which support generic data types
+====
 
 == ItemWriter
 
@@ -140,6 +150,11 @@ void execute() {
     long executionId = jobOperator.start("auctionsJob", new Properties());
 }
 ----
+
+[TIP]
+====
+Use `io.quarkiverse.jberet.runtime.api.ItemWriter<T>` which support generic data types
+====
 
 === Chunk configuration
 

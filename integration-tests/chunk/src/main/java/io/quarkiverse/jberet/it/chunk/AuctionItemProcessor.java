@@ -2,19 +2,18 @@ package io.quarkiverse.jberet.it.chunk;
 
 import java.time.LocalDate;
 
-import jakarta.batch.api.chunk.ItemProcessor;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Named;
 
+import io.quarkiverse.jberet.runtime.api.ItemProcessor;
+
 @Dependent
 @Named
-public class AuctionItemProcessor implements ItemProcessor {
+public class AuctionItemProcessor implements ItemProcessor<Auction, Auction> {
+
     @Override
-    public Object processItem(Object item) {
-        Auction auction = (Auction) item;
-
-        auction.setProcessedAt(LocalDate.now());
-
-        return auction;
+    public Auction process(Auction item) {
+        item.setProcessedAt(LocalDate.now());
+        return item;
     }
 }

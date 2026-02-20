@@ -10,11 +10,12 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import jakarta.batch.api.BatchProperty;
-import jakarta.batch.api.chunk.AbstractItemWriter;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import org.jberet.spi.ArtifactFactory;
+
+import io.quarkiverse.jberet.runtime.api.ItemWriter;
 
 /**
  * Writes data to a {@link DataSource} using JDBC batch processing.
@@ -43,7 +44,7 @@ import org.jberet.spi.ArtifactFactory;
  * @param <T> the type to write
  */
 @Named("jdbcItemWriter")
-public class JdbcBatchItemWriter<T> extends AbstractItemWriter {
+public class JdbcBatchItemWriter<T> implements ItemWriter<T> {
     private final DataSource dataSource;
     private final String sql;
     private final ParameterSetter<T> parameterSetter;
@@ -74,12 +75,11 @@ public class JdbcBatchItemWriter<T> extends AbstractItemWriter {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void writeItems(List<Object> items) throws Exception {
+    public void write(List<T> items) throws Exception {
         Connection connection = dataSource.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        for (Object item : items) {
-            parameterSetter.setValues(preparedStatement, (T) item);
+        for (T item : items) {
+            parameterSetter.setValues(preparedStatement, item);
             preparedStatement.addBatch();
         }
         preparedStatement.executeBatch();
