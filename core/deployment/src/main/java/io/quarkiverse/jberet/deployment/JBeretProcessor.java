@@ -392,6 +392,10 @@ class JBeretProcessor {
         // Map with Bean names to discovered Batch components
         Map<String, ClassInfo> refNames = new HashMap<>();
         for (ClassInfo refArtifact : refArtifacts) {
+            if (refArtifact.name().toString().startsWith("jakarta.")) {
+                continue;
+            }
+
             AnnotationInstance named = refArtifact.declaredAnnotation(DotNames.NAMED);
             refNames.put(refArtifact.name().toString(), refArtifact);
             if (named != null && named.value() != null && named.value().value() != null
