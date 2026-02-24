@@ -41,8 +41,11 @@ public class DotNames {
     public static final DotName DECIDER = DotName.createSimple(Decider.class);
 
     public static final DotName READER = DotName.createSimple(ItemReader.class);
+    public static final DotName READER_TYPED = DotName.createSimple(io.quarkiverse.jberet.runtime.api.ItemReader.class);
     public static final DotName PROCESSOR = DotName.createSimple(ItemProcessor.class);
+    public static final DotName PROCESSOR_TYPED = DotName.createSimple(io.quarkiverse.jberet.runtime.api.ItemProcessor.class);
     public static final DotName WRITER = DotName.createSimple(ItemWriter.class);
+    public static final DotName WRITER_TYPED = DotName.createSimple(io.quarkiverse.jberet.runtime.api.ItemWriter.class);
     public static final DotName CHECKPOINT_ALGORITHM = DotName.createSimple(CheckpointAlgorithm.class);
     public static final DotName READ_LISTENER = DotName.createSimple(ItemReadListener.class);
     public static final DotName PROCESS_LISTENER = DotName.createSimple(ItemProcessListener.class);
@@ -66,6 +69,7 @@ public class DotNames {
             BATCHLET,
             DECIDER,
             READER, PROCESSOR, WRITER, CHECKPOINT_ALGORITHM,
+            READER_TYPED, PROCESSOR_TYPED, WRITER_TYPED,
             READ_LISTENER, PROCESS_LISTENER, WRITE_LISTENER, CHUNK_LISTENER,
             RETRY_READ_LISTENER, RETRY_PROCESS_LISTENER, RETRY_WRITE_LISTENER,
             SKIP_READ_LISTENER, SKIP_PROCESS_LISTENER, SKIP_WRITE_LISTENER,
