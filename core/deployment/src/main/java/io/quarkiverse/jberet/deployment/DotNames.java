@@ -2,6 +2,7 @@ package io.quarkiverse.jberet.deployment;
 
 import java.util.Set;
 
+import jakarta.batch.api.BatchProperty;
 import jakarta.batch.api.Batchlet;
 import jakarta.batch.api.Decider;
 import jakarta.batch.api.chunk.CheckpointAlgorithm;
@@ -63,6 +64,8 @@ public class DotNames {
     public static final DotName PARTITION_COLLECTOR = DotName.createSimple(PartitionCollector.class);
     public static final DotName PARTITION_ANALYZER = DotName.createSimple(PartitionAnalyzer.class);
     public static final DotName PARTITION_REDUCER = DotName.createSimple(PartitionReducer.class);
+
+    public static final DotName BATCH_PROPERTY = DotName.createSimple(BatchProperty.class);
 
     public static final Set<DotName> JOB_ELEMENTS = Set.of(
             JOB_LISTENER, STEP_LISTENER,

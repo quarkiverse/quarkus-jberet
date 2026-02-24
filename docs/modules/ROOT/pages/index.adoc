@@ -74,6 +74,9 @@ Quarkus may fail to start due to invalid configuration (cannot find the Job conf
 configuration injection points with the `@ConfigProperty` annotation must set a default value or use an `Optional`.
 ====
 
+Also, `@BatchProperty` injection fallbacks to Quarkus Config
+`org.eclipse.microprofile.config.spi.Converter` to convert the type, if the type is not supported by Java Batch.
+
 == CDI Beans
 
 The Batch APIs `JobOperator` and `JobRepository` are available as CDI beans, so they can be injected directly into any
