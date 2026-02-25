@@ -70,6 +70,7 @@
     <module>scripting</module>
     <module>scopes</module>
     <module>mailer</module>
+    <module>mongo</module>
     <module>tck</module>
   </modules>
 
