@@ -318,6 +318,7 @@ class JBeretProcessor {
             // Some elements may be undetermined if they reference a parameter expression
             ClassInfo resolvedArtifact = refArtifact.getResolvedArtifact();
             if (resolvedArtifact == null) {
+                // TODO - Must look for Producer methods also
                 log.warn("Unable to validate ref artifact " + refArtifact.getRefArtifact().getRef());
                 continue;
             }

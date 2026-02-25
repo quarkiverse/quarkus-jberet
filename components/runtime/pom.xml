@@ -35,6 +35,12 @@
             <artifactId>quarkus-hibernate-orm</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <!-- For Mongo -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-mongodb-client</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

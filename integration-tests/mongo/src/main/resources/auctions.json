@@ -1,0 +1,84 @@
+{
+  "auctions": [
+    {
+      "id": 279573567,
+      "item": {
+          "id":22792
+      },
+      "bid": 3800000,
+      "buyout": 4000000,
+      "quantity": 20,
+      "time_left": "LONG"
+    },
+    {
+      "id": 278907544,
+      "item": {
+          "id": 40195
+      },
+      "bid": 38000,
+      "buyout": 40000,
+      "quantity": 1,
+      "time_left": "VERY_LONG"
+    },
+    {
+      "id": 278268046,
+      "item": {
+          "id": 4306
+      },
+      "bid": 570000,
+      "buyout": 600,
+      "quantity": 20,
+      "time_left": "VERY_LONG"
+    },
+    {
+      "id": 278698948,
+      "item": {
+          "id": 4340
+      },
+      "bid": 1000000,
+      "buyout": 1000000,
+      "quantity": 10,
+      "time_left": "LONG"
+    },
+    {
+      "id": 279595850,
+      "item": {
+          "id": 6370
+      },
+      "bid": 142500000,
+      "buyout": 150000000,
+      "quantity": 3,
+      "time_left": "VERY_LONG"
+    },
+    {
+      "id": 279259594,
+      "item": {
+          "id": 5503
+      },
+      "bid": 17600000,
+      "buyout": 17600000,
+      "quantity": 2,
+      "time_left": "LONG"
+    },
+    {
+      "id": 279595745,
+      "item": {
+          "id": 6370
+      },
+      "bid": 142500000,
+      "buyout": 150000000,
+      "quantity": 3,
+      "time_left": "VERY_LONG"
+    },
+    {
+      "id": 279644950,
+      "item": {
+          "id": 43013
+      },
+      "bid": 30000225,
+      "buyout": 35000000,
+      "quantity": 20,
+      "time_left": "VERY_LONG"
+    }
+  ]
+}
