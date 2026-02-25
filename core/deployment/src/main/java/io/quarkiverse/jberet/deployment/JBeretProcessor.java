@@ -1,5 +1,6 @@
 package io.quarkiverse.jberet.deployment;
 
+import static io.quarkiverse.jberet.deployment.DotNames.BATCH_PROPERTY;
 import static io.quarkiverse.jberet.deployment.DotNames.JOB;
 import static io.quarkiverse.jberet.deployment.DotNames.JOB_ELEMENTS;
 import static io.quarkiverse.jberet.runtime.JBeretConfig.JobConfig.DEFAULT;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -41,10 +43,13 @@ import org.jberet.tools.ChainedJobXmlResolver;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
 import org.jboss.jandex.Type.Kind;
 import org.jboss.logging.Logger;
 
+import io.quarkiverse.jberet.runtime.BatchPropertyCreator;
 import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfigSourceFactoryBuilder;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
@@ -61,13 +66,16 @@ import io.quarkiverse.jberet.runtime.scope.QuarkusPartitionScopedContextImpl;
 import io.quarkiverse.jberet.runtime.scope.QuarkusStepScopedContextImpl;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
+import io.quarkus.arc.deployment.BeanDiscoveryFinishedBuildItem;
 import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem;
 import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem;
+import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem.ValidationErrorBuildItem;
 import io.quarkus.arc.processor.BeanInfo;
 import io.quarkus.arc.processor.BeanResolver;
 import io.quarkus.arc.processor.DotNames;
+import io.quarkus.arc.processor.InjectionPointInfo;
 import io.quarkus.deployment.IsProduction;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -132,6 +140,65 @@ class JBeretProcessor {
         additionalBeans.produce(new AdditionalBeanBuildItem(QuarkusJobRepository.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(InMemoryJobRepositorySupplier.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JdbcJobRepositorySupplier.class));
+    }
+
+    @BuildStep
+    void customBatchProperty(
+            CombinedIndexBuildItem combinedIndex,
+            BeanDiscoveryFinishedBuildItem beanDiscovery,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
+
+        Set<DotName> typesWithProducer = new HashSet<>();
+        typesWithProducer.add(PrimitiveType.BYTE.name());
+        typesWithProducer.add(PrimitiveType.CHAR.name());
+        typesWithProducer.add(PrimitiveType.DOUBLE.name());
+        typesWithProducer.add(PrimitiveType.FLOAT.name());
+        typesWithProducer.add(PrimitiveType.INT.name());
+        typesWithProducer.add(PrimitiveType.LONG.name());
+        typesWithProducer.add(PrimitiveType.SHORT.name());
+        typesWithProducer.add(PrimitiveType.BOOLEAN.name());
+        ClassInfo batchBeanProducer = combinedIndex.getComputingIndex().getClassByName(BatchBeanProducer.class.getName());
+        for (MethodInfo method : batchBeanProducer.methods()) {
+            if (method.hasAnnotation(BATCH_PROPERTY)) {
+                typesWithProducer.add(method.returnType().name());
+            }
+        }
+
+        Set<Type> customTypes = new HashSet<>();
+        for (InjectionPointInfo injectionPoint : beanDiscovery.getInjectionPoints()) {
+            if (injectionPoint.hasDefaultedQualifier()) {
+                continue;
+            }
+
+            AnnotationInstance batchProperty = injectionPoint.getRequiredQualifier(BATCH_PROPERTY);
+            if (batchProperty != null) {
+                Type injectedType = injectionPoint.getRequiredType();
+                if (!typesWithProducer.contains(injectedType.name())) {
+                    customTypes.add(injectedType);
+                }
+            }
+        }
+
+        for (Type type : customTypes) {
+            if (type.kind() == Kind.ARRAY) {
+                continue;
+            }
+
+            reflectiveClass.produce(ReflectiveClassBuildItem.builder(type.name().toString()).methods()
+                    .reason(getClass().getName() + " Custom BatchProperty")
+                    .build());
+
+            syntheticBeans.produce(SyntheticBeanBuildItem.configure(BatchPropertyCreator.class)
+                    .creator(BatchPropertyCreator.class)
+                    .forceApplicationClass()
+                    .providerType(type)
+                    .types(type)
+                    .addQualifier(BATCH_PROPERTY)
+                    .setRuntimeInit()
+                    .param("type", type.name().toString())
+                    .done());
+        }
     }
 
     @BuildStep
