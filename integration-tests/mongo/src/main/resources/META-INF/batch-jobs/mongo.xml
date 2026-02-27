@@ -1,0 +1,31 @@
+<job id="mongo" xmlns="https://jakarta.ee/xml/ns/jakartaee"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/jobXML_2_0.xsd"
+     version="2.0">
+  <step id="mongoWriterChunk" next="mongoReadChunk">
+    <chunk item-count="2">
+      <reader ref="auctionJsonItemReader"/>
+      <writer ref="mongoItemWriter">
+        <properties>
+          <property name="database" value="auctions"/>
+          <property name="collection" value="auctions"/>
+          <property name="itemType" value="io.quarkiverse.jberet.it.mongo.Auction"/>
+        </properties>
+      </writer>
+    </chunk>
+  </step>
+  <step id="mongoReadChunk">
+    <chunk item-count="2">
+      <reader ref="mongoItemReader">
+        <properties>
+          <property name="database" value="auctions"/>
+          <property name="collection" value="auctions"/>
+          <property name="itemType" value="io.quarkiverse.jberet.it.mongo.Auction"/>
+          <property name="filter" value="{}"/>
+          <property name="projection" value="{}"/>
+        </properties>
+      </reader>
+      <writer ref="inMemoryItemWriter"/>
+    </chunk>
+  </step>
+</job>

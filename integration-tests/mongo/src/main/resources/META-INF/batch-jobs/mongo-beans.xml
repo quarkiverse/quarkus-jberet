@@ -1,0 +1,17 @@
+<job id="mongo-beans" xmlns="https://jakarta.ee/xml/ns/jakartaee"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/jobXML_2_0.xsd"
+     version="2.0">
+  <step id="mongoWriterChunk" next="mongoReadChunk">
+    <chunk>
+      <reader ref="auctionJsonItemReader"/>
+      <writer ref="auctionsMongoItemWriter"/>
+    </chunk>
+  </step>
+  <step id="mongoReadChunk">
+    <chunk>
+      <reader ref="auctionsMongoItemReader"/>
+      <writer ref="auctionsInMemoryItemWriter"/>
+    </chunk>
+  </step>
+</job>

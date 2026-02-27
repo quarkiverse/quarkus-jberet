@@ -1,0 +1,24 @@
+<job id="mongo-skip" xmlns="https://jakarta.ee/xml/ns/jakartaee"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/jobXML_2_0.xsd"
+     version="2.0">
+  <step id="mongoWriterChunk">
+    <listeners>
+      <listener ref="writeErrorListener"/>
+    </listeners>
+    <chunk item-count="3">
+      <reader ref="auctionJsonItemReader"/>
+      <writer ref="mongoItemWriter">
+        <properties>
+          <property name="mongoClient" value="skip"/>
+          <property name="database" value="auctions"/>
+          <property name="collection" value="auctions"/>
+          <property name="itemType" value="io.quarkiverse.jberet.it.mongo.Auction"/>
+        </properties>
+      </writer>
+      <skippable-exception-classes>
+        <include class="io.quarkiverse.jberet.it.mongo.WriteException"/>
+      </skippable-exception-classes>
+    </chunk>
+  </step>
+</job>

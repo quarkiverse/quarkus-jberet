@@ -26,6 +26,12 @@
             <artifactId>quarkus-hibernate-orm-deployment-spi</artifactId>
         </dependency>
 
+        <!-- For Mongo -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-mongodb-client-deployment</artifactId>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>io.quarkus</groupId>
