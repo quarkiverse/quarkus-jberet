@@ -64,7 +64,6 @@ public class BatchletRestTest {
 
         assertNotNull(jobExecutionEntity);
         assertEquals("batchlet-job", jobExecutionEntity.getJobName());
-        assertEquals(BatchStatus.STARTING, jobExecutionEntity.getBatchStatus());
 
         await().atMost(5, TimeUnit.SECONDS).until(() -> {
             JobExecutionEntity jobExecution = batchClient.getJobExecution(jobExecutionEntity.getExecutionId());

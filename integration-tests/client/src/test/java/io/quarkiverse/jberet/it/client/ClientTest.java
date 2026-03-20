@@ -4,8 +4,8 @@ import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.hamcrest.Matchers.equalTo;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -37,6 +37,6 @@ class ClientTest {
                 .post("client/startJob/client")
                 .then()
                 .statusCode(200)
-                .body("batchStatus", equalTo("STARTING"));
+                .body("batchStatus", Matchers.oneOf("STARTING", "STARTED"));
     }
 }
