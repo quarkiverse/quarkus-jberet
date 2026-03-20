@@ -7,7 +7,7 @@ h|[.header-title]##Configuration property##
 h|Type
 h|Default
 
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-type]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-type[`quarkus.jberet.repository.type`]##
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-type]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-type[`+++quarkus.jberet.repository.type+++`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.repository.type+++[]
 endif::add-copy-button-to-config-props[]
@@ -28,7 +28,7 @@ endif::add-copy-button-to-env-var[]
 |string
 |`+++in-memory+++`
 
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-datasource]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-datasource[`quarkus.jberet.repository.jdbc.datasource`]##
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-datasource]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-datasource[`+++quarkus.jberet.repository.jdbc.datasource+++`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.repository.jdbc.datasource+++[]
 endif::add-copy-button-to-config-props[]
@@ -49,7 +49,7 @@ endif::add-copy-button-to-env-var[]
 |string
 |`+++<default>+++`
 
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-ddl-file]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-ddl-file[`quarkus.jberet.repository.jdbc.ddl-file`]##
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-ddl-file]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-ddl-file[`+++quarkus.jberet.repository.jdbc.ddl-file+++`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.repository.jdbc.ddl-file+++[]
 endif::add-copy-button-to-config-props[]
@@ -70,7 +70,7 @@ endif::add-copy-button-to-env-var[]
 |string
 |
 
-a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-sql-file]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-sql-file[`quarkus.jberet.repository.jdbc.sql-file`]##
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-sql-file]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-sql-file[`+++quarkus.jberet.repository.jdbc.sql-file+++`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.repository.jdbc.sql-file+++[]
 endif::add-copy-button-to-config-props[]
@@ -93,7 +93,7 @@ endif::add-copy-button-to-env-var[]
 |string
 |
 
-a| [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-prefix]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-prefix[`quarkus.jberet.repository.jdbc.db-table-prefix`]##
+a| [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-prefix]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-prefix[`+++quarkus.jberet.repository.jdbc.db-table-prefix+++`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.repository.jdbc.db-table-prefix+++[]
 endif::add-copy-button-to-config-props[]
@@ -114,7 +114,7 @@ endif::add-copy-button-to-env-var[]
 |string
 |
 
-a| [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-suffix]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-suffix[`quarkus.jberet.repository.jdbc.db-table-suffix`]##
+a| [[quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-suffix]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-repository_quarkus-jberet-repository-jdbc-db-table-suffix[`+++quarkus.jberet.repository.jdbc.db-table-suffix+++`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.repository.jdbc.db-table-suffix+++[]
 endif::add-copy-button-to-config-props[]
