@@ -1,6 +1,5 @@
 package io.quarkiverse.jberet.it.jdbc;
 
-import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static io.restassured.RestAssured.given;
 import static jakarta.batch.runtime.BatchStatus.COMPLETED;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
@@ -18,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.vertx.http.HttpServer;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 
@@ -37,9 +37,11 @@ class JdbcItemTest {
         given().get("/auctions/statistics/clear").then().statusCode(200);
     }
 
+    HttpServer httpServer;
+
     @Test
     void jdbcProperties() throws Exception {
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
         JobExecutionEntity jobExecution = batchClient.startJob("jdbc-properties", new Properties());
 
         await().atMost(5, SECONDS)
@@ -51,7 +53,7 @@ class JdbcItemTest {
 
     @Test
     void jdbcBeans() throws Exception {
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
         JobExecutionEntity jobExecution = batchClient.startJob("jdbc-beans", new Properties());
 
         await().atMost(5, SECONDS)

@@ -1,6 +1,5 @@
 package io.quarkiverse.jberet.it.chunk;
 
-import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static io.restassured.RestAssured.given;
 import static jakarta.batch.runtime.BatchStatus.COMPLETED;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
@@ -20,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkiverse.jberet.it.chunk.BatchResource.JobData;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.vertx.http.HttpServer;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 
@@ -39,9 +39,11 @@ class AuctionsJobTest {
         RestAssured.reset();
     }
 
+    HttpServer httpServer;
+
     @Test
     void auctions() throws Exception {
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
 
         Properties properties = new Properties();
         properties.setProperty("auctions.file", "auctions.json");
@@ -66,7 +68,7 @@ class AuctionsJobTest {
                 .statusCode(200)
                 .extract().as(JobData.class);
 
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
 
         await().atMost(5, SECONDS)
                 .until(() -> COMPLETED.equals(batchClient.getJobExecution(jobData.getExecutionId()).getBatchStatus()));

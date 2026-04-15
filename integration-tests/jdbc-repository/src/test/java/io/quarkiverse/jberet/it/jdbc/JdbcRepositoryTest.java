@@ -1,6 +1,5 @@
 package io.quarkiverse.jberet.it.jdbc;
 
-import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static io.restassured.RestAssured.given;
 import static jakarta.batch.runtime.BatchStatus.COMPLETED;
 import static jakarta.batch.runtime.BatchStatus.FAILED;
@@ -26,6 +25,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.vertx.http.HttpServer;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 
@@ -49,10 +49,12 @@ class JdbcRepositoryTest {
         RestAssured.reset();
     }
 
+    HttpServer httpServer;
+
     @Test
     @Order(1)
     void jdbc() throws Exception {
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
         JobExecutionEntity execution = batchClient.startJob("jdbc", new Properties());
         await().atMost(5, SECONDS)
                 .until(() -> COMPLETED.equals(batchClient.getJobExecution(execution.getExecutionId()).getBatchStatus()));
@@ -72,7 +74,7 @@ class JdbcRepositoryTest {
 
     @Test
     void fail() throws Exception {
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
 
         Properties properties = new Properties();
         properties.setProperty("jdbc.batchlet.fail", "true");
@@ -83,7 +85,7 @@ class JdbcRepositoryTest {
 
     @Test
     void restart() throws Exception {
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
 
         Properties properties = new Properties();
         properties.setProperty("jdbc.batchlet.fail", "true");

@@ -1,6 +1,5 @@
 package io.quarkiverse.jberet.it.mailer;
 
-import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static io.restassured.RestAssured.given;
 import static jakarta.batch.runtime.BatchStatus.FAILED;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
@@ -30,6 +29,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.MockMailbox;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.vertx.http.HttpServer;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 
@@ -45,6 +45,8 @@ class MailerJobTest {
                     return ctx.next(requestSpec, responseSpec);
                 });
     }
+
+    HttpServer httpServer;
 
     @Inject
     MockMailbox mailbox;
@@ -81,7 +83,7 @@ class MailerJobTest {
     @Test
     @Order(2)
     void mailerJob() throws Exception {
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
 
         JobExecutionEntity auctions = batchClient.startJob("mailer", new Properties());
 

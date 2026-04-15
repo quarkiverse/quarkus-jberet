@@ -1,6 +1,5 @@
 package io.quarkiverse.jberet.it.scheduler;
 
-import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
@@ -25,6 +24,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.vertx.http.HttpServer;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 
@@ -44,6 +44,8 @@ class SchedulerTest {
     static void afterAll() {
         RestAssured.reset();
     }
+
+    HttpServer httpServer;
 
     @Test
     void schedule() {
@@ -69,7 +71,7 @@ class SchedulerTest {
                 .statusCode(200)
                 .extract().path("jobExecutionIds");
 
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
 
         JobExecutionEntity jobExecutionOne = batchClient.getJobExecution(jobExecutionIds.get(0));
         assertEquals("scheduler", jobExecutionOne.getJobName());

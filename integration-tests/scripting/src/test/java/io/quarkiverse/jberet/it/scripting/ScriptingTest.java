@@ -1,6 +1,5 @@
 package io.quarkiverse.jberet.it.scripting;
 
-import static io.quarkus.test.common.http.TestHTTPResourceManager.getUri;
 import static jakarta.batch.runtime.BatchStatus.COMPLETED;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
@@ -13,12 +12,15 @@ import org.jberet.rest.entity.JobExecutionEntity;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.vertx.http.HttpServer;
 
 @QuarkusTest
 public class ScriptingTest {
+    HttpServer httpServer;
+
     @Test
     void groovyInline() throws Exception {
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
 
         Properties properties = new Properties();
         properties.setProperty("testName", "groovyInline");
@@ -33,7 +35,7 @@ public class ScriptingTest {
 
     @Test
     void groovySrc() throws Exception {
-        BatchClient batchClient = new BatchClient(getUri());
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
 
         Properties properties = new Properties();
         properties.setProperty("testName", "batchletGroovySrc");
