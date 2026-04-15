@@ -169,6 +169,169 @@ Hints to the JDBC driver how many rows to fetch from the database:
 <property name="fetchSize" value="1"/>
 ----
 
+=== Flat File
+
+The Flat File components provide reading and writing of flat files (CSV or any line-based format) using custom
+line mapping and formatting. These components are ideal for:
+
+- Importing data from CSV or other delimited files
+- Exporting batch processing results to flat files
+- Transforming between file formats
+- Processing large files line by line without loading the entire file into memory
+
+==== FlatFileItemReader
+
+The `FlatFileItemReader` reads data from a flat file, mapping each line into an object using a `LineMapper`. The
+resource is resolved in order as a file path or a classpath resource.
+
+.FlatFileItemReader
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/file/AuctionFlatFileItemReaderProducer.java[]
+----
+
+The `FlatFileItemReader` requires:
+
+- A resource to read (file path or classpath resource)
+- A `LineMapper` to convert each line into a custom POJO
+
+==== LineMapper
+
+The `LineMapper` is a functional interface that maps a line of text to a POJO:
+
+.LineMapper
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/file/AuctionLineMapper.java[]
+----
+
+.Auction
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/file/Auction.java[]
+----
+
+The `LineMapper` receives the line content and the line number (starting at 1) and constructs the `Auction` object.
+
+==== FlatFileItemWriter
+
+The `FlatFileItemWriter` writes data to a flat file, formatting each item into a line using a `LineFormatter`.
+
+.FlatFileItemWriter
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/file/AuctionFlatFileItemWriterProducer.java[]
+----
+
+The `FlatFileItemWriter` requires:
+
+- A `Path` to the file to write
+- A `LineFormatter` to format each object into a line
+
+==== LineFormatter
+
+The `LineFormatter` is a functional interface that formats a POJO into a line of text:
+
+.LineFormatter
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/file/AuctionLineFormatter.java[]
+----
+
+The `LineFormatter` extracts values from an object and returns a `String` representation.
+
+==== The Job
+
+All Flat File components must be assembled in a Job definition:
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+    <step id="processAuctions">
+        <chunk>
+            <reader ref="auctionsItemReader"/>    <!--1-->
+            <writer ref="auctionsItemWriter"/>    <!--2-->
+        </chunk>
+    </step>
+</job>
+----
+
+<1> The `auctionsItemReader` is the CDI bean name of the `FlatFileItemReader` produced by the `AuctionFlatFileItemReaderProducer`
+<2> The `auctionsItemWriter` is the CDI bean name of the `FlatFileItemWriter` produced by the `AuctionFlatFileItemWriterProducer`
+
+To execute this Job:
+
+[source,java]
+----
+@Inject
+JobOperator jobOperator;
+
+void execute() {
+    long executionId = jobOperator.start("auctionsJob", new Properties());
+}
+----
+
+==== Configuration with Batch Properties
+
+Instead of using CDI producers, the `FlatFileItemReader` and `FlatFileItemWriter` can be configured directly
+in the Job XML using batch properties and their built-in reference names `flatFileItemReader` and `flatFileItemWriter`:
+
+.auctionsJob.xml
+[source,xml]
+----
+include::{examples-dir}/org/acme/batch/components/file/auctionsJob.xml[]
+----
+
+<1> Reference the built-in `flatFileItemReader` `FlatFileItemReader`
+<2> Specify the resource to read (file path or classpath resource)
+<3> Specify the CDI bean name of the `LineMapper`
+<4> Reference the built-in `flatFileItemWriter` `FlatFileItemWriter`
+<5> Specify the file path to write
+<6> Specify the CDI bean name of the `LineFormatter`
+
+Additionally, the following properties can be configured:
+
+**For `flatFileItemReader`:**
+
+**encoding** (optional)::
+The file encoding to use when reading the file. Defaults to `UTF-8`:
+[source,xml]
+----
+<property name="encoding" value="ISO-8859-1"/>
+----
+
+**linesToSkip** (optional)::
+The number of header lines to skip at the beginning of the file. Defaults to `0`:
+[source,xml]
+----
+<property name="linesToSkip" value="1"/>
+----
+
+**For `flatFileItemWriter`:**
+
+**encoding** (optional)::
+The file encoding to use when writing the file. Defaults to `UTF-8`:
+[source,xml]
+----
+<property name="encoding" value="ISO-8859-1"/>
+----
+
+**lineSeparator** (optional)::
+The line separator to use. Defaults to the system line separator:
+[source,xml]
+----
+<property name="lineSeparator" value="\n"/>
+----
+
+**append** (optional)::
+Whether to append to the file instead of overwriting it. Defaults to `false`:
+[source,xml]
+----
+<property name="append" value="true"/>
+----
+
 === MongoDB
 
 The MongoDB components provide efficient reading and writing of documents using the MongoDB Java Driver with full

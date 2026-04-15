@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+	<step id="processAuctions">
+		<chunk item-count="100">
+			<reader ref="flatFileItemReader">
+				<!--1-->
+				<properties>
+					<!--2-->
+					<property name="resource" value="auctions.csv" />
+					<!--3-->
+					<property name="lineMapper" value="auctionLineMapper" />
+				</properties>
+			</reader>
+			<writer ref="flatFileItemWriter">
+				<!--4-->
+				<properties>
+					<!--5-->
+					<property name="resource" value="/tmp/auctions-output.csv" />
+					<!--6-->
+					<property name="lineFormatter" value="auctionLineFormatter" />
+				</properties>
+			</writer>
+		</chunk>
+	</step>
+</job>
