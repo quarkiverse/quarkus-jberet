@@ -18,7 +18,7 @@
     <maven.compiler.target>17</maven.compiler.target>
 
     <version.install.plugin>3.1.4</version.install.plugin>
-    <version.sundrio.plugin>0.240.1</version.sundrio.plugin>
+    <version.sundrio.plugin>0.300.0</version.sundrio.plugin>
 
     <quarkus.version>3.34.5</quarkus.version>
     <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
