@@ -16,9 +16,6 @@ import jakarta.inject.Named;
 
 import org.jberet.spi.ArtifactFactory;
 
-import io.agroal.pool.ConnectionHandler;
-import io.agroal.pool.ConnectionHandler.State;
-import io.agroal.pool.wrapper.ConnectionWrapper;
 import io.quarkiverse.jberet.runtime.api.ItemReader;
 
 /**
@@ -87,7 +84,7 @@ public class JdbcCursorItemReader<T> implements ItemReader<T> {
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
-        connection = detachConnection(dataSource.getConnection());
+        connection = dataSource.getConnection();
         if (connectionAutoCommit != null) {
             connection.setAutoCommit(connectionAutoCommit);
         }
@@ -157,19 +154,5 @@ public class JdbcCursorItemReader<T> implements ItemReader<T> {
     public JdbcCursorItemReader<T> setFetchSize(int fetchSize) {
         this.fetchSize = fetchSize;
         return this;
-    }
-
-    /**
-     * Retrieves the real JDBC Connection instead of the wrapped Connection returned by Agroal. Agroal wrapped
-     * connection automatically closes all Closeable elements associated with the Connection on commit, not honoring
-     * ResultSet.HOLD_CURSORS_OVER_COMMIT. This also detach the connection from the pool, so it doesn't get acquired
-     * before it is closed manually by the reader.
-     */
-    private static Connection detachConnection(final Connection connection) {
-        ConnectionWrapper connectionWrapper = ((ConnectionWrapper) connection);
-        ConnectionHandler handler = connectionWrapper.getHandler();
-        handler.setState(State.CHECKED_OUT, State.FLUSH);
-        handler.transactionBeforeCompletion(false);
-        return handler.detachedWrapper();
     }
 }
