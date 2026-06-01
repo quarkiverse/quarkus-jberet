@@ -21,7 +21,7 @@ To use the extension, add the dependency to the target project:
     <dependency>
       <groupId>io.quarkiverse.jberet</groupId>
       <artifactId>quarkus-jberet-bom</artifactId>
-      <version>2.8.0</version>
+      <version>2.9.1</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
