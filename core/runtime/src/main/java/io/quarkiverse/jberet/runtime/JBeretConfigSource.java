@@ -32,10 +32,11 @@ public class JBeretConfigSource implements ConfigSource {
             final Properties properties = getCurrentArtifactCreationContext().getProperties();
             if (properties != null) {
                 String value = properties.get(propertyName);
-                return value.isEmpty() ? null : value;
+                if (value != null && !value.isEmpty()) {
+                    return value;
+                }
             }
         }
-
         return null;
     }
 
