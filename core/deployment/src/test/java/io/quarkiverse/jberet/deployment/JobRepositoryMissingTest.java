@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 class JobRepositoryMissingTest {
     @RegisterExtension
-    static QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(DummyBatchlet.class)
                     .addAsManifestResource("batchlet.xml", "batch-jobs/batchlet.xml"))

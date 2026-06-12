@@ -34,11 +34,11 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class ChunkTest {
     @RegisterExtension
-    static QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addAsResource("people.txt")
                     .addAsManifestResource("chunk.xml", "batch-jobs/chunk.xml"))

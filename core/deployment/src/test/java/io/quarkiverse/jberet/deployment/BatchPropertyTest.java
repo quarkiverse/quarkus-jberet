@@ -24,11 +24,11 @@ import org.jberet.job.model.StepBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class BatchPropertyTest {
     @RegisterExtension
-    static QuarkusUnitTest TEST = new QuarkusUnitTest();
+    static QuarkusExtensionTest TEST = new QuarkusExtensionTest();
 
     @Test
     void batchProperty() {
