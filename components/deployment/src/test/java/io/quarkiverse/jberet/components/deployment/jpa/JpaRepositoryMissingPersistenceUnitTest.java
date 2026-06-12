@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.runtime.configuration.ConfigurationException;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 class JpaRepositoryMissingPersistenceUnitTest {
     @RegisterExtension
-    static QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class))
             .overrideConfigKey("quarkus.jberet.repository.type", "jpa")
             .overrideConfigKey("quarkus.jberet.repository.jpa.persistence-unit-name", "other")

@@ -27,12 +27,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.jberet.runtime.QuarkusJobOperator;
 import io.quarkus.logging.Log;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class MaxAsyncJobExecutorConfigTest {
 
     @RegisterExtension
-    static QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(ConfigParamsTest.ConfigBatchlet.class)
                     .addAsResource(new StringAsset("quarkus.jberet.max-async=1"),
