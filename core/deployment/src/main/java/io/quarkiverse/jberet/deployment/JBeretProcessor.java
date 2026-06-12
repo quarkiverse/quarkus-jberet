@@ -57,6 +57,7 @@ import io.quarkiverse.jberet.runtime.JBeretRecorder;
 import io.quarkiverse.jberet.runtime.JobProcessor;
 import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
 import io.quarkiverse.jberet.runtime.JobsProducer;
+import io.quarkiverse.jberet.runtime.QuarkusJobLauncher;
 import io.quarkiverse.jberet.runtime.QuarkusJobRepository;
 import io.quarkiverse.jberet.runtime.QuarkusJobScheduler;
 import io.quarkiverse.jberet.runtime.repository.InMemoryJobRepositorySupplier;
@@ -136,6 +137,7 @@ class JBeretProcessor {
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JobsProducer.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(QuarkusJobScheduler.class));
+        additionalBeans.produce(new AdditionalBeanBuildItem(QuarkusJobLauncher.class));
 
         additionalBeans.produce(new AdditionalBeanBuildItem(QuarkusJobRepository.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(InMemoryJobRepositorySupplier.class));

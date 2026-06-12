@@ -71,6 +71,7 @@
     <module>scripting</module>
     <module>scopes</module>
     <module>mailer</module>
+    <module>job-launcher</module>
     <module>mongo</module>
     <module>tck</module>
   </modules>

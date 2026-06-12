@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="restart" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0" restartable="true">
+  <step id="restartStep">
+    <batchlet ref="restartBatchlet"/>
+  </step>
+</job>
