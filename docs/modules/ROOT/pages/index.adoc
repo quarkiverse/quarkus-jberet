@@ -62,16 +62,33 @@ Quarkus using the MicroProfile Config API and keep consistency:
 @BatchProperty(name = "job.config.name")
 String batchConfig;
 
-// This is equivalent to @BatchProperty injection
+// Use Optional or set a defaultValue (see note below)
 @ConfigProperty(name = "job.config.name")
 Optional<String> mpConfig;
 ----
 
 [IMPORTANT]
 ====
-Although, there is a slight limitation: since job configuration is mostly dynamic and only injected on job execution,
-Quarkus may fail to start due to invalid configuration (cannot find the Job configuration values). In this case,
-configuration injection points with the `@ConfigProperty` annotation must set a default value or use an `Optional`.
+Batch properties are only available during job execution, not at application startup. Because Quarkus validates
+`@ConfigProperty` injection points at startup, using `@ConfigProperty` without `Optional` or `defaultValue` will cause a
+`ConfigurationException`. Always use `Optional<T>` or set a `defaultValue`:
+
+[source,java]
+----
+// OK - Optional
+@ConfigProperty(name = "job.config.name")
+Optional<String> mpConfig;
+
+// OK - defaultValue
+@ConfigProperty(name = "job.config.name", defaultValue = "")
+String mpConfig;
+
+// FAILS at startup - batch property value is not yet available
+@ConfigProperty(name = "job.config.name")
+String mpConfig;
+----
+
+This restriction does not apply to `@BatchProperty`, which is only resolved during job execution.
 ====
 
 Also, `@BatchProperty` injection fallbacks to Quarkus Config
