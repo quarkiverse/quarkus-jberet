@@ -153,6 +153,54 @@ public static class JobProducer {
 A `Job` registered with CDI will be named by the `@Named#value` attribute or by the method name. The
 `@Named` annotation is required regardless. This is the named used by `JobOperator` to locate and execute a `Job`.
 
+== Job Launcher
+
+The `QuarkusJobLauncher` provides a simplified way to start and run batch jobs synchronously. Unlike the standard
+`JobOperator`, which always starts jobs asynchronously, the `QuarkusJobLauncher` blocks until the job completes and
+returns the final `JobExecution`:
+
+[source,java]
+----
+@Inject
+QuarkusJobLauncher jobLauncher;
+
+void execute() throws Exception {
+    JobExecution execution = jobLauncher.run("myJob", new Properties());
+    // Execution is already complete here
+    BatchStatus status = execution.getBatchStatus();
+}
+----
+
+The `run` method also handles restart automatically. If the most recent execution of the job is `FAILED` or `STOPPED`,
+calling `run` will restart it from the last checkpoint instead of creating a new job instance. If the job has never been
+run or the last execution completed successfully, a new job instance is created.
+
+=== Command Mode with `@QuarkusMain`
+
+The `QuarkusJobLauncher` is designed to work with Quarkus
+https://quarkus.io/guides/lifecycle#the-main-method[Command Mode]. This allows you to run a batch job as a CLI
+application that starts, executes the job, and exits:
+
+[source,java]
+----
+@QuarkusMain
+public class BatchApplication implements QuarkusApplication {
+    @Inject
+    QuarkusJobLauncher jobLauncher;
+
+    @Override
+    public int run(String... args) throws Exception {
+        Properties jobParameters = new Properties();
+        // args can be used to set job parameters
+        JobExecution execution = jobLauncher.run("myJob", jobParameters);
+        return execution.getBatchStatus() == BatchStatus.COMPLETED ? 0 : 1;
+    }
+}
+----
+
+The application will start Quarkus, execute the batch job, and return an exit code based on the job result. This is
+useful for scheduled batch processing via cron, CI/CD pipelines, or any scenario where the job should run once and exit.
+
 // TODO - Rewrite
 == Scheduler
 
@@ -252,6 +300,7 @@ Example applications can be found inside the `integration-tests` folder:
 - `chunk` - A simple Job that reads, processes, and stores data from a file.
 - `jdbc-repository` - A Job that uses a `jdbc` datasource to store JBeret and Job metadata.
 - `scheduler` - Schedule a Job to run every 10 seconds
+- `job-launcher` - A `@QuarkusMain` application using `QuarkusJobLauncher` with start and restart
 
 Or take a look into the https://github.com/radcortez/wow-auctions[World of Warcraft Auctions - Batch Application]. It
 downloads the World of Warcraft Auction House data and provides statistics about items prices.
