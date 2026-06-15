@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+	<step id="processAuctions">
+		<chunk item-count="100">
+			<reader ref="jpaItemReader"> <!--1-->
+				<properties>
+					<!--2-->
+					<property name="query" value="SELECT a FROM Auction a ORDER BY a.id"/>
+					<!--3-->
+					<property name="entityType" value="org.acme.batch.components.jpa.Auction"/>
+				</properties>
+			</reader>
+			<writer ref="jpaItemWriter"/> <!--4-->
+		</chunk>
+	</step>
+</job>

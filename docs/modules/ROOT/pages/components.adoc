@@ -169,6 +169,152 @@ Hints to the JDBC driver how many rows to fetch from the database:
 <property name="fetchSize" value="1"/>
 ----
 
+=== JPA
+
+The JPA components provide reading and writing of JPA entities using JPQL queries with automatic pagination. These
+components are ideal for:
+
+- Processing JPA entities using standard JPQL queries
+- Migrating data between JPA-managed tables
+- Bulk processing with automatic pagination to avoid loading entire tables into memory
+- Leveraging existing JPA entity mappings in batch jobs
+
+[NOTE]
+====
+JPA components support requires the https://quarkus.io/guides/hibernate-orm[Quarkus Hibernate ORM] extension.
+====
+
+To use the JPA components, add the Hibernate ORM extension to your build file:
+
+[source,xml,subs=attributes+,role="primary asciidoc-tabs-target-sync-cli asciidoc-tabs-target-sync-maven"]
+.pom.xml
+----
+<dependency>
+  <groupId>io.quarkus</groupId>
+  <artifactId>quarkus-hibernate-orm</artifactId>
+</dependency>
+----
+
+[source,gradle,subs=attributes+,role="secondary asciidoc-tabs-target-sync-gradle"]
+.build.gradle
+----
+implementation("io.quarkus:quarkus-hibernate-orm")
+----
+
+[NOTE]
+====
+It also requires the JBeret Component dependency. See <<installation,Installation>>.
+====
+
+==== JpaItemReader
+
+The `JpaItemReader` reads JPA entities using a JPQL query with automatic pagination. Since JPA does not support
+database cursors natively, the reader pages through results by issuing repeated queries, fetching one page at a time
+without loading the entire result set into memory.
+
+.JpaItemReader
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/jpa/AuctionJpaItemReaderProducer.java[]
+----
+
+The `JpaItemReader` requires:
+
+- An `EntityManager` to query the data
+- A JPQL query to execute
+- The entity class type
+
+.Auction
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/jpa/Auction.java[]
+----
+
+==== JpaItemWriter
+
+The `JpaItemWriter` writes JPA entities using `EntityManager.merge()`. The writer operates within the transaction
+boundaries defined by the chunk step.
+
+.JpaItemWriter
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/jpa/AuctionJpaItemWriterProducer.java[]
+----
+
+The `JpaItemWriter` requires:
+
+- An `EntityManager` to persist the data
+
+.AuctionStatistics
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/jpa/AuctionStatistics.java[]
+----
+
+==== The Job
+
+All JPA components must be assembled in a Job definition:
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+    <step id="processAuctions">
+        <chunk>
+            <reader ref="auctionsItemReader"/>    <!--1-->
+            <writer ref="auctionsItemWriter"/>    <!--2-->
+        </chunk>
+    </step>
+</job>
+----
+
+<1> The `auctionsItemReader` is the CDI bean name of the `JpaItemReader` produced by the `AuctionJpaItemReaderProducer`
+<2> The `auctionsItemWriter` is the CDI bean name of the `JpaItemWriter` produced by the `AuctionJpaItemWriterProducer`
+
+To execute this Job:
+
+[source,java]
+----
+@Inject
+JobOperator jobOperator;
+
+void execute() {
+    long executionId = jobOperator.start("auctionsJob", new Properties());
+}
+----
+
+==== Configuration with Batch Properties
+
+Instead of using CDI producers, the `JpaItemReader` and `JpaItemWriter` can be configured directly
+in the Job XML using batch properties and their built-in reference names `jpaItemReader` and `jpaItemWriter`:
+
+.auctionsJob.xml
+[source,xml]
+----
+include::{examples-dir}/org/acme/batch/components/jpa/auctionsJob.xml[]
+----
+
+<1> Reference the built-in `jpaItemReader` `JpaItemReader`
+<2> Specify the JPQL query to execute
+<3> Specify the fully qualified class name of the entity type
+<4> Reference the built-in `jpaItemWriter` `JpaItemWriter`
+
+[NOTE]
+====
+When using batch properties, the `persistenceUnit` property is optional. If not specified, the default (unnamed)
+persistence unit is used. For named persistence units, use: `<property name="persistenceUnit" value="namedUnit"/>`
+====
+
+Additionally, the following properties can be configured for the `jpaItemReader`:
+
+**pageSize** (optional)::
+The number of results to fetch per page. Defaults to `10`:
+[source,xml]
+----
+<property name="pageSize" value="100"/>
+----
+
 === Flat File
 
 The Flat File components provide reading and writing of flat files (CSV or any line-based format) using custom
