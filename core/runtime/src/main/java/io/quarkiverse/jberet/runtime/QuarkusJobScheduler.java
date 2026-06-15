@@ -69,10 +69,10 @@ public class QuarkusJobScheduler extends JobScheduler {
                 jobDefinition.setCron(toCronExpression(scheduleConfig.getScheduleExpression()));
             }
         } else if (scheduleConfig.getInterval() <= 0 && scheduleConfig.getAfterDelay() <= 0) {
-            jobDefinition.setDelayed(String.valueOf(scheduleConfig.getInitialDelay()));
+            jobDefinition.setDelayed(scheduleConfig.getInitialDelay() + "m");
         } else if (scheduleConfig.getInterval() > 0) {
-            jobDefinition.setDelayed(String.valueOf(scheduleConfig.getInitialDelay()));
-            jobDefinition.setInterval(String.valueOf(scheduleConfig.getInterval()));
+            jobDefinition.setDelayed(scheduleConfig.getInitialDelay() + "m");
+            jobDefinition.setInterval(scheduleConfig.getInterval() + "m");
         } else {
             // TODO - Quarkus Scheduler does not support scheduleWithFixedDelay
             throw new UnsupportedOperationException();
