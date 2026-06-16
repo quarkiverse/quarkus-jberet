@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="jpa-properties" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <step id="jpaStep">
+        <chunk item-count="3">
+            <reader ref="jpaItemReader">
+                <properties>
+                    <property name="query" value="SELECT a FROM Auction a ORDER BY a.id"/>
+                    <property name="entityType" value="io.quarkiverse.jberet.it.jpa.Auction"/>
+                </properties>
+            </reader>
+            <processor ref="auctionStatisticsProcessor"/>
+            <writer ref="jpaItemWriter"/>
+        </chunk>
+    </step>
+</job>
