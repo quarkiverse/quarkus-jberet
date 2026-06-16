@@ -21,7 +21,7 @@ To use the extension, add the dependency to the target project:
     <dependency>
       <groupId>io.quarkiverse.jberet</groupId>
       <artifactId>quarkus-jberet-bom</artifactId>
-      <version>2.10.0</version>
+      <version>2.11.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -35,7 +35,7 @@ To use the extension, add the dependency to the target project:
 </dependencies>
 ```
 
-:information_source: **Recommended Quarkus version: `3.28.1` or higher**
+:information_source: **Recommended Quarkus version: `3.36.0` or higher**
 
 The Batch API and Runtime will be available out of the box. Please refer to the
 [Jakarta Batch documentation](https://jakarta.ee/specifications/batch/2.1/jakarta-batch-spec-2.1), and
