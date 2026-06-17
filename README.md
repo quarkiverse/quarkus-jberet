@@ -52,6 +52,7 @@ Example applications can be found inside the `integration-tests` folder:
 - `chunk` - A simple Job that reads, processes, and stores data from a file.
 - `jdbc-repository` - A Job that uses a `jdbc` datasource to store JBeret and Job metadata.
 - `scheduler` - Schedule a Job to run every 10 seconds
+- `job-launcher` - A `@QuarkusMain` application using `QuarkusJobLauncher` with start and restart
 
 Or take a look into the [World of Warcraft Auctions - Batch Application](https://github.com/radcortez/wow-auctions). It
 downloads the World of Warcraft Auction House data and provides statistics about items prices.
