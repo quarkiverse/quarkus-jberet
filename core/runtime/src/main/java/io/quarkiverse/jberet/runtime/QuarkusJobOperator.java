@@ -48,7 +48,7 @@ public class QuarkusJobOperator extends AbstractJobOperator {
     @Override
     public long start(final String jobXMLName, final Properties jobParameters)
             throws JobStartException, JobSecurityException {
-        return start(jobXMLName, jobParameters, null);
+        return start(jobXMLName, jobParameters != null ? jobParameters : new Properties(), null);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class QuarkusJobOperator extends AbstractJobOperator {
     public long restart(final long executionId, final Properties restartParameters)
             throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException,
             JobRestartException, JobSecurityException {
-        return restart(executionId, restartParameters, null);
+        return restart(executionId, restartParameters != null ? restartParameters : new Properties(), null);
     }
 
     @Override
