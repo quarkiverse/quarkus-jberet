@@ -138,14 +138,60 @@ public class QuarkusJobScheduler extends JobScheduler {
         return TRIGGER_ID_PREFIX + jobName + "-" + ids.getAndIncrement();
     }
 
-    private String toCronExpression(final ScheduleExpression scheduleExpression) {
+    static String toCronExpression(final ScheduleExpression scheduleExpression) {
+        String dayOfMonth = scheduleExpression.getDayOfMonth();
+        String dayOfWeek = toDayOfWeek(scheduleExpression.getDayOfWeek());
+
+        if (!"*".equals(dayOfWeek) && !"?".equals(dayOfWeek)) {
+            dayOfMonth = "?";
+        } else if (!"*".equals(dayOfMonth) && !"?".equals(dayOfMonth)) {
+            dayOfWeek = "?";
+        } else {
+            dayOfWeek = "?";
+        }
+
         return scheduleExpression.getSecond() + " " +
                 scheduleExpression.getMinute() + " " +
                 scheduleExpression.getHour() + " " +
-                scheduleExpression.getDayOfMonth() + " " +
+                dayOfMonth + " " +
                 scheduleExpression.getMonth() + " " +
-                scheduleExpression.getDayOfWeek() + " " +
+                dayOfWeek + " " +
                 scheduleExpression.getYear();
+    }
+
+    // EJB: 0=Sun, 1=Mon, ..., 6=Sat, 7=Sun
+    // Quartz: 1=Sun, 2=Mon, ..., 7=Sat
+    static String toDayOfWeek(String dayOfWeek) {
+        if (dayOfWeek == null || dayOfWeek.equals("*") || dayOfWeek.equals("?")) {
+            return dayOfWeek;
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (String listPart : dayOfWeek.split(",")) {
+            if (!result.isEmpty()) {
+                result.append(",");
+            }
+            if (listPart.contains("/")) {
+                String[] parts = listPart.split("/", 2);
+                result.append(convertDayOfWeek(parts[0])).append("/").append(parts[1]);
+            } else if (listPart.contains("-")) {
+                String[] parts = listPart.split("-", 2);
+                result.append(convertDayOfWeek(parts[0])).append("-").append(convertDayOfWeek(parts[1]));
+            } else {
+                result.append(convertDayOfWeek(listPart));
+            }
+        }
+        return result.toString();
+    }
+
+    static String convertDayOfWeek(String token) {
+        try {
+            int value = Integer.parseInt(token.trim());
+            int convertedValue = (value == 0 || value == 7) ? 1 : value + 1;
+            return String.valueOf(convertedValue);
+        } catch (NumberFormatException e) {
+            return token;
+        }
     }
 
     public static class Delegate extends JobScheduler {

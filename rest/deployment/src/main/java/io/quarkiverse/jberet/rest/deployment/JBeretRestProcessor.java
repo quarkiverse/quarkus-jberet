@@ -10,8 +10,11 @@ import static io.quarkus.deployment.Capability.REST_CLIENT_REACTIVE_JACKSON;
 import static io.quarkus.deployment.Capability.REST_CLIENT_REACTIVE_JSONB;
 
 import io.quarkiverse.jberet.rest.runtime.JBeretRestProducer;
+import io.quarkiverse.jberet.rest.runtime.ScheduleExpressionJsonbConfigCustomizer;
+import io.quarkiverse.jberet.rest.runtime.ScheduleExpressionObjectMapperCustomizer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
@@ -44,7 +47,13 @@ class JBeretRestProcessor {
     }
 
     @BuildStep
-    void additionalBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
+    void additionalBeans(Capabilities capabilities, BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
         additionalBeans.produce(new AdditionalBeanBuildItem(JBeretRestProducer.class));
+        if (capabilities.isPresent(Capability.JACKSON)) {
+            additionalBeans.produce(new AdditionalBeanBuildItem(ScheduleExpressionObjectMapperCustomizer.class));
+        }
+        if (capabilities.isPresent(Capability.JSONB)) {
+            additionalBeans.produce(new AdditionalBeanBuildItem(ScheduleExpressionJsonbConfigCustomizer.class));
+        }
     }
 }
