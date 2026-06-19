@@ -4,26 +4,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.ejb.ScheduleExpression;
-import jakarta.inject.Inject;
 
 import org.jberet.schedule.JobScheduleConfig;
 import org.jberet.schedule.JobScheduleConfigBuilder;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.quarkus.test.QuarkusExtensionTest;
+import io.quarkiverse.jberet.rest.runtime.ScheduleExpressionObjectMapperCustomizer;
 
 public class ScheduleExpressionJacksonTest {
-    @RegisterExtension
-    static QuarkusExtensionTest TEST = new QuarkusExtensionTest()
-            .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class));
+    static ObjectMapper objectMapper;
 
-    @Inject
-    ObjectMapper objectMapper;
+    @BeforeAll
+    static void setUp() {
+        objectMapper = new ObjectMapper();
+        new ScheduleExpressionObjectMapperCustomizer().customize(objectMapper);
+    }
 
     @Test
     void scheduleExpressionRoundTrip() throws Exception {
