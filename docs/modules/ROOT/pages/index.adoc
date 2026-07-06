@@ -293,6 +293,35 @@ void start() throws Exception {
 }
 ----
 
+The full list of all API endpoints:
+
+[cols="1,5"]
+|===
+|GET     |/jobexecutions
+|GET     |/jobexecutions/running
+|GET     |/jobexecutions/{jobExecutionId : \d+}
+|POST    |/jobexecutions/{jobExecutionId}/abandon
+|POST    |/jobexecutions/{jobExecutionId}/restart
+|POST    |/jobexecutions/{jobExecutionId}/resubmit
+|POST    |/jobexecutions/{jobExecutionId}/schedule
+|GET     |/jobexecutions/{jobExecutionId}/stepexecutions
+|GET     |/jobexecutions/{jobExecutionId}/stepexecutions/{stepExecutionId}
+|POST    |/jobexecutions/{jobExecutionId}/stop
+|GET     |/jobinstances
+|GET     |/jobinstances/count
+|GET     |/jobs
+|POST    |/jobs/submit
+|POST    |/jobs/{jobXmlName}/restart
+|POST    |/jobs/{jobXmlName}/schedule
+|POST    |/jobs/{jobXmlName}/start
+|GET     |/schedules
+|GET     |/schedules/features
+|GET     |/schedules/timezones
+|GET     |/schedules/{scheduleId : .*\d+.*}
+|DELETE  |/schedules/{scheduleId}
+|POST    |/schedules/{scheduleId}/cancel
+|===
+
 == Example Applications
 
 Example applications can be found inside the `integration-tests` folder:
