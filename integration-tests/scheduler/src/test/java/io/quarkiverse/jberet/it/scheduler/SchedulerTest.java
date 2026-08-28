@@ -55,14 +55,24 @@ class SchedulerTest {
                 .statusCode(200)
                 .body("status", equalTo("SCHEDULED"));
 
-        await().atMost(35, TimeUnit.SECONDS).until(() -> {
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
+
+        await().atMost(60, TimeUnit.SECONDS).until(() -> {
             List<Integer> jobExecutionIds = given()
                     .get("/schedules/{scheduleId}/", "quarkus-jberet-scheduler-1")
                     .then()
                     .statusCode(200)
                     .extract()
                     .path("jobExecutionIds");
-            return jobExecutionIds.size() > 2;
+            if (jobExecutionIds.size() < 3) {
+                return false;
+            }
+            for (int i = 0; i < 3; i++) {
+                if (batchClient.getJobExecution(jobExecutionIds.get(i)).getBatchStatus() != BatchStatus.COMPLETED) {
+                    return false;
+                }
+            }
+            return true;
         });
 
         List<Integer> jobExecutionIds = given()
@@ -70,8 +80,6 @@ class SchedulerTest {
                 .then()
                 .statusCode(200)
                 .extract().path("jobExecutionIds");
-
-        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
 
         JobExecutionEntity jobExecutionOne = batchClient.getJobExecution(jobExecutionIds.get(0));
         assertEquals("scheduler", jobExecutionOne.getJobName());
