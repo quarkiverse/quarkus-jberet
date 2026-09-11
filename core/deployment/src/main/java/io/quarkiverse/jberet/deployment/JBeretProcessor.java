@@ -368,7 +368,8 @@ class JBeretProcessor {
 
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
-    ServiceStartBuildItem init(JBeretRecorder recorder,
+    ServiceStartBuildItem init(
+            JBeretRecorder recorder,
             BeanContainerBuildItem beanContainer) {
 
         recorder.init(beanContainer.getValue());
