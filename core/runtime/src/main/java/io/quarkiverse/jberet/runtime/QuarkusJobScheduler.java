@@ -17,6 +17,7 @@ import org.jberet.schedule.JobSchedule;
 import org.jberet.schedule.JobScheduleConfig;
 import org.jberet.schedule.JobScheduleConfigBuilder;
 import org.jberet.schedule.JobScheduler;
+import org.jboss.logging.Logger;
 
 import io.quarkiverse.jberet.runtime.JBeretRuntimeConfig.JobConfig;
 import io.quarkus.arc.Arc;
@@ -26,9 +27,12 @@ import io.quarkus.scheduler.ScheduledExecution;
 import io.quarkus.scheduler.Scheduler;
 import io.quarkus.scheduler.Scheduler.JobDefinition;
 import io.quarkus.scheduler.Trigger;
+import io.quarkus.scheduler.runtime.SchedulerRuntimeConfig;
 
 @ApplicationScoped
 public class QuarkusJobScheduler extends JobScheduler {
+    private static final Logger log = Logger.getLogger("io.quarkiverse.jberet");
+
     private static final String TRIGGER_ID_PREFIX = "quarkus-jberet-";
 
     private final AtomicInteger ids = new AtomicInteger(1);
@@ -36,6 +40,8 @@ public class QuarkusJobScheduler extends JobScheduler {
 
     @Inject
     JBeretRuntimeConfig config;
+    @Inject
+    SchedulerRuntimeConfig schedulerConfig;
     @Inject
     InjectableInstance<Scheduler> scheduler;
     @Inject
@@ -46,6 +52,12 @@ public class QuarkusJobScheduler extends JobScheduler {
         for (String jobName : jobOperator.getJobNames()) {
             JobConfig jobConfig = config.job().get(jobName);
             if (jobConfig.cron().isPresent()) {
+                if (!schedulerConfig.enabled()) {
+                    log.warn("The JobScheduler is disabled, but the Job \"" + jobName + "\" is configured to be scheduled at \""
+                            + jobConfig.cron().get() + "\"");
+                    continue;
+                }
+
                 JobScheduleConfig scheduleConfig = JobScheduleConfigBuilder.newInstance()
                         .jobName(jobName)
                         .jobParameters(jobConfig.paramsAsProperties())
@@ -194,12 +206,16 @@ public class QuarkusJobScheduler extends JobScheduler {
         }
     }
 
+    /**
+     * Required so we can call {@link JobScheduler#getJobScheduler(Class, ConcurrentMap, String)} to register the
+     * JobScheduler. The method creates a new instance of the JobScheduler reflectively and registers it internally.
+     * Subsequent calls to <code>getJobScheduler</code> return the previously created instance.
+     */
     public static class Delegate extends JobScheduler {
-        JobScheduler delegate;
+        private final JobScheduler delegate;
 
         public Delegate() {
-            InjectableInstance<JobScheduler> jobSchedulers = Arc.container().select(JobScheduler.class);
-            delegate = jobSchedulers.isUnsatisfied() ? new NoOpJobScheduler() : jobSchedulers.get();
+            delegate = Arc.container().select(JobScheduler.class).get();
         }
 
         @Override
@@ -230,38 +246,6 @@ public class QuarkusJobScheduler extends JobScheduler {
         @Override
         public JobSchedule getJobSchedule(String scheduleId) {
             return delegate.getJobSchedule(scheduleId);
-        }
-    }
-
-    private static class NoOpJobScheduler extends JobScheduler {
-        @Override
-        public String[] getFeatures() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void delete(String scheduleId) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public JobSchedule schedule(JobScheduleConfig scheduleConfig) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<JobSchedule> getJobSchedules() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean cancel(String scheduleId) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public JobSchedule getJobSchedule(String scheduleId) {
-            throw new UnsupportedOperationException();
         }
     }
 }

@@ -23,6 +23,7 @@ import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.ThreadPoolConfig;
 import io.quarkus.runtime.annotations.Recorder;
+import io.quarkus.scheduler.runtime.SchedulerRuntimeConfig;
 import io.smallrye.config.ConfigValue;
 import io.smallrye.config.DefaultValuesConfigSource;
 import io.smallrye.config.SmallRyeConfig;
@@ -31,10 +32,15 @@ import io.smallrye.config.SmallRyeConfig;
 public class JBeretRecorder {
     private final RuntimeValue<JBeretRuntimeConfig> config;
     private final RuntimeValue<ThreadPoolConfig> threadPoolConfig;
+    private final RuntimeValue<SchedulerRuntimeConfig> schedulerConfig;
 
-    public JBeretRecorder(RuntimeValue<JBeretRuntimeConfig> config, RuntimeValue<ThreadPoolConfig> threadPoolConfig) {
+    public JBeretRecorder(
+            final RuntimeValue<JBeretRuntimeConfig> config,
+            final RuntimeValue<ThreadPoolConfig> threadPoolConfig,
+            final RuntimeValue<SchedulerRuntimeConfig> schedulerConfig) {
         this.config = config;
         this.threadPoolConfig = threadPoolConfig;
+        this.schedulerConfig = schedulerConfig;
     }
 
     public void registerJobs(List<Job> jobs, BeanContainer beanContainer) {
@@ -59,8 +65,10 @@ public class JBeretRecorder {
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
 
-        beanContainer.beanInstance(JobScheduler.class);
-        JobScheduler.getJobScheduler(QuarkusJobScheduler.Delegate.class, new ConcurrentHashMap<>(), null);
+        if (schedulerConfig.getValue().enabled()) {
+            beanContainer.beanInstance(JobScheduler.class);
+            JobScheduler.getJobScheduler(QuarkusJobScheduler.Delegate.class, new ConcurrentHashMap<>(), null);
+        }
     }
 
     private static class SetTransactionTimeout implements Consumer<Step> {

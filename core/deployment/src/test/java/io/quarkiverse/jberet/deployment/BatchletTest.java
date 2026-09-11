@@ -30,7 +30,8 @@ public class BatchletTest {
     static QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(DummyBatchlet.class)
-                    .addAsManifestResource("batchlet.xml", "batch-jobs/batchlet.xml"));
+                    .addAsManifestResource("batchlet.xml", "batch-jobs/batchlet.xml"))
+            .overrideRuntimeConfigKey("quarkus.scheduler.enabled", "false");
 
     @Named("batchlet")
     @Dependent
