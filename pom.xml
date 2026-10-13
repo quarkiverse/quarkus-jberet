@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.quarkiverse</groupId>
     <artifactId>quarkiverse-parent</artifactId>
-    <version>22</version>
+    <version>26</version>
   </parent>
 
   <groupId>io.quarkiverse.jberet</groupId>
@@ -14,9 +14,6 @@
   <name>Quarkus - JBeret - Parent</name>
 
   <properties>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-
     <version.install.plugin>3.2.0</version.install.plugin>
     <version.sundrio.plugin>0.400.1</version.sundrio.plugin>
 
