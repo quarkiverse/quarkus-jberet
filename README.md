@@ -35,7 +35,8 @@ To use the extension, add the dependency to the target project:
 </dependencies>
 ```
 
-:information_source: **Recommended Quarkus version: `3.36.0` or higher**
+:information_source: **Recommended Quarkus version: `3.36.0` or higher for Quarkiverse JBeret 2.11.x**
+:information_source: **Recommended Quarkus version: `4.0.x` or higher for Quarkiverse JBeret 3.0.x**
 
 The Batch API and Runtime will be available out of the box. Please refer to the
 [Jakarta Batch documentation](https://jakarta.ee/specifications/batch/2.1/jakarta-batch-spec-2.1), and
