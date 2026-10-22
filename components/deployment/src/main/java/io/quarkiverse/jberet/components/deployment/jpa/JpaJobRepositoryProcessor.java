@@ -21,6 +21,7 @@ import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.hibernate.orm.deployment.spi.AdditionalJpaModelBuildItem;
@@ -64,6 +65,12 @@ class JpaJobRepositoryProcessor {
         Set<String> persistenceUnits = Set.of(jobRepositoryConfig.repository().jpa().persistenceUnitName());
         ENTITY_CLASSES.forEach(entityClass -> additionalJpaModelBuildItemsBuildProducer
                 .produce(new AdditionalJpaModelBuildItem(entityClass.getName(), persistenceUnits)));
+    }
+
+    @BuildStep(onlyIf = JpaJobRepositoryBooleanSupplier.class)
+    void transformJpaRepository(BuildProducer<BytecodeTransformerBuildItem> bytecodeTransformers) {
+        bytecodeTransformers.produce(new BytecodeTransformerBuildItem(JpaRepositoryTransformer.JPA_REPOSITORY,
+                new JpaRepositoryTransformer()));
     }
 
     @BuildStep(onlyIf = JpaJobRepositoryBooleanSupplier.class)
