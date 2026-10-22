@@ -9,7 +9,7 @@
 
   <groupId>io.quarkiverse.jberet</groupId>
   <artifactId>quarkus-jberet-parent</artifactId>
-  <version>2.11.1-SNAPSHOT</version>
+  <version>3.0.0.Beta1</version>
   <packaging>pom</packaging>
   <name>Quarkus - JBeret - Parent</name>
 
@@ -29,7 +29,7 @@
     <connection>scm:git:git@github.com:quarkiverse/quarkus-jberet.git</connection>
     <developerConnection>scm:git:git@github.com:quarkiverse/quarkus-jberet.git</developerConnection>
     <url>https://github.com/quarkiverse/quarkus-jberet</url>
-    <tag>HEAD</tag>
+    <tag>3.0.0.Beta1</tag>
   </scm>
 
   <modules>
