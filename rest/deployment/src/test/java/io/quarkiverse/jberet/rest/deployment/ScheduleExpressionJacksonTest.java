@@ -10,21 +10,21 @@ import org.jberet.schedule.JobScheduleConfigBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.quarkiverse.jberet.rest.runtime.ScheduleExpressionObjectMapperCustomizer;
+import tools.jackson.databind.json.JsonMapper;
 
 public class ScheduleExpressionJacksonTest {
-    static ObjectMapper objectMapper;
+    static JsonMapper objectMapper;
 
     @BeforeAll
     static void setUp() {
-        objectMapper = new ObjectMapper();
-        new ScheduleExpressionObjectMapperCustomizer().customize(objectMapper);
+        JsonMapper.Builder builder = JsonMapper.builder();
+        new ScheduleExpressionObjectMapperCustomizer().customize(builder);
+        objectMapper = builder.build();
     }
 
     @Test
-    void scheduleExpressionRoundTrip() throws Exception {
+    void scheduleExpressionRoundTrip() {
         ScheduleExpression expression = new ScheduleExpression()
                 .hour("6")
                 .minute("30")
@@ -48,7 +48,7 @@ public class ScheduleExpressionJacksonTest {
     }
 
     @Test
-    void scheduleExpressionWithNumericValues() throws Exception {
+    void scheduleExpressionWithNumericValues() {
         String json = """
                 {
                     "jobName": "myJob",
