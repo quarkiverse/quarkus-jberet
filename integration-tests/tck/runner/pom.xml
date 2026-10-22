@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.quarkiverse.jberet</groupId>
     <artifactId>quarkus-jberet-tck-parent</artifactId>
-    <version>3.0.0.Beta1</version>
+    <version>999-SNAPSHOT</version>
   </parent>
 
   <artifactId>quarkus-jberet-tck-runner</artifactId>
