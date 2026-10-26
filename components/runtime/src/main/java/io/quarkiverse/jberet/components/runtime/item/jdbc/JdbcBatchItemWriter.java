@@ -58,7 +58,7 @@ public class JdbcBatchItemWriter<T> implements ItemWriter<T> {
             ArtifactFactory artifactFactory) throws Exception {
         this.dataSource = getDataSource(dataSource);
         this.sql = sql;
-        this.parameterSetter = (ParameterSetter<T>) artifactFactory.create(parameterSetter, RowMapper.class, null);
+        this.parameterSetter = (ParameterSetter<T>) artifactFactory.create(parameterSetter, ParameterSetter.class, null);
     }
 
     /**
