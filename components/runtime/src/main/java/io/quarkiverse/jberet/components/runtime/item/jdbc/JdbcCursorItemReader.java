@@ -99,9 +99,13 @@ public class JdbcCursorItemReader<T> implements ItemReader<T> {
 
         resultSet = preparedStatement.executeQuery();
 
-        // TODO - Test Checkpoint
+        currentRow = 0;
         if (checkpoint != null) {
-            resultSet.absolute((Integer) checkpoint);
+            // ResultSet is TYPE_FORWARD_ONLY, so absolute positioning is not allowed
+            int checkpointRow = (Integer) checkpoint;
+            while (currentRow < checkpointRow && resultSet.next()) {
+                currentRow++;
+            }
         }
     }
 
@@ -120,7 +124,7 @@ public class JdbcCursorItemReader<T> implements ItemReader<T> {
 
         if (resultSet.next()) {
             T item = rowMapper.mapRow(resultSet);
-            currentRow = resultSet.getRow();
+            currentRow++;
             return item;
         }
 
