@@ -61,6 +61,24 @@ class MongoJobTest {
     }
 
     @Test
+    void chunkClientNamedWithReactiveInjection() throws Exception {
+        BatchClient batchClient = new BatchClient(server.getLocalBaseUri().toString());
+        Properties properties = new Properties();
+        properties.setProperty("auctions.file", "auctions.json");
+        JobExecutionEntity jobExecution = batchClient.startJob("mongo-named-reactive-injection", properties);
+
+        await().atMost(5, SECONDS)
+                .until(() -> COMPLETED.equals(batchClient.getJobExecution(jobExecution.getExecutionId()).getBatchStatus()));
+
+        Auction auction = given().get("/auctions/horde/{id}", 279573567L).then().statusCode(200).extract().as(Auction.class);
+        assertNotNull(auction);
+        assertEquals(3800000, auction.getBid());
+        assertEquals(4000000, auction.getBuyout());
+        assertEquals(22792, auction.getItemId());
+        assertEquals(20, auction.getQuantity());
+    }
+
+    @Test
     void chunkNoClientInjection() throws Exception {
         BatchClient batchClient = new BatchClient(server.getLocalBaseUri().toString());
         Properties properties = new Properties();

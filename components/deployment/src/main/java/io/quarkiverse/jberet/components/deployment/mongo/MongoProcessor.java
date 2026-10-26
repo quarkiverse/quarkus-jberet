@@ -1,13 +1,10 @@
 package io.quarkiverse.jberet.components.deployment.mongo;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.jberet.job.model.Properties;
-import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
 
 import io.quarkiverse.jberet.components.runtime.item.mongo.MongoConfigBuilder;
 import io.quarkiverse.jberet.components.runtime.item.mongo.MongoCursorItemReader;
@@ -25,8 +22,6 @@ import io.quarkus.deployment.builditem.StaticInitConfigBuilderBuildItem;
 import io.quarkus.mongodb.deployment.spi.MongoClientBuildItem;
 
 class MongoProcessor {
-    private static final DotName MONGO_CLIENT_ANNOTATION = DotName.createSimple("io.quarkus.mongodb.MongoClientName");
-
     @BuildStep
     void config(
             Capabilities capabilities,
@@ -65,27 +60,16 @@ class MongoProcessor {
             return;
         }
 
-        List<String> mongoClientNames = new ArrayList<>();
-        Collection<AnnotationInstance> mongoClientAnnotations = combinedIndex.getIndex()
-                .getAnnotations(MONGO_CLIENT_ANNOTATION);
-        for (AnnotationInstance annotation : mongoClientAnnotations) {
-            if (annotation.value() != null && !annotation.value().toString().isEmpty()) {
-                mongoClientNames.add(annotation.value().asString());
-            }
-        }
-
         Collection<ClassInfo> mongoItems = combinedIndex.getIndex().getAllKnownSubclasses(MongoItemBase.class);
         // Force to create a MongoClient without an injection point, since it can be referenced in the reader / writer
+        // The client is always marked as unremovable, even if it also has injection points, because the reader / writer
+        // looks up the blocking MongoClient, which may not be registered if only the ReactiveMongoClient is injected
         for (RefArtifactBuildItem refArtifact : refArtifacts) {
             if (mongoItems.contains(refArtifact.getResolvedArtifact())) {
                 Properties properties = refArtifact.getRefArtifact().getProperties();
-                if (properties != null) {
-                    String mongoClientName = properties.get("mongoClient");
-                    if (mongoClientName != null && !mongoClientNames.contains(mongoClientName)) {
-                        mongoClients.produce(MongoClientBuildItem.ofUnremovable(mongoClientName));
-                    } else {
-                        mongoClients.produce(MongoClientBuildItem.defaultClientUnremovable());
-                    }
+                String mongoClientName = properties != null ? properties.get("mongoClient") : null;
+                if (mongoClientName != null) {
+                    mongoClients.produce(MongoClientBuildItem.ofUnremovable(mongoClientName));
                 } else {
                     mongoClients.produce(MongoClientBuildItem.defaultClientUnremovable());
                 }
