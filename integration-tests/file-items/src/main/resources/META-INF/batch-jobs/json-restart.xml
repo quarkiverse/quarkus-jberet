@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="json-restart" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <step id="jsonStep">
+        <chunk item-count="3">
+            <reader ref="jsonItemReader">
+                <properties>
+                    <property name="resource" value="auctions.json"/>
+                    <property name="itemType" value="io.quarkiverse.jberet.it.file.Auction"/>
+                </properties>
+            </reader>
+            <processor ref="failOnceItemProcessor"/>
+            <writer ref="jsonItemWriter">
+                <properties>
+                    <property name="resource" value="#{jobParameters['outputFile']}"/>
+                </properties>
+            </writer>
+        </chunk>
+    </step>
+</job>

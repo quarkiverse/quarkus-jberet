@@ -17,6 +17,13 @@
             <artifactId>quarkus-jberet</artifactId>
         </dependency>
 
+        <!-- For JSON -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jackson</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- For JPA -->
         <dependency>
             <groupId>org.jberet</groupId>

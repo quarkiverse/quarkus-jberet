@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+    <step id="processAuctions">
+        <chunk item-count="100">
+            <reader ref="jsonItemReader">                                                       <!--1-->
+                <properties>
+                    <property name="resource" value="auctions.json"/>                           <!--2-->
+                    <property name="itemType" value="org.acme.batch.components.json.Auction"/>  <!--3-->
+                </properties>
+            </reader>
+            <writer ref="jsonItemWriter">                                                       <!--4-->
+                <properties>
+                    <property name="resource" value="/tmp/auctions-output.json"/>               <!--5-->
+                </properties>
+            </writer>
+        </chunk>
+    </step>
+</job>
