@@ -1,5 +1,6 @@
 package io.quarkiverse.jberet.it.chunk;
 
+import java.util.List;
 import java.util.Properties;
 
 import jakarta.batch.operations.JobOperator;
@@ -11,6 +12,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import org.jberet.runtime.AbstractStepExecution;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -30,6 +33,15 @@ public class BatchResource {
         JobExecution jobExecution = jobOperator.getJobExecution(executionId);
 
         return Response.ok(new JobData(executionId, jobExecution.getBatchStatus().toString())).build();
+    }
+
+    @GET
+    @Path("/job/{executionId}/step-exceptions")
+    public List<String> stepExceptions(@PathParam("executionId") final long executionId) {
+        return BatchRuntime.getJobOperator().getStepExecutions(executionId).stream()
+                .map(stepExecution -> ((AbstractStepExecution) stepExecution).getException())
+                .map(exception -> exception != null ? exception + " caused by " + exception.getCause() : null)
+                .toList();
     }
 
     @RegisterForReflection
