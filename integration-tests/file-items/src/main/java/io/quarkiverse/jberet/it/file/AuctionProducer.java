@@ -14,6 +14,9 @@ import jakarta.inject.Singleton;
 
 import io.quarkiverse.jberet.components.runtime.item.file.FlatFileItemReader;
 import io.quarkiverse.jberet.components.runtime.item.file.FlatFileItemWriter;
+import io.quarkiverse.jberet.components.runtime.item.json.JsonItemReader;
+import io.quarkiverse.jberet.components.runtime.item.json.JsonItemWriter;
+import tools.jackson.databind.ObjectMapper;
 
 @Singleton
 public class AuctionProducer {
@@ -21,6 +24,8 @@ public class AuctionProducer {
     AuctionLineMapper lineMapper;
     @Inject
     AuctionLineFormatter lineFormatter;
+    @Inject
+    ObjectMapper objectMapper;
 
     @Produces
     @Dependent
@@ -37,5 +42,22 @@ public class AuctionProducer {
         Properties jobParameters = jobExecution.getJobParameters();
         String outputFile = jobParameters.getProperty("outputFile");
         return new FlatFileItemWriter<>(Path.of(outputFile), lineFormatter);
+    }
+
+    @Produces
+    @Dependent
+    @Named("auctionsJsonItemReader")
+    JsonItemReader<Auction> auctionsJsonItemReader() {
+        return new JsonItemReader<>("auctions.json", Auction.class, objectMapper);
+    }
+
+    @Produces
+    @Dependent
+    @Named("auctionsJsonItemWriter")
+    JsonItemWriter<Auction> auctionsJsonItemWriter(JobOperator jobOperator, JobContext jobContext) {
+        JobExecution jobExecution = jobOperator.getJobExecution(jobContext.getExecutionId());
+        Properties jobParameters = jobExecution.getJobParameters();
+        String outputFile = jobParameters.getProperty("outputFile");
+        return new JsonItemWriter<>(Path.of(outputFile), objectMapper);
     }
 }

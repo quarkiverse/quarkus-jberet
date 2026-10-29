@@ -478,6 +478,154 @@ Whether to append to the file instead of overwriting it. Defaults to `false`:
 <property name="append" value="true"/>
 ----
 
+=== JSON
+
+The JSON components provide reading and writing of JSON files using https://github.com/FasterXML/jackson[Jackson].
+The file is expected to contain a JSON array, where each element is an item to process. These components are ideal
+for:
+
+- Importing data from JSON exports or API dumps
+- Exporting batch processing results to JSON
+- Processing large JSON files element by element without loading the entire file into memory
+
+[NOTE]
+====
+JSON components support requires the https://quarkus.io/guides/rest-json#jackson[Quarkus Jackson] extension.
+====
+
+To use the JSON components, add the Jackson extension to your build file:
+
+[source,xml,subs=attributes+,role="primary asciidoc-tabs-target-sync-cli asciidoc-tabs-target-sync-maven"]
+.pom.xml
+----
+<dependency>
+  <groupId>io.quarkus</groupId>
+  <artifactId>quarkus-jackson</artifactId>
+</dependency>
+----
+
+[source,gradle,subs=attributes+,role="secondary asciidoc-tabs-target-sync-gradle"]
+.build.gradle
+----
+implementation("io.quarkus:quarkus-jackson")
+----
+
+[NOTE]
+====
+It also requires the JBeret Component dependency. See <<installation,Installation>>.
+====
+
+==== JsonItemReader
+
+The `JsonItemReader` reads data from a JSON file, mapping each element of the root JSON array into an object. The
+file is streamed one element at a time. The resource is resolved in order as a file path or a classpath resource.
+
+.JsonItemReader
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/json/AuctionJsonItemReaderProducer.java[]
+----
+
+The `JsonItemReader` requires:
+
+- A resource to read (file path or classpath resource)
+- The item class type
+- An `ObjectMapper` to map each JSON element into the item type
+
+.Auction
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/json/Auction.java[]
+----
+
+==== JsonItemWriter
+
+The `JsonItemWriter` writes data to a JSON file as a JSON array, serializing each item into an array element in its
+own line. On restart, the file is truncated to the last checkpoint, discarding any items written by a chunk that did
+not complete, so the resulting file is always a valid JSON array.
+
+.JsonItemWriter
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/components/json/AuctionJsonItemWriterProducer.java[]
+----
+
+The `JsonItemWriter` requires:
+
+- A `Path` to the file to write
+- An `ObjectMapper` to serialize each item
+
+==== The Job
+
+All JSON components must be assembled in a Job definition:
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+    <step id="processAuctions">
+        <chunk>
+            <reader ref="auctionsItemReader"/>    <!--1-->
+            <writer ref="auctionsItemWriter"/>    <!--2-->
+        </chunk>
+    </step>
+</job>
+----
+
+<1> The `auctionsItemReader` is the CDI bean name of the `JsonItemReader` produced by the `AuctionJsonItemReaderProducer`
+<2> The `auctionsItemWriter` is the CDI bean name of the `JsonItemWriter` produced by the `AuctionJsonItemWriterProducer`
+
+To execute this Job:
+
+[source,java]
+----
+@Inject
+JobOperator jobOperator;
+
+void execute() {
+    long executionId = jobOperator.start("auctionsJob", new Properties());
+}
+----
+
+==== Configuration with Batch Properties
+
+Instead of using CDI producers, the `JsonItemReader` and `JsonItemWriter` can be configured directly in the Job XML
+using batch properties and their built-in reference names `jsonItemReader` and `jsonItemWriter`:
+
+.auctionsJob.xml
+[source,xml]
+----
+include::{examples-dir}/org/acme/batch/components/json/auctionsJob.xml[]
+----
+
+<1> Reference the built-in `jsonItemReader` `JsonItemReader`
+<2> Specify the resource to read (file path or classpath resource)
+<3> Specify the fully qualified class name of the item type
+<4> Reference the built-in `jsonItemWriter` `JsonItemWriter`
+<5> Specify the file path to write
+
+[NOTE]
+====
+When using batch properties, the components use the application `ObjectMapper`, including any customization applied
+with `quarkus.jackson.*` configuration or a `JsonMapperBuilderCustomizer`.
+====
+
+Additionally, the following properties can be configured for both the `jsonItemReader` and `jsonItemWriter`:
+
+**encoding** (optional)::
+The file encoding. Defaults to `UTF-8`:
+[source,xml]
+----
+<property name="encoding" value="ISO-8859-1"/>
+----
+
+[NOTE]
+====
+In native mode, the `itemType` set in the Job XML of a `jsonItemReader` is automatically registered for reflection.
+Types read via CDI producers, or written by a `JsonItemWriter`, must be registered with `@RegisterForReflection`.
+====
+
 === MongoDB
 
 The MongoDB components provide efficient reading and writing of documents using the MongoDB Java Driver with full

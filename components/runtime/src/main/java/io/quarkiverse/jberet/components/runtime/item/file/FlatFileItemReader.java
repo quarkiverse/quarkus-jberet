@@ -1,15 +1,9 @@
 package io.quarkiverse.jberet.components.runtime.item.file;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import jakarta.batch.api.BatchProperty;
@@ -18,8 +12,8 @@ import jakarta.inject.Named;
 
 import org.jberet.spi.ArtifactFactory;
 
+import io.quarkiverse.jberet.components.runtime.util.ResourceUtils;
 import io.quarkiverse.jberet.runtime.api.ItemReader;
-import io.smallrye.common.classloader.ClassPathUtils;
 
 /**
  * Reads data from a flat file, mapping each line into an object of type {@code T} using a {@link LineMapper}.
@@ -88,7 +82,7 @@ public class FlatFileItemReader<T> implements ItemReader<T> {
     @Override
     public void open(Serializable checkpoint) throws Exception {
         Charset charset = encoding != null ? Charset.forName(encoding) : StandardCharsets.UTF_8;
-        reader = openResource(charset);
+        reader = ResourceUtils.openReader(resource, charset);
         currentLine = 0;
 
         if (checkpoint != null) {
@@ -131,38 +125,6 @@ public class FlatFileItemReader<T> implements ItemReader<T> {
     @Override
     public Serializable checkpointInfo() {
         return currentLine;
-    }
-
-    private BufferedReader openResource(Charset charset) throws IOException {
-        // Try as file path
-        Path path = Path.of(resource);
-        if (Files.exists(path)) {
-            return Files.newBufferedReader(path, charset);
-        }
-
-        // Try as classpath resource
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        if (cl == null) {
-            cl = FlatFileItemReader.class.getClassLoader();
-        }
-        URL url = cl.getResource(resource);
-        if (url != null) {
-            String protocol = url.getProtocol();
-            if ("file".equals(protocol) || "jar".equals(protocol)) {
-                return ClassPathUtils.processAsPath(url, p -> {
-                    try {
-                        return Files.newBufferedReader(p, charset);
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
-                });
-            }
-            // Fallback for other protocols
-            InputStream is = url.openStream();
-            return new BufferedReader(new InputStreamReader(is, charset));
-        }
-
-        throw new IllegalArgumentException("Resource not found: " + resource);
     }
 
     /**
