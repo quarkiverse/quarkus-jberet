@@ -1,5 +1,6 @@
 package io.quarkiverse.jberet.runtime;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
@@ -7,7 +8,11 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
+import jakarta.batch.operations.BatchRuntimeException;
 import jakarta.batch.operations.JobOperator;
 import jakarta.batch.runtime.BatchRuntime;
 
@@ -59,6 +64,42 @@ public class JBeretSubstitutions {
             decoder.flush(cb);
             return new String(cb.array(), 0, cb.position());
         }
+    }
+
+    /**
+     * JBeret Java-serializes step exceptions and checkpoint data. In native mode, serializing a class not registered
+     * for serialization throws an {@link Error} instead of an {@link IOException}, which bypasses the JBeret fallback
+     * in {@link org.jberet.runtime.SerializableData} and breaks the step failure handling.
+     */
+    @TargetClass(className = "org.jberet.spi.SerializableDataProvider$DefaultSerializableDataProvider")
+    static final class Target_DefaultSerializableDataProvider {
+        @Substitute
+        public byte[] objectToBytes(final Object obj) throws IOException {
+            try {
+                return BatchUtil.objectToBytes(obj);
+            } catch (IOException | VirtualMachineError e) {
+                throw e;
+            } catch (Throwable e) {
+                if (obj instanceof Throwable throwable) {
+                    return BatchUtil.objectToBytes(
+                            toSerializableException(throwable, Collections.newSetFromMap(new IdentityHashMap<>())));
+                }
+                throw new IOException(e);
+            }
+        }
+    }
+
+    /**
+     * Replaces a {@link Throwable} and its causes with {@link BatchRuntimeException}, which is registered for
+     * serialization, keeping the original type and message (via {@link Throwable#toString()}) and the stack trace.
+     */
+    static BatchRuntimeException toSerializableException(final Throwable throwable, final Set<Throwable> visited) {
+        visited.add(throwable);
+        Throwable cause = throwable.getCause();
+        BatchRuntimeException exception = new BatchRuntimeException(throwable.toString(),
+                cause != null && !visited.contains(cause) ? toSerializableException(cause, visited) : null);
+        exception.setStackTrace(throwable.getStackTrace());
+        return exception;
     }
 
     public static String getStackTraceAsString(Throwable throwable) {
