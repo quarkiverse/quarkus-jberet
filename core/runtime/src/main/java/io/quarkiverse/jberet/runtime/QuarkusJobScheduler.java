@@ -34,6 +34,7 @@ public class QuarkusJobScheduler extends JobScheduler {
     private static final Logger log = Logger.getLogger("io.quarkiverse.jberet");
 
     private static final String TRIGGER_ID_PREFIX = "quarkus-jberet-";
+    private static final String SINGLE_SHOT_INTERVAL = "1h";
 
     private final AtomicInteger ids = new AtomicInteger(1);
     private final ConcurrentMap<String, JobSchedule> jobSchedules = new ConcurrentHashMap<>();
@@ -73,6 +74,8 @@ public class QuarkusJobScheduler extends JobScheduler {
         String scheduleId = generateScheduleId(scheduleConfig.getJobName());
         JobSchedule jobSchedule = new JobSchedule(scheduleId, scheduleConfig);
         JobDefinition<?> jobDefinition = scheduler.getActive().newJob(scheduleId);
+        boolean singleShot = scheduleConfig.getScheduleExpression() == null && scheduleConfig.getInterval() <= 0
+                && scheduleConfig.getAfterDelay() <= 0;
         if (scheduleConfig.getScheduleExpression() != null) {
             JobConfig jobConfig = config.job().get(scheduleConfig.getJobName());
             if (jobConfig.cron().isPresent()) {
@@ -80,18 +83,27 @@ public class QuarkusJobScheduler extends JobScheduler {
             } else {
                 jobDefinition.setCron(toCronExpression(scheduleConfig.getScheduleExpression()));
             }
-        } else if (scheduleConfig.getInterval() <= 0 && scheduleConfig.getAfterDelay() <= 0) {
+        } else if (singleShot) {
+            // Quarkus Scheduler does not support single-shot executions. Schedule with an interval, and unschedule
+            // on the first execution. The interval trigger fires at the delayed start time.
             jobDefinition.setDelayed(scheduleConfig.getInitialDelay() + "m");
+            jobDefinition.setInterval(SINGLE_SHOT_INTERVAL);
         } else if (scheduleConfig.getInterval() > 0) {
             jobDefinition.setDelayed(scheduleConfig.getInitialDelay() + "m");
             jobDefinition.setInterval(scheduleConfig.getInterval() + "m");
         } else {
-            // TODO - Quarkus Scheduler does not support scheduleWithFixedDelay
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(
+                    "Scheduling the Job \"" + scheduleConfig.getJobName() + "\" with an afterDelay is not supported");
         }
         jobDefinition.setTask(new Consumer<ScheduledExecution>() {
             @Override
             public void accept(ScheduledExecution scheduledExecution) {
+                if (singleShot) {
+                    if (scheduler.get().unscheduleJob(scheduleId) == null) {
+                        return;
+                    }
+                    jobSchedules.remove(scheduleId);
+                }
                 JobScheduleConfig jobScheduleConfig = jobSchedule.getJobScheduleConfig();
                 if (jobScheduleConfig.getJobExecutionId() == 0) {
                     jobSchedule.addJobExecutionIds(
@@ -130,7 +142,11 @@ public class QuarkusJobScheduler extends JobScheduler {
 
     @Override
     public boolean cancel(final String scheduleId) {
-        throw new UnsupportedOperationException();
+        if (!jobSchedules.containsKey(scheduleId) || scheduler.get().unscheduleJob(scheduleId) == null) {
+            return false;
+        }
+        jobSchedules.remove(scheduleId);
+        return true;
     }
 
     @Override
