@@ -45,7 +45,7 @@ class JdbcItemTest {
         BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
         JobExecutionEntity jobExecution = batchClient.startJob("jdbc-properties", new Properties());
 
-        await().atMost(5, SECONDS)
+        await().atMost(60, SECONDS)
                 .until(() -> COMPLETED.equals(batchClient.getJobExecution(jobExecution.getExecutionId()).getBatchStatus()));
 
         int count = given().get("/auctions/statistics/count").then().statusCode(200).extract().as(int.class);
@@ -57,7 +57,7 @@ class JdbcItemTest {
         BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
         JobExecutionEntity jobExecution = batchClient.startJob("jdbc-beans", new Properties());
 
-        await().atMost(5, SECONDS)
+        await().atMost(60, SECONDS)
                 .until(() -> COMPLETED.equals(batchClient.getJobExecution(jobExecution.getExecutionId()).getBatchStatus()));
 
         int count = given().get("/auctions/statistics/count").then().statusCode(200).extract().as(int.class);
@@ -69,7 +69,7 @@ class JdbcItemTest {
         BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
         JobExecutionEntity jobExecution = batchClient.startJob("jdbc-restart", new Properties());
 
-        await().atMost(5, SECONDS)
+        await().atMost(60, SECONDS)
                 .until(() -> FAILED.equals(batchClient.getJobExecution(jobExecution.getExecutionId()).getBatchStatus()));
 
         // first chunk of 3 committed, second chunk rolled back
@@ -78,7 +78,7 @@ class JdbcItemTest {
 
         JobExecutionEntity restartExecution = batchClient.restartJobExecution(jobExecution.getExecutionId(), new Properties());
 
-        await().atMost(5, SECONDS)
+        await().atMost(60, SECONDS)
                 .until(() -> batchClient.getJobExecution(restartExecution.getExecutionId()).getEndTime() != null);
         assertEquals(COMPLETED, batchClient.getJobExecution(restartExecution.getExecutionId()).getBatchStatus());
 

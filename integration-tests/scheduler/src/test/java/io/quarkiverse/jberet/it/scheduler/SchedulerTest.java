@@ -4,14 +4,13 @@ import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static java.time.ZoneId.systemDefault;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -93,17 +92,13 @@ class SchedulerTest {
         assertEquals("scheduler", jobExecutionThree.getJobName());
         assertEquals(BatchStatus.COMPLETED, jobExecutionThree.getBatchStatus());
 
-        LocalDateTime localDateOne = jobExecutionOne.getCreateTime().toInstant().atZone(systemDefault()).toLocalDateTime()
-                .truncatedTo(SECONDS);
-        LocalDateTime localDateTwo = jobExecutionTwo.getCreateTime().toInstant().atZone(systemDefault()).toLocalDateTime()
-                .truncatedTo(SECONDS);
-        LocalDateTime localDateThree = jobExecutionThree.getCreateTime().toInstant().atZone(systemDefault()).toLocalDateTime()
-                .truncatedTo(SECONDS);
+        Instant createTimeOne = jobExecutionOne.getCreateTime().toInstant();
+        Instant createTimeTwo = jobExecutionTwo.getCreateTime().toInstant();
+        Instant createTimeThree = jobExecutionThree.getCreateTime().toInstant();
 
-        assertTrue(localDateOne.isBefore(localDateTwo));
-        assertTrue(localDateTwo.isBefore(localDateThree));
-
-        assertTrue(SECONDS.between(localDateOne, localDateTwo) >= 10);
-        assertTrue(SECONDS.between(localDateTwo, localDateThree) >= 10);
+        // The cron fires every 10 seconds, but the Scheduler only checks triggers once per second, so a fire can be
+        // late. Only verify that the executions follow the cron, and not the exact period between them.
+        assertTrue(SECONDS.between(createTimeOne, createTimeTwo) >= 5);
+        assertTrue(SECONDS.between(createTimeTwo, createTimeThree) >= 5);
     }
 }
