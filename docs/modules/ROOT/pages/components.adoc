@@ -920,4 +920,61 @@ The JBeret JPA entities are automatically registered with the specified persiste
 
 For more information, please check xref:batch.adoc#configuring_a_jobrepository[Configuring a JobRepository]
 
+=== MongoDB Repository
+
+The MongoDB Repository stores batch job metadata (job instances, executions, step executions, and partition executions)
+in MongoDB collections, using the https://quarkus.io/guides/mongodb[Quarkus MongoDB Client].
+
+To use the MongoDB Repository, add the MongoDB Client extension to your build file:
+
+[source,xml,subs=attributes+,role="primary asciidoc-tabs-target-sync-cli asciidoc-tabs-target-sync-maven"]
+.pom.xml
+----
+<dependency>
+  <groupId>io.quarkus</groupId>
+  <artifactId>quarkus-mongodb-client</artifactId>
+</dependency>
+----
+
+[source,gradle,subs=attributes+,role="secondary asciidoc-tabs-target-sync-gradle"]
+.build.gradle
+----
+implementation("io.quarkus:quarkus-mongodb-client")
+----
+
+[NOTE]
+====
+It also requires the JBeret Component dependency. See <<installation,Installation>>.
+====
+
+==== Configuration
+
+To use the MongoDB Repository, set the repository type to `mongodb`:
+
+.application.properties
+[source,properties]
+----
+quarkus.mongodb.connection-string=mongodb://localhost:27017
+quarkus.jberet.repository.type=mongodb
+----
+
+The MongoDB Repository uses the default MongoDB client and stores its collections in the `jberet` database by default.
+To use a named MongoDB client, or a different database:
+
+[source,properties]
+----
+quarkus.mongodb.batch.connection-string=mongodb://localhost:27017
+quarkus.jberet.repository.type=mongodb
+quarkus.jberet.repository.mongodb.client-name=batch
+quarkus.jberet.repository.mongodb.database=batch
+----
+
+[NOTE]
+====
+The MongoDB Repository does not participate in JTA transactions. A failure between committing the chunk transaction and
+saving the checkpoint may cause items to be processed again on restart.
+====
+
+For more information, please check xref:batch.adoc#configuring_a_jobrepository[Configuring a JobRepository]
+
 include::includes/quarkus-jberet-components.adoc[leveloffset=+1, opts=optional]

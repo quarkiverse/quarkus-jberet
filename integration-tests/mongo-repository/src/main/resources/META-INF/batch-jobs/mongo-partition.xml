@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="mongo-partition" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+  <step id="partitionStep">
+    <chunk item-count="2">
+      <reader ref="countingItemReader"/>
+      <writer ref="noopItemWriter"/>
+    </chunk>
+    <partition>
+      <plan partitions="2" threads="2"/>
+    </partition>
+  </step>
+</job>
