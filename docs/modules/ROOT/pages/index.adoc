@@ -94,6 +94,88 @@ This restriction does not apply to `@BatchProperty`, which is only resolved duri
 Also, `@BatchProperty` injection fallbacks to Quarkus Config
 `org.eclipse.microprofile.config.spi.Converter` to convert the type, if the type is not supported by Java Batch.
 
+== Job Parameters
+
+Job parameters are the `Properties` passed when starting a job, for instance with
+`jobOperator.start("job", jobParameters)`. Job parameters are not injected directly with `@BatchProperty`. A
+`@BatchProperty` only resolves the properties declared in the batch artifact definition (the `<properties>` element of
+the `batchlet`, `reader`, `processor`, `writer`, etc.). To use a job parameter in a batch artifact, declare an artifact
+property and reference the job parameter with the `#{jobParameters['<name>']}` substitution expression:
+
+[source,xml]
+----
+<job id="job" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+    <step id="step">
+        <batchlet ref="batchlet">
+            <properties>
+                <property name="name" value="#{jobParameters['name']}"/>
+            </properties>
+        </batchlet>
+    </step>
+</job>
+----
+
+The same applies to programmatic jobs. The artifact properties are set with the `StepBuilder` artifact methods:
+
+[source,java]
+----
+@Produces
+@Named
+public Job job() {
+    return new JobBuilder("job")
+            .step(new StepBuilder("step")
+                    .batchlet("batchlet", new String[] { "name", "#{jobParameters['name']}" })
+                    .build())
+            .build();
+}
+----
+
+Then, inject the value with `@BatchProperty`, using the property name (not the job parameter name):
+
+[source,java]
+----
+@Named("batchlet")
+@Dependent
+public class MyBatchlet implements Batchlet {
+    @Inject
+    @BatchProperty(name = "name")
+    String name;
+
+    @Override
+    public String process() {
+        return BatchStatus.COMPLETED.toString();
+    }
+}
+----
+
+A default value can be set with the `?:` operator: `#{jobParameters['name']}?:default;`. The default is used when the
+job parameter is not set.
+
+[NOTE]
+====
+Properties set at the job level (`JobBuilder#property`) or at the step level (`StepBuilder#property`) are not
+available to `@BatchProperty` in a batch artifact, and `JobContext#getProperties` and `StepContext#getProperties`
+return the job and step properties, not the job parameters. Use the job parameters substitution in the artifact
+properties instead.
+====
+
+Alternatively, job parameters can be retrieved programmatically with the `JobOperator`:
+
+[source,java]
+----
+@Inject
+JobContext jobContext;
+@Inject
+JobOperator jobOperator;
+
+@Override
+public String process() {
+    Properties jobParameters = jobOperator.getParameters(jobContext.getExecutionId());
+    String name = jobParameters.getProperty("name");
+    return BatchStatus.COMPLETED.toString();
+}
+----
+
 == CDI Beans
 
 The Batch APIs `JobOperator` and `JobRepository` are available as CDI beans, so they can be injected directly into any
