@@ -28,5 +28,47 @@ endif::add-copy-button-to-env-var[]
 |string
 |<default>
 
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet-components_quarkus-jberet-repository-mongodb-client-name]] [.property-path]##link:#quarkus-jberet-components_quarkus-jberet-repository-mongodb-client-name[`+++quarkus.jberet.repository.mongodb.client-name+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.repository.mongodb.client-name+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+The name of the MongoDB client for the JBeret Repository. By default, it uses the default MongoDB client from the MongoDB Client Extension.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_REPOSITORY_MONGODB_CLIENT_NAME+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_REPOSITORY_MONGODB_CLIENT_NAME+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|<default>
+
+a|icon:lock[title=Fixed at build time] [[quarkus-jberet-components_quarkus-jberet-repository-mongodb-database]] [.property-path]##link:#quarkus-jberet-components_quarkus-jberet-repository-mongodb-database[`+++quarkus.jberet.repository.mongodb.database+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.repository.mongodb.database+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+The name of the MongoDB database to store the JBeret Repository collections.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_REPOSITORY_MONGODB_DATABASE+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_REPOSITORY_MONGODB_DATABASE+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|`+++jberet+++`
+
 |===
 

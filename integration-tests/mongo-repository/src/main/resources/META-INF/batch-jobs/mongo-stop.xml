@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="mongo-stop" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+  <step id="stopStep">
+    <batchlet ref="stoppableBatchlet"/>
+  </step>
+</job>

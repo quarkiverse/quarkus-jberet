@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="mongo-chunk" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+  <step id="chunkStep">
+    <chunk item-count="2">
+      <reader ref="countingItemReader">
+        <properties>
+          <property name="mongo.reader.fail.at" value="#{jobParameters['mongo.reader.fail.at']}"/>
+        </properties>
+      </reader>
+      <writer ref="noopItemWriter"/>
+    </chunk>
+  </step>
+</job>

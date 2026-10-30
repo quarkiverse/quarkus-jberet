@@ -11,6 +11,7 @@ import io.smallrye.config.WithName;
 @ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public interface JobRepositoryConfig {
     String DEFAULT_PERSISTENCE_UNIT_NAME = "<default>";
+    String DEFAULT_MONGO_CLIENT_NAME = "<default>";
 
     /**
      * The JBeret Repository configuration.
@@ -34,6 +35,29 @@ public interface JobRepositoryConfig {
             @WithDefault(DEFAULT_PERSISTENCE_UNIT_NAME)
             @ConfigDocDefault(value = DEFAULT_PERSISTENCE_UNIT_NAME, escape = false)
             String persistenceUnitName();
+        }
+
+        /**
+         * The JBeret Repository MongoDB configuration.
+         */
+        Mongodb mongodb();
+
+        interface Mongodb {
+            String TYPE = "mongodb";
+
+            /**
+             * The name of the MongoDB client for the JBeret Repository. By default, it uses the default MongoDB client
+             * from the MongoDB Client Extension.
+             */
+            @WithDefault(DEFAULT_MONGO_CLIENT_NAME)
+            @ConfigDocDefault(value = DEFAULT_MONGO_CLIENT_NAME, escape = false)
+            String clientName();
+
+            /**
+             * The name of the MongoDB database to store the JBeret Repository collections.
+             */
+            @WithDefault("jberet")
+            String database();
         }
     }
 }
