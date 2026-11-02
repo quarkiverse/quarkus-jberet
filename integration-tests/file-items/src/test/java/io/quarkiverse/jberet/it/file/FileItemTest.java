@@ -1,12 +1,16 @@
 package io.quarkiverse.jberet.it.file;
 
 import static jakarta.batch.runtime.BatchStatus.COMPLETED;
+import static jakarta.batch.runtime.BatchStatus.FAILED;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Properties;
 
 import org.jberet.rest.client.BatchClient;
@@ -47,5 +51,36 @@ class FileItemTest {
                 .until(() -> COMPLETED.equals(batchClient.getJobExecution(jobExecution.getExecutionId()).getBatchStatus()));
 
         assertEquals(8, Files.readAllLines(outputFile).size());
+    }
+
+    @Test
+    void fileRestart(@TempDir Path tempDir) throws Exception {
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
+        Path outputFile = tempDir.resolve("auctions-output.csv");
+        Properties properties = new Properties();
+        properties.setProperty("outputFile", outputFile.toString());
+        JobExecutionEntity jobExecution = batchClient.startJob("file-restart", properties);
+
+        await().atMost(5, SECONDS)
+                .until(() -> FAILED.equals(batchClient.getJobExecution(jobExecution.getExecutionId()).getBatchStatus()));
+
+        // first chunk of 3 committed, second chunk rolled back
+        List<String> auctions = auctions();
+        assertEquals(auctions.subList(0, 3), Files.readAllLines(outputFile));
+
+        JobExecutionEntity restartExecution = batchClient.restartJobExecution(jobExecution.getExecutionId(), properties);
+
+        await().atMost(5, SECONDS)
+                .until(() -> batchClient.getJobExecution(restartExecution.getExecutionId()).getEndTime() != null);
+        assertEquals(COMPLETED, batchClient.getJobExecution(restartExecution.getExecutionId()).getBatchStatus());
+
+        assertEquals(auctions, Files.readAllLines(outputFile));
+    }
+
+    static List<String> auctions() throws Exception {
+        try (InputStream inputStream = FileItemTest.class.getClassLoader().getResourceAsStream("auctions.csv")) {
+            // skip the header
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8).lines().skip(1).toList();
+        }
     }
 }

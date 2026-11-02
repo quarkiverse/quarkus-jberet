@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="file-restart" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <step id="fileStep">
+        <chunk item-count="3">
+            <reader ref="flatFileItemReader">
+                <properties>
+                    <property name="resource" value="auctions.csv"/>
+                    <property name="lineMapper" value="auctionLineMapper"/>
+                    <property name="linesToSkip" value="1"/>
+                </properties>
+            </reader>
+            <processor ref="failOnceItemProcessor"/>
+            <writer ref="flatFileItemWriter">
+                <properties>
+                    <property name="resource" value="#{jobParameters['outputFile']}"/>
+                    <property name="lineFormatter" value="auctionLineFormatter"/>
+                </properties>
+            </writer>
+        </chunk>
+    </step>
+</job>
