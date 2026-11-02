@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="mongo-batchlet" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+  <step id="batchletStep">
+    <batchlet ref="mongoBatchlet">
+      <properties>
+        <property name="mongo.batchlet.fail" value="#{jobParameters['mongo.batchlet.fail']}"/>
+      </properties>
+    </batchlet>
+  </step>
+</job>
