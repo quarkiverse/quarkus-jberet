@@ -1,10 +1,11 @@
 package io.quarkiverse.jberet.components.runtime.item.file;
 
-import java.io.BufferedWriter;
 import java.io.Serializable;
+import java.io.Writer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
@@ -33,6 +34,9 @@ import io.quarkiverse.jberet.runtime.api.ItemWriter;
  * false</li>
  * </ul>
  * <p>
+ * On restart, the file is truncated to the position of the last checkpoint, discarding any lines written by a chunk
+ * that did not complete, and the writer continues appending to the existing file.
+ * <p>
  * It is also possible to use the {@link FlatFileItemWriter} programmatically via
  * {@link #FlatFileItemWriter(Path, LineFormatter)}
  *
@@ -50,7 +54,9 @@ public class FlatFileItemWriter<T> implements ItemWriter<T> {
     @BatchProperty
     Boolean append;
 
-    private BufferedWriter writer;
+    private FileChannel channel;
+    private Writer writer;
+    private long position;
 
     @Inject
     @SuppressWarnings("unchecked")
@@ -76,24 +82,46 @@ public class FlatFileItemWriter<T> implements ItemWriter<T> {
     @Override
     public void open(Serializable checkpoint) throws Exception {
         Charset charset = encoding != null ? Charset.forName(encoding) : StandardCharsets.UTF_8;
+        channel = FileChannel.open(resource, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        writer = Channels.newWriter(channel, charset);
 
-        if (checkpoint != null) {
-            writer = Files.newBufferedWriter(resource, charset, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        } else {
-            boolean shouldAppend = append != null ? append : false;
-            if (shouldAppend) {
-                writer = Files.newBufferedWriter(resource, charset, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        try {
+            if (checkpoint != null) {
+                position = (Long) checkpoint;
+                if (channel.size() < position) {
+                    throw new IllegalStateException("Cannot restart writing to " + resource + ": the file size "
+                            + channel.size() + " is smaller than the checkpoint position " + position);
+                }
+                rewind();
+            } else if (append != null && append) {
+                position = channel.size();
+                channel.position(position);
             } else {
-                writer = Files.newBufferedWriter(resource, charset, StandardOpenOption.CREATE,
-                        StandardOpenOption.TRUNCATE_EXISTING);
+                channel.truncate(0);
+                position = 0;
             }
+        } catch (Exception e) {
+            try {
+                close();
+            } catch (Exception closeException) {
+                e.addSuppressed(closeException);
+            }
+            throw e;
         }
     }
 
     @Override
     public void close() throws Exception {
-        if (writer != null) {
-            writer.close();
+        try {
+            if (writer != null) {
+                writer.close();
+            }
+        } finally {
+            writer = null;
+            if (channel != null) {
+                channel.close();
+                channel = null;
+            }
         }
     }
 
@@ -105,11 +133,36 @@ public class FlatFileItemWriter<T> implements ItemWriter<T> {
 
         String separator = lineSeparator != null ? lineSeparator : System.lineSeparator();
 
+        // format the whole chunk first, so a failing item does not leave partial content in the file
+        StringBuilder chunk = new StringBuilder();
         for (T item : items) {
-            writer.write(lineFormatter.formatLine(item));
-            writer.write(separator);
+            chunk.append(lineFormatter.formatLine(item));
+            chunk.append(separator);
         }
+
+        try {
+            writer.write(chunk.toString());
+            writer.flush();
+        } catch (Exception e) {
+            try {
+                rewind();
+            } catch (Exception rewindException) {
+                e.addSuppressed(rewindException);
+            }
+            throw e;
+        }
+        position = channel.position();
+    }
+
+    @Override
+    public Serializable checkpointInfo() {
+        return position;
+    }
+
+    private void rewind() throws Exception {
         writer.flush();
+        channel.truncate(position);
+        channel.position(position);
     }
 
     /**

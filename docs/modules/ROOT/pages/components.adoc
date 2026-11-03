@@ -478,6 +478,9 @@ Whether to append to the file instead of overwriting it. Defaults to `false`:
 <property name="append" value="true"/>
 ----
 
+On restart, the `FlatFileItemWriter` truncates the file to the last checkpoint, discarding any lines written by a
+chunk that did not complete.
+
 === JSON
 
 The JSON components provide reading and writing of JSON files using https://github.com/FasterXML/jackson[Jackson].
