@@ -26,6 +26,7 @@ import io.quarkiverse.jberet.runtime.api.ItemReader;
  * <li>{@code lineMapper} (required), a <code>String</code> reference to the CDI name of the {@link LineMapper}</li>
  * <li>{@code encoding} (optional), a <code>String</code> with the file encoding. Defaults to UTF-8</li>
  * <li>{@code linesToSkip} (optional), an <code>int</code> with the number of header lines to skip. Defaults to 0</li>
+ * <li>{@code commentPrefix} (optional), a <code>String</code> with the prefix of comment lines to skip</li>
  * </ul>
  * <p>
  * It is also possible to use the {@link FlatFileItemReader} programmatically via
@@ -42,6 +43,8 @@ public class FlatFileItemReader<T> implements ItemReader<T> {
     String encoding;
     @BatchProperty
     Integer linesToSkip;
+    @BatchProperty
+    String commentPrefix;
 
     private BufferedReader reader;
     private int currentLine;
@@ -113,10 +116,12 @@ public class FlatFileItemReader<T> implements ItemReader<T> {
             throw new IllegalStateException();
         }
 
-        String line = reader.readLine();
-        if (line != null) {
+        String line;
+        while ((line = reader.readLine()) != null) {
             currentLine++;
-            return lineMapper.mapLine(line, currentLine);
+            if (commentPrefix == null || commentPrefix.isEmpty() || !line.startsWith(commentPrefix)) {
+                return lineMapper.mapLine(line, currentLine);
+            }
         }
 
         return null;
@@ -146,6 +151,17 @@ public class FlatFileItemReader<T> implements ItemReader<T> {
      */
     public FlatFileItemReader<T> setLinesToSkip(int linesToSkip) {
         this.linesToSkip = linesToSkip;
+        return this;
+    }
+
+    /**
+     * Sets the prefix of comment lines to skip. Comment lines are skipped anywhere in the file.
+     *
+     * @param commentPrefix the prefix of comment lines, like {@code #}
+     * @return this {@link FlatFileItemReader}
+     */
+    public FlatFileItemReader<T> setCommentPrefix(String commentPrefix) {
+        this.commentPrefix = commentPrefix;
         return this;
     }
 }

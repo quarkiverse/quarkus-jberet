@@ -455,6 +455,13 @@ The number of header lines to skip at the beginning of the file. Defaults to `0`
 <property name="linesToSkip" value="1"/>
 ----
 
+**commentPrefix** (optional)::
+The prefix of comment lines to skip, anywhere in the file:
+[source,xml]
+----
+<property name="commentPrefix" value="#"/>
+----
+
 **For `flatFileItemWriter`:**
 
 **encoding** (optional)::
@@ -476,6 +483,14 @@ Whether to append to the file instead of overwriting it. Defaults to `false`:
 [source,xml]
 ----
 <property name="append" value="true"/>
+----
+
+**header** (optional)::
+A header line to write at the beginning of the file. It is not written when appending to a non-empty file, or on
+restart:
+[source,xml]
+----
+<property name="header" value="id,itemId,bid,buyout,quantity"/>
 ----
 
 On restart, the `FlatFileItemWriter` truncates the file to the last checkpoint, discarding any lines written by a

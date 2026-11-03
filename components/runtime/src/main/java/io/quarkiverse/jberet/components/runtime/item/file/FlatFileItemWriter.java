@@ -32,6 +32,8 @@ import io.quarkiverse.jberet.runtime.api.ItemWriter;
  * separator</li>
  * <li>{@code append} (optional), a <code>boolean</code> indicating whether to append to the file. Defaults to
  * false</li>
+ * <li>{@code header} (optional), a <code>String</code> with a header line to write at the beginning of the file. The
+ * header is not written when appending to a non-empty file, or on restart</li>
  * </ul>
  * <p>
  * On restart, the file is truncated to the position of the last checkpoint, discarding any lines written by a chunk
@@ -53,6 +55,8 @@ public class FlatFileItemWriter<T> implements ItemWriter<T> {
     String lineSeparator;
     @BatchProperty
     Boolean append;
+    @BatchProperty
+    String header;
 
     private FileChannel channel;
     private Writer writer;
@@ -99,6 +103,13 @@ public class FlatFileItemWriter<T> implements ItemWriter<T> {
             } else {
                 channel.truncate(0);
                 position = 0;
+            }
+
+            if (checkpoint == null && header != null && position == 0) {
+                writer.write(header);
+                writer.write(lineSeparator != null ? lineSeparator : System.lineSeparator());
+                writer.flush();
+                position = channel.position();
             }
         } catch (Exception e) {
             try {
@@ -195,6 +206,18 @@ public class FlatFileItemWriter<T> implements ItemWriter<T> {
      */
     public FlatFileItemWriter<T> setAppend(boolean append) {
         this.append = append;
+        return this;
+    }
+
+    /**
+     * Sets a header line to write at the beginning of the file. The header is not written when appending to a
+     * non-empty file, or on restart.
+     *
+     * @param header the header line, without the line separator
+     * @return this {@link FlatFileItemWriter}
+     */
+    public FlatFileItemWriter<T> setHeader(String header) {
+        this.header = header;
         return this;
     }
 }

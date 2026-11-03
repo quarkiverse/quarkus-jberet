@@ -64,9 +64,9 @@ class FileItemTest {
         await().atMost(5, SECONDS)
                 .until(() -> FAILED.equals(batchClient.getJobExecution(jobExecution.getExecutionId()).getBatchStatus()));
 
-        // first chunk of 3 committed, second chunk rolled back
-        List<String> auctions = auctions();
-        assertEquals(auctions.subList(0, 3), Files.readAllLines(outputFile));
+        // header and first chunk of 3 committed, second chunk rolled back
+        List<String> auctions = lines("auctions.csv");
+        assertEquals(auctions.subList(0, 4), Files.readAllLines(outputFile));
 
         JobExecutionEntity restartExecution = batchClient.restartJobExecution(jobExecution.getExecutionId(), properties);
 
@@ -74,13 +74,28 @@ class FileItemTest {
                 .until(() -> batchClient.getJobExecution(restartExecution.getExecutionId()).getEndTime() != null);
         assertEquals(COMPLETED, batchClient.getJobExecution(restartExecution.getExecutionId()).getBatchStatus());
 
+        // the header is not written again on restart
         assertEquals(auctions, Files.readAllLines(outputFile));
     }
 
-    static List<String> auctions() throws Exception {
-        try (InputStream inputStream = FileItemTest.class.getClassLoader().getResourceAsStream("auctions.csv")) {
-            // skip the header
-            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8).lines().skip(1).toList();
+    @Test
+    void fileCommentsHeader(@TempDir Path tempDir) throws Exception {
+        BatchClient batchClient = new BatchClient(httpServer.getLocalBaseUri().toString());
+        Path outputFile = tempDir.resolve("auctions-output.csv");
+        Properties properties = new Properties();
+        properties.setProperty("outputFile", outputFile.toString());
+        JobExecutionEntity jobExecution = batchClient.startJob("file-comments-header", properties);
+
+        await().atMost(5, SECONDS)
+                .until(() -> COMPLETED.equals(batchClient.getJobExecution(jobExecution.getExecutionId()).getBatchStatus()));
+
+        // comments skipped when reading, header written back
+        assertEquals(lines("auctions.csv"), Files.readAllLines(outputFile));
+    }
+
+    static List<String> lines(String resource) throws Exception {
+        try (InputStream inputStream = FileItemTest.class.getClassLoader().getResourceAsStream(resource)) {
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8).lines().toList();
         }
     }
 }
