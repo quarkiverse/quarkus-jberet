@@ -5,14 +5,14 @@ import jakarta.batch.runtime.BatchStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import io.quarkiverse.jberet.it.cdiscopes.AbstractQuarkusIT;
+import io.quarkiverse.jberet.it.cdiscopes.AbstractScopeTest;
 import io.quarkus.test.junit.QuarkusTest;
 
 /**
  * Tests for {@link org.jberet.cdi.StepScoped}.
  */
 @QuarkusTest
-class StepScopedIT extends AbstractQuarkusIT {
+class StepScopedTest extends AbstractScopeTest {
     static final String stepScopedTest = "stepScoped";
     static final String stepScopedFailedTest = "stepScopedFail";
     static final String stepScopedTest2 = "stepScoped2";
