@@ -16,13 +16,6 @@
       <groupId>io.quarkiverse.jberet</groupId>
       <artifactId>quarkus-jberet-integration-tests-scopes-commons</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jberet.test-apps</groupId>
-      <artifactId>stepScoped</artifactId>
-      <version>${jberet.version}</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

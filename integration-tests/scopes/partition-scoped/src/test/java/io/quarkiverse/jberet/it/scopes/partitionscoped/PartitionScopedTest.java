@@ -1,22 +1,18 @@
 package io.quarkiverse.jberet.it.scopes.partitionscoped;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.Set;
-
 import jakarta.batch.runtime.BatchStatus;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import io.quarkiverse.jberet.it.cdiscopes.AbstractQuarkusIT;
+import io.quarkiverse.jberet.it.cdiscopes.AbstractScopeTest;
 import io.quarkus.test.junit.QuarkusTest;
 
 /**
  * Tests for {@link org.jberet.cdi.PartitionScoped}.
  */
 @QuarkusTest
-class PartitionScopedIT extends AbstractQuarkusIT {
+class PartitionScopedTest extends AbstractScopeTest {
     static final String partitionScopedTest = "partitionScopedPartitioned";
     static final String partitionScopedFailJobListenerTest = "partitionScopedFailJobListener";
     static final String partitionScopedFailStepListenerTest = "partitionScopedFailStepListener";
@@ -33,7 +29,7 @@ class PartitionScopedIT extends AbstractQuarkusIT {
         // There's not guarantee which orders threads will be processed in, just check
         // the existStatus contains
         // each value from the expected data.
-        for (String expected : getExpectedData()) {
+        for (String expected : PartitionScopePartitionAnalyzer.expectedData) {
             Assertions.assertTrue(exitStatus.contains(expected),
                     "Missing expected data '" + expected + "' in '" + exitStatus + "'");
         }
@@ -51,17 +47,5 @@ class PartitionScopedIT extends AbstractQuarkusIT {
         // injecting @PartitionScoped Foo into a step listener will fail
         startJobAndWait(partitionScopedFailStepListenerTest);
         Assertions.assertEquals(BatchStatus.FAILED, jobExecution.getBatchStatus());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Set<String> getExpectedData() {
-        try {
-            Field f = org.jberet.testapps.cdiscopes.partitionscoped.PartitionScopePartitionAnalyzer.class
-                    .getDeclaredField("expectedData");
-            f.setAccessible(true);
-            return (Set<String>) f.get(null);
-        } catch (ReflectiveOperationException | SecurityException e) {
-            throw new UndeclaredThrowableException(e.getCause());
-        }
     }
 }
