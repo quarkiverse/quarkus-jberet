@@ -27,11 +27,13 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-client-jsonb</artifactId>
     </dependency>
-
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-test-h2</artifactId>
-      <scope>test</scope>
+      <artifactId>quarkus-flyway</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-liquibase</artifactId>
     </dependency>
   </dependencies>
 

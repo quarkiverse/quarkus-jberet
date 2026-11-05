@@ -9,14 +9,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import io.quarkiverse.jberet.it.jdbc.JdbcRepositoryTablesDDLFilenameTest.Profile;
-import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
 
 @QuarkusTest
-@QuarkusTestResource(H2DatabaseTestResource.class)
 @TestProfile(Profile.class)
 class JdbcRepositoryTablesDDLFilenameTest {
     public static class Profile implements QuarkusTestProfile {

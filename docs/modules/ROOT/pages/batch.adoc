@@ -301,6 +301,10 @@ DDL scripts in:
 - {jberet-repo-url}/src/main/resources/sql/jberet.ddl[Schema Creation]
 - {jberet-repo-url}/src/main/resources/sql/jberet-sql.properties[SQL Scripts]
 
+When Flyway or Liquibase migrate the datasource at startup (`migrate-at-start`), the JDBC `JobRepository` is only
+initialized after the migration completes. If the required tables already exist, Quarkus Batch does not create them, so
+the datasource user of the `JobRepository` does not require DDL permissions.
+
 The Quarkus JBeret extension offers configuration to override the DDL and SQL files, as well as customizing
 the table names with prefixes and/or suffixes:
 

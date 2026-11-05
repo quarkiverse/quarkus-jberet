@@ -65,6 +65,7 @@ import io.quarkiverse.jberet.runtime.repository.JdbcJobRepositorySupplier;
 import io.quarkiverse.jberet.runtime.scope.QuarkusJobScopedContextImpl;
 import io.quarkiverse.jberet.runtime.scope.QuarkusPartitionScopedContextImpl;
 import io.quarkiverse.jberet.runtime.scope.QuarkusStepScopedContextImpl;
+import io.quarkus.agroal.spi.JdbcDataSourceSchemaReadyBuildItem;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.BeanDiscoveryFinishedBuildItem;
@@ -370,7 +371,10 @@ class JBeretProcessor {
     @Record(ExecutionTime.RUNTIME_INIT)
     ServiceStartBuildItem init(
             JBeretRecorder recorder,
-            BeanContainerBuildItem beanContainer) {
+            BeanContainerBuildItem beanContainer,
+            // Ordering only: the JDBC Repository creates its tables if they don't exist, so schema management tools
+            // (Flyway, Liquibase) must run first
+            List<JdbcDataSourceSchemaReadyBuildItem> schemaReady) {
 
         recorder.init(beanContainer.getValue());
 
