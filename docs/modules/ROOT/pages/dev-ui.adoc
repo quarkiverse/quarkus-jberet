@@ -1,0 +1,149 @@
+include::./includes/attributes.adoc[]
+
+= Dev UI
+
+When the application runs in dev mode (`quarkus dev` or `mvn quarkus:dev`), the extension adds a *JBeret - Batch
+Processing* card to the https://quarkus.io/guides/dev-ui[Dev UI] (http://localhost:8080/q/dev-ui). The Dev UI lets you
+inspect, run, and troubleshoot batch jobs without writing a REST endpoint or a test to start them.
+
+The Dev UI is only available in dev mode, and nothing from it is included in the production application.
+
+== Jobs
+
+The *Jobs* page lists every Job in the application, from Job XML files in `META-INF/batch-jobs` or produced as CDI
+beans, with:
+
+* The Job steps.
+* The cron schedule, from `quarkus.jberet.job."job-name".cron`.
+* The parameters configured with `quarkus.jberet.job."job-name".params`.
+* The status of the latest execution.
+
+Select a Job to see its flow diagram: the steps, decisions, flows, splits and the transitions between them.
+
+The *Start* button starts a new execution. The configured parameters are filled in, and you can change them or add
+new ones before starting the Job.
+
+== Executions
+
+The *Executions* page lists the latest Job executions, with their status, exit status, parameters and duration. The
+page updates as executions start and end.
+
+Select an execution to see:
+
+* The flow diagram, with each step colored by its status in the execution.
+* The step executions, with their metrics (read, write, filter, skip, commit, and rollback counts).
+* The exception of a failed step. In the stack trace, the lines from the application classes open the source in
+your IDE.
+
+Depending on the execution status, you can *Stop* a running execution, *Restart* a failed or stopped one (with new
+parameters), or *Abandon* it, so it can no longer be restarted.
+
+[NOTE]
+====
+With the default `in-memory` `JobRepository`, the executions are lost when the application restarts or reloads in
+dev mode. Configure a persistent repository to keep them; see
+xref:batch.adoc#configuring_a_jobrepository[Configuring a JobRepository].
+====
+
+== Schedules
+
+The *Schedules* page lists the Job schedules, both the ones from the `quarkus.jberet.job."job-name".cron`
+configuration and the ones created with the `JobScheduler` API. For each schedule, it shows the next and previous fire
+times and the executions it started. You can pause, resume or cancel a schedule.
+
+A schedule cancelled from the Dev UI is created again from the configuration when the application restarts.
+
+== Batch Artifacts
+
+The *Batch Artifacts* page lists the batch artifacts (batchlets, readers, processors, writers, deciders, listeners and
+partition artifacts) that the Jobs reference with `ref`, with:
+
+* The class that implements the artifact, which opens in your IDE.
+* The batch API types the artifact implements, for instance `ItemReader`.
+* The Jobs and steps that use the artifact, and how they use it.
+
+Each `ref` is resolved the same way as when the Job runs. A `ref` that does not match any bean is marked *Unresolved*,
+because any Job that uses it fails when it runs. A `ref` with an expression, like `#{jobParameters['writer']}`, is
+only resolved when the Job runs, and is marked *Expression*.
+
+The page also lists the named batch artifacts that no Job uses yet, including the readers and writers from the
+xref:components.adoc[Components] extension (marked *Built-in*).
+
+== Batch log
+
+The *Batch* tab in the Dev UI footer shows a live log of Job and step executions: when they start and end, their
+status, metrics and failures.
+
+== Dev Assistant
+
+With the https://quarkus.io/guides/assistant[Quarkus Dev Assistant], the Dev UI adds AI-powered features to help you
+write and troubleshoot Jobs:
+
+* *Explain failure*: in the details of a failed execution, explains why the execution failed and how to fix it. The
+assistant receives the Job definition, the parameters, the step executions with their exceptions, and the batch
+artifacts the Job uses.
+* *Job Builder*: a page in the JBeret card that generates a Job from a description: the Job XML, the Java code of
+any new batch artifacts, and the configuration. The assistant knows the batch artifacts available in the
+application, and reuses them, including the ones from the Components extension.
+
+The assistant features are only available when the Dev Assistant is installed and configured. To install it, add the
+`quarkus-chappie` extension to the application:
+
+[source,xml,subs=attributes+]
+----
+<dependency>
+    <groupId>io.quarkiverse.chappie</groupId>
+    <artifactId>quarkus-chappie</artifactId>
+    <version>{chappie-version}</version>
+</dependency>
+----
+
+Chappie 2.x requires Quarkus 4. To find the Chappie version for your Quarkus version, see the compatibility table in
+the https://github.com/quarkiverse/quarkus-chappie#readme[Chappie README].
+
+Then open the Dev UI and select the AI provider (for instance OpenAI, Anthropic, Gemini, or a local model with Ollama)
+in the assistant settings.
+
+[IMPORTANT]
+====
+The assistant sends the Job definitions, parameters, exceptions, and the names of the batch artifact classes to the
+configured AI provider. Review the generated code before adding it to your application.
+====
+
+== Dev MCP
+
+The extension exposes the following tools to AI coding agents through
+https://quarkus.io/guides/dev-mcp[Dev MCP]. They are enabled by default:
+
+[cols="1,3"]
+|===
+|Tool |Description
+
+|`getJobs`
+|The Jobs, with their steps, cron schedule, configured parameters, and latest execution.
+
+|`getExecutions`
+|The latest Job executions, for all Jobs or a single one.
+
+|`getStepExecutions`
+|The step executions of a Job execution, with their metrics and failures.
+
+|`getJobDiagram`
+|The flow diagram of a Job, in Graphviz DOT format.
+
+|`getExecutionDiagram`
+|The flow diagram of a Job execution, with the steps colored by their status.
+
+|`getSchedules`
+|The Job schedules, with their next and previous fire times.
+
+|`getRecentEvents`
+|The latest events of Job and step executions.
+
+|`getBatchArtifacts`
+|The batch artifacts, how each `ref` resolves, and which Jobs use them.
+|===
+
+The tools that change the application state (`startJob`, `restartExecution`, `stopExecution`, `abandonExecution`,
+`pauseSchedule`, `resumeSchedule` and `cancelSchedule`) are disabled by default. You can enable them in the Dev MCP
+settings of the Dev UI.

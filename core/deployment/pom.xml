@@ -43,10 +43,32 @@
             <groupId>io.quarkiverse.jberet</groupId>
             <artifactId>quarkus-jberet</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.jberet</groupId>
+            <artifactId>quarkus-jberet-dev</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-devui-deployment-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-devjsonrpc-deployment-spi</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit-internal</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-devui-test-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-vertx-http-deployment</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

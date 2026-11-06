@@ -1,0 +1,8 @@
+<job id="broken-job" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <step id="broken-step">
+        <chunk>
+            <reader ref="missingReader"/>
+            <writer ref="#{jobParameters['writer']}"/>
+        </chunk>
+    </step>
+</job>

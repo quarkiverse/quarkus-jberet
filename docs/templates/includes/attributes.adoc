@@ -1,5 +1,6 @@
 :project-version: ${release.current-version}
-:quarkus-minimum-version: 3.28.1
+:quarkus-version: ${quarkus.version}
+:chappie-version: 2.0.0
 
 :examples-dir: ../examples
 :jberet-repo-url: https://raw.githubusercontent.com/jberet/jsr352/refs/tags/3.1.0.Final/jberet-core

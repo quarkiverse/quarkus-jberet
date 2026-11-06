@@ -169,7 +169,7 @@ public class QuarkusJobScheduler extends JobScheduler {
         return TRIGGER_ID_PREFIX + jobName + "-" + ids.getAndIncrement();
     }
 
-    static String toCronExpression(final ScheduleExpression scheduleExpression) {
+    public static String toCronExpression(final ScheduleExpression scheduleExpression) {
         String dayOfMonth = scheduleExpression.getDayOfMonth();
         String dayOfWeek = toDayOfWeek(scheduleExpression.getDayOfWeek());
 
