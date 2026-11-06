@@ -2,6 +2,7 @@ package io.quarkiverse.jberet.runtime;
 
 import static org.jberet._private.BatchMessages.MESSAGES;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,25 +83,56 @@ public class QuarkusJobOperator extends AbstractJobOperator {
             throw MESSAGES.noSuchJobInstance(null);
         }
 
+        // The execution and the repository use the Job id, the Job definitions and the configuration the Job XML name
         String jobName = originalToRestart.getJobName();
+        String jobXmlName = getJobXmlName(originalToRestart);
         Job jobDefinition = jobInstance.getUnsubstitutedJob();
         if (jobDefinition == null) {
             ApplicationAndJobName applicationAndJobName = new ApplicationAndJobName(jobInstance.getApplicationName(), jobName);
             JobRepository repository = getJobRepository();
             jobDefinition = repository.getJob(applicationAndJobName);
-            if (jobDefinition == null) {
-                jobDefinition = jobs.get(jobName);
+            if (jobDefinition == null && jobXmlName != null) {
+                jobDefinition = jobs.get(jobXmlName);
                 repository.addJob(applicationAndJobName, jobDefinition);
             }
             jobInstance.setUnsubstitutedJob(jobDefinition);
         }
 
         if (jobDefinition != null) {
-            setJobParametersFromConfig(restartParameters, config.job().get(jobName));
+            if (jobXmlName != null) {
+                setJobParametersFromConfig(restartParameters, config.job().get(jobXmlName));
+            }
             return super.restart(executionId, restartParameters, user);
         } else {
-            throw new NoSuchJobException("Job with xml name " + jobName + " was not found");
+            throw new NoSuchJobException("Job with id " + jobName + " was not found");
         }
+    }
+
+    /**
+     * The Job XML name of an execution. JBeret stores it in the parameters of failed and stopped executions (the ones
+     * that can be restarted). Otherwise, find the Job by its id.
+     */
+    private String getJobXmlName(final JobExecutionImpl execution) {
+        Properties parameters = execution.getJobParameters();
+        String jobXmlName = parameters != null ? parameters.getProperty(Job.JOB_XML_NAME) : null;
+        if (jobXmlName != null && jobs.containsKey(jobXmlName)) {
+            return jobXmlName;
+        }
+        for (Map.Entry<String, Job> job : jobs.entrySet()) {
+            if (job.getValue().getId().equals(execution.getJobName())) {
+                return job.getKey();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The Jobs available to this operator, keyed by the Job XML name (or the bean name, for Jobs produced with CDI).
+     *
+     * @return an unmodifiable {@link Map} of the available Jobs
+     */
+    public Map<String, Job> getJobs() {
+        return Collections.unmodifiableMap(jobs);
     }
 
     @Override
