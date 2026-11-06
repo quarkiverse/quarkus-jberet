@@ -1,0 +1,9 @@
+<job id="job-id" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+    <step id="step">
+        <batchlet ref="failOnceBatchlet">
+            <properties>
+                <property name="name" value="#{jobParameters['name']}"/>
+            </properties>
+        </batchlet>
+    </step>
+</job>

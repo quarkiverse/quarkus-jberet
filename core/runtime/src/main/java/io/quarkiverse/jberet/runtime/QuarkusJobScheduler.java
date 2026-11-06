@@ -47,10 +47,13 @@ public class QuarkusJobScheduler extends JobScheduler {
     InjectableInstance<Scheduler> scheduler;
     @Inject
     JobOperator jobOperator;
+    @Inject
+    QuarkusJobOperator quarkusJobOperator;
 
     @Startup
     void schedule() {
-        for (String jobName : jobOperator.getJobNames()) {
+        // The job configuration is keyed by the job XML name (or bean name), which may differ from the job id
+        for (String jobName : quarkusJobOperator.getJobs().keySet()) {
             JobConfig jobConfig = config.job().get(jobName);
             if (jobConfig.cron().isPresent()) {
                 if (!schedulerConfig.enabled()) {

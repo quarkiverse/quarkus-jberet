@@ -5,19 +5,19 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.batch.operations.JobOperator;
 import jakarta.batch.runtime.BatchStatus;
 import jakarta.batch.runtime.JobExecution;
 import jakarta.batch.runtime.JobInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.jberet.job.model.Job;
 import org.jberet.runtime.JobExecutionImpl;
 
 @ApplicationScoped
 public class QuarkusJobLauncher {
     @Inject
-    JobOperator jobOperator;
+    QuarkusJobOperator jobOperator;
 
     /**
      * Starts or restarts a job synchronously. If the most recent execution of the job is
@@ -39,7 +39,9 @@ public class QuarkusJobLauncher {
     }
 
     private long startOrRestart(String jobName, Properties jobParameters) {
-        List<JobInstance> instances = jobOperator.getJobInstances(jobName, 0, 1);
+        // The Job instances are stored with the Job id, which may differ from the Job XML name
+        Job job = jobOperator.getJobs().get(jobName);
+        List<JobInstance> instances = job != null ? jobOperator.getJobInstances(job.getId(), 0, 1) : List.of();
         if (!instances.isEmpty()) {
             List<JobExecution> executions = jobOperator.getJobExecutions(instances.get(0));
             if (!executions.isEmpty()) {
