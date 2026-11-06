@@ -141,6 +141,11 @@
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.jberet</groupId>
+        <artifactId>quarkus-jberet-dev</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.jberet</groupId>
         <artifactId>quarkus-jberet-deployment</artifactId>
         <version>${project.version}</version>
       </dependency>
