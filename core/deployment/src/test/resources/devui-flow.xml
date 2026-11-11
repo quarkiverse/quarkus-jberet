@@ -1,0 +1,25 @@
+<job id="flow-job" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <step id="prepare" next="decide">
+        <batchlet ref="noop"/>
+    </step>
+    <decision id="decide" ref="flowDecider">
+        <next on="split" to="parallel"/>
+        <fail on="fail" exit-status="FAILED_BY_DECISION"/>
+        <end on="*"/>
+    </decision>
+    <split id="parallel" next="report">
+        <flow id="left">
+            <step id="left-step">
+                <batchlet ref="noop"/>
+            </step>
+        </flow>
+        <flow id="right">
+            <step id="right-step">
+                <batchlet ref="noop"/>
+            </step>
+        </flow>
+    </split>
+    <step id="report">
+        <batchlet ref="noop"/>
+    </step>
+</job>

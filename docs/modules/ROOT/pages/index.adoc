@@ -41,7 +41,7 @@ implementation("io.quarkiverse.jberet:quarkus-jberet:{project-version}")
 
 [IMPORTANT,subs=attributes+]
 ====
-Recommended Quarkus version: `{quarkus-minimum-version}` or higher
+Recommended Quarkus version: `{quarkus-version}` or higher
 
 There is no direct correspondence between Quarkus JBeret versions and Quarkus versions.
 ====
@@ -403,6 +403,11 @@ The full list of all API endpoints:
 |DELETE  |/schedules/{scheduleId}
 |POST    |/schedules/{scheduleId}/cancel
 |===
+
+== Dev UI
+
+In dev mode, the extension adds pages to the Quarkus Dev UI to list, start, and troubleshoot Jobs, their executions,
+schedules, and batch artifacts. See xref:dev-ui.adoc[Dev UI].
 
 == Example Applications
 

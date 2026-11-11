@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.quarkiverse.jberet</groupId>
+        <artifactId>quarkus-jberet-core-parent</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>quarkus-jberet-dev</artifactId>
+    <name>Quarkus - JBeret - Core Runtime Dev mode</name>
+    <description>Write Batch Applications with JBeret a JSR-352 implementation - Dev mode only</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.quarkiverse.jberet</groupId>
+            <artifactId>quarkus-jberet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-assistant-dev</artifactId>
+        </dependency>
+    </dependencies>
+</project>
