@@ -12,6 +12,7 @@ import org.jberet.job.model.Job;
 import org.jberet.job.model.JobElement;
 import org.jberet.job.model.Listeners;
 import org.jberet.job.model.Partition;
+import org.jberet.job.model.Properties;
 import org.jberet.job.model.PropertiesHolder;
 import org.jberet.job.model.RefArtifact;
 import org.jberet.job.model.Split;
@@ -69,62 +70,56 @@ public class JobProcessor {
     }
 
     public void processJob(Job job) {
-        jobConsumers.forEach(consumer -> consumer.accept(job));
+        jobConsumers.forEach(consumer -> consumer.accept(withProperties(job)));
+        jobListenersConsumers.forEach(consumer -> consumer.accept(withListeners(job)));
 
-        if (job.getListeners() != null) {
-            jobListenersConsumers.forEach(consumer -> consumer.accept(job.getListeners()));
-        }
-
+        // Job#getInheritingJobElements are not processed, because the elements are also in the Job elements (or in the
+        // elements of a Flow), and the inheritance was already resolved when the Job was loaded
         for (JobElement jobElement : job.getJobElements()) {
             processJob(jobElement);
-        }
-
-        for (InheritableJobElement inheritingJobElement : job.getInheritingJobElements()) {
-            processJob(inheritingJobElement);
         }
     }
 
     private void processJob(JobElement jobElement) {
         if (jobElement instanceof Step step) {
-            stepConsumers.forEach(consumer -> consumer.accept(step));
+            stepConsumers.forEach(consumer -> consumer.accept(withProperties(step)));
 
             if (step.getBatchlet() != null) {
-                batchletConsumers.forEach(consumer -> consumer.accept(step.getBatchlet()));
+                batchletConsumers.forEach(consumer -> consumer.accept(withProperties(step.getBatchlet())));
             }
 
-            if (step.getListeners() != null) {
-                stepListenersConsumers.forEach(consumer -> consumer.accept(step.getListeners()));
-            }
+            stepListenersConsumers.forEach(consumer -> consumer.accept(withListeners(step)));
 
             if (step.getChunk() != null) {
                 Chunk chunk = step.getChunk();
                 if (chunk.getReader() != null) {
-                    readerConsumers.forEach(consumer -> consumer.accept(chunk.getReader()));
+                    readerConsumers.forEach(consumer -> consumer.accept(withProperties(chunk.getReader())));
                 }
                 if (chunk.getProcessor() != null) {
-                    processorConsumers.forEach(consumer -> consumer.accept(chunk.getProcessor()));
+                    processorConsumers.forEach(consumer -> consumer.accept(withProperties(chunk.getProcessor())));
                 }
                 if (chunk.getWriter() != null) {
-                    writerConsumers.forEach(consumer -> consumer.accept(chunk.getWriter()));
+                    writerConsumers.forEach(consumer -> consumer.accept(withProperties(chunk.getWriter())));
                 }
                 if (chunk.getCheckpointAlgorithm() != null) {
-                    checkPointAlgorithmConsumers.forEach(consumer -> consumer.accept(chunk.getCheckpointAlgorithm()));
+                    checkPointAlgorithmConsumers
+                            .forEach(consumer -> consumer.accept(withProperties(chunk.getCheckpointAlgorithm())));
                 }
             }
 
             if (step.getPartition() != null) {
                 Partition partition = step.getPartition();
                 if (partition.getMapper() != null) {
-                    mapperConsumers.forEach(consumer -> consumer.accept(partition.getMapper()));
+                    mapperConsumers.forEach(consumer -> consumer.accept(withProperties(partition.getMapper())));
                 }
                 if (partition.getCollector() != null) {
-                    collectorConsumers.forEach(consumer -> consumer.accept(partition.getCollector()));
+                    collectorConsumers.forEach(consumer -> consumer.accept(withProperties(partition.getCollector())));
                 }
                 if (partition.getAnalyzer() != null) {
-                    analyzerConsumers.forEach(consumer -> consumer.accept(partition.getAnalyzer()));
+                    analyzerConsumers.forEach(consumer -> consumer.accept(withProperties(partition.getAnalyzer())));
                 }
                 if (partition.getReducer() != null) {
-                    reducerConsumers.forEach(consumer -> consumer.accept(partition.getReducer()));
+                    reducerConsumers.forEach(consumer -> consumer.accept(withProperties(partition.getReducer())));
                 }
             }
         }
@@ -143,8 +138,36 @@ public class JobProcessor {
         }
 
         if (jobElement instanceof Decision decision) {
-            deciderConsumers.forEach(consumer -> consumer.accept(new RefArtifact(decision.getRef())));
+            // The Decider is not a RefArtifact in the Job model, so use the Decision properties
+            RefArtifact decider = new RefArtifact(decision.getRef());
+            decider.setProperties(withProperties(decision).getProperties());
+            deciderConsumers.forEach(consumer -> consumer.accept(decider));
         }
+    }
+
+    /**
+     * The {@link Listeners} of a Job or Step, so the listeners consumers can add listeners. Creates the
+     * {@link Listeners} if the element doesn't have any, and copies the listeners, in case the list is not modifiable
+     * (the recorded list).
+     */
+    private static Listeners withListeners(final InheritableJobElement element) {
+        if (element.getListeners() == null) {
+            element.setListeners(new Listeners());
+        }
+        element.getListeners().setListeners(new ArrayList<>(element.getListeners().getListeners()));
+        element.getListeners().getListeners().forEach(JobProcessor::withProperties);
+        return element.getListeners();
+    }
+
+    /**
+     * Creates the {@link Properties} of a Job element or a batch artifact if it doesn't have any, so the consumers
+     * can always read and add properties.
+     */
+    private static <T extends PropertiesHolder> T withProperties(final T holder) {
+        if (holder.getProperties() == null) {
+            holder.setProperties(new Properties());
+        }
+        return holder;
     }
 
     public static class JobProcessorBuilder {
@@ -263,26 +286,9 @@ public class JobProcessor {
         }
 
         public JobProcessorBuilder propertiesHolderConsumer(final Consumer<PropertiesHolder> consumer) {
-            jobConsumers.add(job -> {
-                if (job.getProperties() != null) {
-                    consumer.accept(job);
-                }
-            });
-            stepConsumers.add(step -> {
-                if (step.getProperties() != null) {
-                    consumer.accept(step);
-                }
-            });
-            deciderConsumers.add(decider -> {
-                if (decider.getProperties() != null) {
-                    consumer.accept(decider);
-                }
-            });
-            refArtifactConsumer(refArtifact -> {
-                if (refArtifact.getProperties() != null) {
-                    consumer.accept(refArtifact);
-                }
-            });
+            jobConsumers.add(consumer::accept);
+            stepConsumers.add(consumer::accept);
+            refArtifactConsumer(consumer::accept);
             return this;
         }
 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="inherited-step" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="child" parent="base"/>
+  <step id="base" abstract="true">
+    <batchlet ref="inheritedStepBatchlet"/>
+  </step>
+</job>

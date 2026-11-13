@@ -6,6 +6,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,15 +14,11 @@ import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.interceptor.Interceptor;
 
-import org.jberet.job.model.Flow;
-import org.jberet.job.model.InheritableJobElement;
-import org.jberet.job.model.Job;
-import org.jberet.job.model.JobElement;
 import org.jberet.job.model.Listeners;
 import org.jberet.job.model.RefArtifact;
-import org.jberet.job.model.Split;
-import org.jberet.job.model.Step;
 
+import io.quarkiverse.jberet.runtime.JobProcessor;
+import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
 import io.quarkiverse.jberet.runtime.QuarkusJobOperator;
 import io.quarkus.runtime.StartupEvent;
 import io.smallrye.mutiny.Multi;
@@ -47,10 +44,21 @@ public class JBeretDevEvents {
      * Adds the Dev listeners to the Jobs before anything else can start them.
      */
     void registerListeners(@Observes @Priority(Interceptor.Priority.PLATFORM_BEFORE) StartupEvent event) {
-        for (Job job : jobOperator.getJobs().values()) {
-            addListener(job, JBeretDevJobListener.NAME);
-            addStepListeners(job.getJobElements());
-        }
+        JobProcessor listeners = new JobProcessorBuilder()
+                .jobListenersConsumer(new Consumer<Listeners>() {
+                    @Override
+                    public void accept(final Listeners listeners) {
+                        listeners.getListeners().add(new RefArtifact(JBeretDevJobListener.NAME));
+                    }
+                })
+                .stepListenersConsumer(new Consumer<Listeners>() {
+                    @Override
+                    public void accept(final Listeners listeners) {
+                        listeners.getListeners().add(new RefArtifact(JBeretDevStepListener.NAME));
+                    }
+                })
+                .build();
+        jobOperator.getJobs().values().forEach(listeners::processJob);
     }
 
     Multi<BatchEvent> stream() {
@@ -81,32 +89,6 @@ public class JBeretDevEvents {
             recentEvents.addLast(event);
         }
         events.onNext(event);
-    }
-
-    private static void addStepListeners(final List<JobElement> elements) {
-        for (JobElement element : elements) {
-            if (element instanceof Step step) {
-                addListener(step, JBeretDevStepListener.NAME);
-            } else if (element instanceof Flow flow) {
-                addStepListeners(flow.getJobElements());
-            } else if (element instanceof Split split) {
-                for (Flow flow : split.getFlows()) {
-                    addStepListeners(flow.getJobElements());
-                }
-            }
-        }
-    }
-
-    private static void addListener(final InheritableJobElement element, final String ref) {
-        if (element.getListeners() == null) {
-            element.setListeners(new Listeners());
-        }
-        // Copy the listeners, in case the recorded list is not modifiable
-        List<RefArtifact> listeners = new ArrayList<>(element.getListeners().getListeners());
-        if (listeners.stream().noneMatch(listener -> ref.equals(listener.getRef()))) {
-            listeners.add(new RefArtifact(ref));
-            element.getListeners().setListeners(listeners);
-        }
     }
 
     /**

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="decision-config" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="first" next="decider">
+    <batchlet ref="decisionConfigBatchlet"/>
+  </step>
+
+  <decision id="decider" ref="configDecider">
+    <properties>
+      <property name="decision.exit-status" value="proceed"/>
+    </properties>
+    <next on="proceed" to="second"/>
+    <fail on="*"/>
+  </decision>
+
+  <step id="second">
+    <batchlet ref="decisionConfigBatchlet"/>
+  </step>
+</job>
