@@ -78,17 +78,13 @@ public class JBeretRecorder {
         @Override
         public void accept(Step step) {
             Properties properties = step.getProperties();
-            String globalTimeout = properties != null ? properties.get(JAKARTA_TRANSACTION_TIMEOUT) : null;
-            if (globalTimeout == null) {
+            if (properties.get(JAKARTA_TRANSACTION_TIMEOUT) == null) {
                 SmallRyeConfig config = ConfigProvider.getConfig().unwrap(SmallRyeConfig.class);
                 ConfigValue configValue = config.getConfigValue(QUARKUS_TRANSACTION_TIMEOUT);
                 if (configValue.getValue() != null
                         && !DefaultValuesConfigSource.NAME.equals(configValue.getConfigSourceName())) {
                     Duration transactionTimeout = config.getValue(QUARKUS_TRANSACTION_TIMEOUT, Duration.class);
-                    if (properties == null) {
-                        step.setProperties(new Properties());
-                    }
-                    step.getProperties().getNameValues().put(JAKARTA_TRANSACTION_TIMEOUT,
+                    properties.getNameValues().put(JAKARTA_TRANSACTION_TIMEOUT,
                             String.valueOf(transactionTimeout.toSeconds()));
                 }
             }

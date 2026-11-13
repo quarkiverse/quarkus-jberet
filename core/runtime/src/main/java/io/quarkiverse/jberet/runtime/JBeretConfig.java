@@ -9,10 +9,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.jberet.job.model.Job;
 import org.jberet.job.model.Listeners;
 import org.jberet.job.model.RefArtifact;
-import org.jberet.job.model.Step;
 
 import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
 import io.quarkiverse.jberet.runtime.repository.InMemoryJobRepositorySupplier;
@@ -66,24 +64,16 @@ public interface JBeretConfig {
 
         default JobProcessor listeners() {
             return new JobProcessorBuilder()
-                    .jobConsumer(new Consumer<Job>() {
+                    .jobListenersConsumer(new Consumer<Listeners>() {
                         @Override
-                        public void accept(Job job) {
-                            List<RefArtifact> listeners = jobListeners().orElse(emptyList());
-                            if (job.getListeners() == null) {
-                                job.setListeners(new Listeners());
-                            }
-                            job.getListeners().getListeners().addAll(listeners);
+                        public void accept(Listeners listeners) {
+                            listeners.getListeners().addAll(jobListeners().orElse(emptyList()));
                         }
                     })
-                    .stepConsumer(new Consumer<Step>() {
+                    .stepListenersConsumer(new Consumer<Listeners>() {
                         @Override
-                        public void accept(Step step) {
-                            List<RefArtifact> listeners = stepListeners().orElse(emptyList());
-                            if (step.getListeners() == null) {
-                                step.setListeners(new Listeners());
-                            }
-                            step.getListeners().getListeners().addAll(listeners);
+                        public void accept(Listeners listeners) {
+                            listeners.getListeners().addAll(stepListeners().orElse(emptyList()));
                         }
                     })
                     .build();
