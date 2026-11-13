@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="batchlet" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="step">
+    <batchlet ref="tracingBatchlet"/>
+  </step>
+</job>

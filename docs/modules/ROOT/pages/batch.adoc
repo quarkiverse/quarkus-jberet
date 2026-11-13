@@ -467,6 +467,50 @@ Global Step listeners are applied in addition to any listeners defined in the Jo
 Step listeners execute is undefined.
 ====
 
+== OpenTelemetry
+
+When the application includes the https://quarkus.io/guides/opentelemetry[`quarkus-opentelemetry`] extension, the
+extension traces every Job execution:
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-opentelemetry</artifactId>
+</dependency>
+----
+
+There are no OpenTelemetry semantic conventions for batch jobs yet, so the spans use the following names:
+
+[cols="1,2"]
+|===
+|Span name |Description
+
+|`BatchJob <job>`
+|The Job execution.
+
+|`BatchJob <job>.<step>`
+|A Step execution, child of the Job span.
+
+|`BatchJob <job>.<step>.Chunk`
+|A Chunk of a Chunk Step, child of the Step span.
+|===
+
+`<job>` is the Job id, and `<step>` is the Step id. All spans are `INTERNAL` spans.
+
+A span has an `ERROR` status if the execution fails. The Step and Chunk spans also record the exception.
+
+=== Context Propagation
+
+The Job span is a child of the span that is current when the Job starts. For instance, when a REST endpoint starts a
+Job, the Job span is part of the trace of the HTTP request, even if the Job executes in another thread.
+
+The spans of Split Flows and Partitions also belong to the trace of the Job, even if they execute in other threads.
+
+=== Configuration
+
+To disable the tracing of Jobs, set `quarkus.jberet.telemetry.traces.enabled=false`.
+
 == Testing
 
 Since Batch Applications execute jobs asynchronously, the testing code must explicitly wait for the job to complete or
