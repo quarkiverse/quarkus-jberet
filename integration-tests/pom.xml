@@ -75,6 +75,7 @@
     <module>job-launcher</module>
     <module>mongo</module>
     <module>mongo-repository</module>
+    <module>opentelemetry</module>
     <module>tck</module>
   </modules>
 

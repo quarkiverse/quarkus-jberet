@@ -15,6 +15,7 @@ import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobTask;
 import org.jberet.spi.JobXmlResolver;
 
+import io.quarkiverse.jberet.runtime.telemetry.JobWithTelemetry;
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.InjectableBean;
 
@@ -23,18 +24,21 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
     private final JobExecutor jobExecutor;
     private final JobRepository jobRepository;
     private final TransactionManager transactionManager;
+    private final boolean tracing;
 
     private static final Properties PROPS = new Properties();
 
     public QuarkusBatchEnvironment(
             final JobRepository jobRepository,
             final JobExecutor jobExecutor,
-            final TransactionManager transactionManager) {
+            final TransactionManager transactionManager,
+            final boolean tracing) {
 
         this.artifactFactory = new QuarkusArtifactFactory();
         this.jobExecutor = jobExecutor;
         this.jobRepository = jobRepository;
         this.transactionManager = transactionManager;
+        this.tracing = tracing;
     }
 
     @Override
@@ -53,7 +57,11 @@ class QuarkusBatchEnvironment implements BatchEnvironment {
 
     @Override
     public void submitTask(JobTask jobTask) {
-        jobExecutor.execute(jobTask);
+        if (tracing) {
+            jobExecutor.execute(new JobWithTelemetry(jobTask));
+        } else {
+            jobExecutor.execute(jobTask);
+        }
     }
 
     @Override

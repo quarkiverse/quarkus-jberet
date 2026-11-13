@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="chunk" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="step">
+    <chunk item-count="2">
+      <reader ref="tracingItemReader">
+        <properties>
+          <property name="items" value="3"/>
+        </properties>
+      </reader>
+      <processor ref="tracingItemProcessor"/>
+      <writer ref="tracingItemWriter"/>
+    </chunk>
+  </step>
+</job>
