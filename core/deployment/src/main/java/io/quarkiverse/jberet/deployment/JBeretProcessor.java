@@ -78,6 +78,8 @@ import io.quarkus.arc.processor.BeanInfo;
 import io.quarkus.arc.processor.BeanResolver;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.arc.processor.InjectionPointInfo;
+import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.IsProduction;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -143,6 +145,24 @@ class JBeretProcessor {
         additionalBeans.produce(new AdditionalBeanBuildItem(QuarkusJobRepository.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(InMemoryJobRepositorySupplier.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(JdbcJobRepositorySupplier.class));
+    }
+
+    @BuildStep
+    void tracing(
+            Capabilities capabilities,
+            BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
+        if (capabilities.isPresent(Capability.OPENTELEMETRY_TRACER)) {
+            // The listeners are only referenced by name, and added to the Jobs at runtime. Use the class names, because
+            // the classes require the optional OpenTelemetry dependency
+            additionalBeans.produce(AdditionalBeanBuildItem.builder()
+                    .addBeanClasses(
+                            "io.quarkiverse.jberet.runtime.telemetry.JBeretInstrumenterTracer",
+                            "io.quarkiverse.jberet.runtime.telemetry.JBeretTracingJobListener",
+                            "io.quarkiverse.jberet.runtime.telemetry.JBeretTracingStepListener",
+                            "io.quarkiverse.jberet.runtime.telemetry.JBeretTracingChunkListener")
+                    .setUnremovable()
+                    .build());
+        }
     }
 
     @BuildStep
@@ -374,9 +394,10 @@ class JBeretProcessor {
             BeanContainerBuildItem beanContainer,
             // Ordering only: the JDBC Repository creates its tables if they don't exist, so schema management tools
             // (Flyway, Liquibase) must run first
-            List<JdbcDataSourceSchemaReadyBuildItem> schemaReady) {
+            List<JdbcDataSourceSchemaReadyBuildItem> schemaReady,
+            Capabilities capabilities) {
 
-        recorder.init(beanContainer.getValue());
+        recorder.init(beanContainer.getValue(), capabilities.isPresent(Capability.OPENTELEMETRY_TRACER));
 
         return new ServiceStartBuildItem("jberet");
     }

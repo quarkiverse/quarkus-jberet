@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="partition" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="step">
+    <chunk item-count="10">
+      <reader ref="tracingItemReader">
+        <properties>
+          <property name="items" value="1"/>
+        </properties>
+      </reader>
+      <writer ref="tracingItemWriter"/>
+    </chunk>
+    <partition>
+      <plan partitions="2" threads="2"/>
+    </partition>
+  </step>
+</job>
