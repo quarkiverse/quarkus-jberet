@@ -14,6 +14,9 @@ used in the following scenarios:
 - Report generation from large datasets
 - Any other scenario which requires fail over safety
 
+Chunk Processing covers what runs inside a single `Step`. To combine multiple `Steps` in a `Job`, see
+xref:job-composition.adoc[Job Composition].
+
 A Chunk requires two batch components, an `ItemReader` and an `ItemWriter`, with an optional `ItemProcessor` in
 between. The data is read one item at a time, creating chunks that will be written out, within a transaction
 boundary:
@@ -154,6 +157,12 @@ void execute() {
 [TIP]
 ====
 Use `io.quarkiverse.jberet.runtime.api.ItemWriter<T>` which support generic data types
+====
+
+[TIP]
+====
+To process the chunks of a `Step` in parallel, partition the `Step`. See
+xref:job-composition.adoc#partitions[Partitions].
 ====
 
 === Chunk configuration

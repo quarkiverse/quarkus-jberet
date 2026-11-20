@@ -47,6 +47,9 @@ a `Chunk` or a `Batchlet`.
 A `Job` can be wired together via a Job Specification Language in XML, or programmatically via
 a `org.jberet.job.model.JobBuilder.JobBuilder`.
 
+A `Job` may also run multiple `Steps` in sequence, choose the next `Step` with transitions and decisions, and run
+`Steps` in parallel with splits and partitions. See xref:job-composition.adoc[Job Composition].
+
 === Running a Job
 
 The `JobOperator` provides operations to start, stop, restart, and inspect jobs. The `JobOperator` can be
@@ -505,4 +508,3 @@ seconds if the condition is `false`, the wait is interrupted and the test fails.
 
 // TODO - Add links to advanced documentation when done
 // TODO - Job and Step Context
-// TODO - Other components: Flow, Decider, Partitions
