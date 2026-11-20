@@ -1,0 +1,870 @@
+include::./includes/attributes.adoc[]
+
+= Job Composition
+
+A `Job` is composed of one or more execution elements, wired together with transitions. The transitions define the
+execution order: the path the execution takes through the `Job`, from the first element until the `Job` ends.
+Composing a `Job` with multiple execution elements is mostly used in the following scenarios:
+
+- Running multiple `Steps` in sequence
+- Choosing which `Step` runs next, depending on the result of a previous `Step`
+- Running independent `Steps` in parallel
+- Processing large volumes of data in parallel, by splitting the data into partitions
+
+Job Composition covers how `Steps` are combined in a `Job`. To implement what runs inside a `Step`, see
+xref:batch.adoc[Batchlet] and xref:chunk-processing.adoc[Chunk Processing].
+
+The execution elements are:
+
+- `step`: runs a `Batchlet` or a `Chunk`
+- `decision`: runs a `Decider` to choose the next element to run
+- `flow`: groups elements to run as a single unit
+- `split`: runs several `flow` elements in parallel
+
+Additionally, a `Step` may be partitioned, to run multiple instances of the same `Step` in parallel, each one
+processing a different slice of the data.
+
+.Execution elements usage
+[cols="50,50"]
+|===
+|Usage|Element
+
+|Run `Steps` in sequence
+|The `next` attribute
+
+|Choose the next element from the result of a `Step`
+|Transitions (`next`, `end`, `fail` and `stop`)
+
+|Choose the next element with custom logic
+|A `decision` with a `Decider`
+
+|Group elements to run as a single unit
+|A `flow` element
+
+|Run different elements in parallel
+|A `split` element
+
+|Run the same `Step` in parallel on different slices of data
+|A partitioned `Step`
+
+|===
+
+The following `Job` combines all of these elements. It downloads auctions, and if there are enough new auctions,
+computes statistics partitioned by region while archiving the downloaded file, before producing a report:
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="download" next="checkAuctions">                 <!--1-->
+    <batchlet ref="auctionsDownloadBatchlet"/>
+  </step>
+  <decision id="checkAuctions" ref="auctionsDecider">       <!--2-->
+    <properties>
+      <property name="minimumAuctions" value="100"/>
+    </properties>
+    <next on="NEW_AUCTIONS" to="process"/>
+    <end on="*"/>
+  </decision>
+  <split id="process" next="report">                        <!--3-->
+    <flow id="statisticsFlow">
+      <step id="statistics">
+        <chunk>
+          <reader ref="auctionItemReader">
+            <properties>
+              <property name="region" value="#{partitionPlan['region']}"/>
+            </properties>
+          </reader>
+          <writer ref="auctionStatisticsWriter"/>
+        </chunk>
+        <partition>                                         <!--4-->
+          <mapper ref="regionPartitionMapper"/>
+        </partition>
+      </step>
+    </flow>
+    <flow id="archiveFlow">
+      <step id="archive">
+        <batchlet ref="auctionsArchiveBatchlet"/>
+      </step>
+    </flow>
+  </split>
+  <step id="report">                                        <!--5-->
+    <batchlet ref="auctionsReportBatchlet"/>
+  </step>
+</job>
+----
+
+<1> The `download` step runs first, and continues with the `checkAuctions` decision
+<2> The `checkAuctions` decision continues with the `process` split if there are enough new auctions, or ends the
+`Job`
+<3> The `process` split runs the `statisticsFlow` and the `archiveFlow` in parallel
+<4> The `statistics` step is partitioned by region
+<5> The `report` step runs when both `flow` elements complete, and ends the `Job`
+
+== Sequencing
+
+The `next` attribute sets the element to run once the current element completes. Each element references the next
+one by its `id`, which must be unique within the `Job`:
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="download" next="statistics">           <!--1-->
+    <batchlet ref="auctionsDownloadBatchlet"/>
+  </step>
+  <step id="statistics" next="report">             <!--2-->
+    <chunk>
+      <reader ref="auctionItemReader"/>
+      <writer ref="auctionStatisticsWriter"/>
+    </chunk>
+  </step>
+  <step id="report">                               <!--3-->
+    <batchlet ref="auctionsReportBatchlet"/>
+  </step>
+</job>
+----
+
+<1> The `download` step is the first element, so it runs first, and continues with the `statistics` step
+<2> The `statistics` step continues with the `report` step
+<3> The `report` step does not set a `next` attribute, so the `Job` ends when the `report` step completes
+
+Or with the programmatic API:
+
+[source,java]
+----
+new JobBuilder("auctionsJob")
+        .step(new StepBuilder("download")
+                .batchlet("auctionsDownloadBatchlet")
+                .next("statistics")
+                .build())
+        .step(new StepBuilder("statistics")
+                .reader("auctionItemReader")
+                .writer("auctionStatisticsWriter")
+                .next("report")
+                .build())
+        .step(new StepBuilder("report")
+                .batchlet("auctionsReportBatchlet")
+                .build())
+        .build();
+----
+
+A `Job` always starts with its first `step`, `flow` or `split` element. Any other element only runs when a `next`
+attribute or a transition references it. The position of an element in the Job XML Definition does not define the
+execution order.
+
+[IMPORTANT]
+====
+An element that completes without a `next` attribute or a matching transition ends the `Job` with the batch status
+`COMPLETED`. When the element is inside a `flow` element, only the `flow` element ends, and the `Job` continues with
+the `next` attribute of the `flow` element.
+====
+
+A `Job` cannot run the same `Step` more than once in a single execution. A `next` attribute or a transition that
+references a `Step` which already ran fails the `Job`.
+
+== Exit Status and Transitions
+
+A transition chooses the next element to run, or ends the `Job`, depending on the exit status of the element that
+completed. Transitions are mostly used to:
+
+- Skip `Steps` when there is no data to process
+- Run a recovery `Step` when a `Step` fails
+- End, fail or stop the `Job` with a custom exit status
+
+[#exit_status]
+=== Exit Status
+
+Every element execution has two statuses. The batch status is set by the Batch Runtime and reports the state of the
+execution, with one of the `BatchStatus` values (`STARTED`, `COMPLETED`, `FAILED`, ...). The exit status is a `String`
+set by the application, to report the result of the execution. When the application does not set an exit status, the
+exit status is the same as the batch status.
+
+The exit status of a `Step` can be set:
+
+- With the value returned by `Batchlet#process`
+- With `StepContext#setExitStatus`, from any batch component of the `Step`
+
+.Batchlet
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/composition/AuctionsDownloadBatchlet.java[]
+----
+
+<1> Downloads the auctions file from the configured `auctions.url`, and counts the number of downloaded auctions
+<2> Stores the number of downloaded auctions in the persistent user data of the `StepExecution`, so other elements of
+the `Job` can retrieve it
+<3> Sets the exit status of the `Step` to `NO_AUCTIONS` when there are no auctions to download
+<4> Sets the exit status of the `Step` to `COMPLETED`
+
+=== Transition Elements
+
+Transition elements are declared in a `step`, `flow` or `decision` element, after the definition of the element:
+
+.Transition elements
+|===
+|Element|Usage
+
+|`<next on="..." to="..."/>`
+|Continues the execution with the element referenced by `to`
+
+|`<end on="..." exit-status="..."/>`
+|Ends the `Job` with the batch status `COMPLETED`
+
+|`<fail on="..." exit-status="..."/>`
+|Ends the `Job` with the batch status `FAILED`
+
+|`<stop on="..." exit-status="..." restart="..."/>`
+|Ends the `Job` with the batch status `STOPPED`
+
+|===
+
+The `on` attribute is required, and sets the exit status that triggers the transition. It supports the wildcards `*`,
+to match zero or more characters, and `?`, to match exactly one character. The optional `exit-status` attribute sets
+the exit status of the `Job` when the `Job` ends. Without it, the exit status of the `Job` does not change, and it is
+the same as the batch status of the `Job` if no other element set it.
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="download" next="statistics">
+    <batchlet ref="auctionsDownloadBatchlet"/>
+    <end on="NO_AUCTIONS"/>                                 <!--1-->
+    <fail on="ERROR_*" exit-status="DOWNLOAD_FAILED"/>      <!--2-->
+  </step>
+  <step id="statistics">
+    <chunk>
+      <reader ref="auctionItemReader"/>
+      <writer ref="auctionStatisticsWriter"/>
+    </chunk>
+  </step>
+</job>
+----
+
+<1> Ends the `Job` with the batch status `COMPLETED` when there are no auctions to download
+<2> Fails the `Job` with the exit status `DOWNLOAD_FAILED` when the exit status of the `download` step starts with
+`ERROR_`
+
+When the exit status of the `download` step does not match any transition element, the `Job` continues with the
+`next` attribute, the `statistics` step.
+
+[IMPORTANT]
+====
+Transition elements are evaluated in the order they are declared, and only the first one that matches the exit status
+is applied. Always declare the most specific transition elements first, and the ones with `on="*"` last.
+====
+
+Transition elements are always evaluated before the `next` attribute. If no transition element matches, the
+execution continues with the `next` attribute, or ends the `Job` with the batch status `COMPLETED` if the element does
+not set a `next` attribute.
+
+The `fail` and `stop` transition elements always end the `Job`, even when they are declared in an element inside a
+`flow` element. The `end` transition element behaves differently inside a `flow` element, see <<flows>>. The
+transition elements set the batch status of the `Job`, but not the batch status of the element that declares them.
+
+=== Failed Steps
+
+When a `Step` fails, its exit status is `FAILED`, unless the application sets a different exit status. A failed `Step`
+ignores the `next` attribute, and fails the `Job`, unless a transition element matches the exit status. Use a `next`
+transition element to run a recovery `Step` instead:
+
+[source,xml]
+----
+<step id="download" next="statistics">
+  <batchlet ref="auctionsDownloadBatchlet"/>
+  <next on="FAILED" to="notifyFailure"/>            <!--1-->
+</step>
+----
+
+<1> Runs the `notifyFailure` step when the `download` step fails
+
+=== Stop and Restart
+
+The `stop` transition element stops the `Job`, so it can be restarted later with `JobOperator#restart`. By default,
+a restart begins with the first element of the `Job`, and skips the `Steps` that already completed. The optional
+`restart` attribute sets the element where the restart begins:
+
+[source,xml]
+----
+<step id="download" next="statistics" allow-start-if-complete="true">   <!--1-->
+  <batchlet ref="auctionsDownloadBatchlet"/>
+  <stop on="NO_AUCTIONS" restart="download"/>                          <!--2-->
+</step>
+----
+
+<1> Allows the `download` step to run again on restart, even if it completed
+<2> Stops the `Job` when there are no auctions to download yet, and restarts it from the `download` step
+
+[IMPORTANT]
+====
+A `Step` that completed does not run again on restart, unless it sets `allow-start-if-complete="true"`. A skipped
+`Step` keeps the exit status of its previous execution, so its transition elements are evaluated again with the same
+exit status. Without `allow-start-if-complete="true"`, the `download` step would stop the `Job` again on every
+restart.
+====
+
+The programmatic API provides the transition elements with the methods `nextOn`, `endOn`, `failOn` and `stopOn`:
+
+[source,java]
+----
+new JobBuilder("auctionsJob")
+        .step(new StepBuilder("download")
+                .batchlet("auctionsDownloadBatchlet")
+                .endOn("NO_AUCTIONS").exitStatus()
+                .failOn("ERROR_*").exitStatus("DOWNLOAD_FAILED")
+                .nextOn("FAILED").to("notifyFailure")
+                .next("statistics")
+                .build())
+        ...
+        .build();
+----
+
+[#decisions]
+== Decisions
+
+A `decision` delegates the choice of the next element to a `jakarta.batch.api.Decider`. The `Decider` is a batch
+component that receives the executions of the previous element, and returns a new exit status, which the transition
+elements of the `decision` use to choose the next element. A `decision` is mostly used to:
+
+- Choose the next element with logic that does not belong in a `Step`
+- Choose the next element from the results of multiple `Steps`, for instance, after a `split`
+- Choose the next element from the configuration of the `Job`
+
+The `AuctionsDownloadBatchlet`, described in <<exit_status>>, stores the number of downloaded auctions in the
+persistent user data of the `StepExecution` of the `download` step.
+
+The `Decider` uses the number of downloaded auctions to decide if the `Job` should compute the auctions statistics:
+
+.Decider
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/composition/AuctionsDecider.java[]
+----
+
+<1> The minimum number of auctions to compute the statistics, from the `decision` properties
+<2> The `StepExecution` of the `download` step, which runs before the `decision`
+<3> Retrieves the number of downloaded auctions
+<4> Returns the exit status for the transition elements of the `decision`
+
+The `Decider` must be referenced in a `decision` element:
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="download" next="checkAuctions">
+    <batchlet ref="auctionsDownloadBatchlet"/>
+  </step>
+  <decision id="checkAuctions" ref="auctionsDecider">       <!--1-->
+    <properties>
+      <property name="minimumAuctions" value="100"/>        <!--2-->
+    </properties>
+    <next on="NEW_AUCTIONS" to="statistics"/>               <!--3-->
+    <end on="NO_AUCTIONS"/>                                 <!--4-->
+  </decision>
+  <step id="statistics">
+    <chunk>
+      <reader ref="auctionItemReader"/>
+      <writer ref="auctionStatisticsWriter"/>
+    </chunk>
+  </step>
+</job>
+----
+
+<1> The `auctionsDecider` is the reference name of the `AuctionsDecider`
+<2> Configures the `minimumAuctions` property, injected in the `AuctionsDecider` with `@BatchProperty`
+<3> Runs the `statistics` step when there are enough new auctions
+<4> Ends the `Job` with the batch status `COMPLETED` when there are not enough new auctions
+
+Or with the programmatic API:
+
+[source,java]
+----
+new JobBuilder("auctionsJob")
+        .step(new StepBuilder("download")
+                .batchlet("auctionsDownloadBatchlet")
+                .next("checkAuctions")
+                .build())
+        .decision(new DecisionBuilder("checkAuctions", "auctionsDecider")
+                .property("minimumAuctions", "100")
+                .nextOn("NEW_AUCTIONS").to("statistics")
+                .endOn("NO_AUCTIONS").exitStatus()
+                .build())
+        .step(new StepBuilder("statistics")
+                .reader("auctionItemReader")
+                .writer("auctionStatisticsWriter")
+                .build())
+        .build();
+----
+
+The value returned by the `Decider` sets the exit status of the `Job`, or of the `flow` element when the `decision` is
+inside a `flow` element. When the `decision` ends the `Job`, the `exit-status` attribute of the transition element
+replaces the value returned by the `Decider`. When no transition element matches, the `Job` ends with the batch status
+`COMPLETED`, or only the `flow` element ends, when the `decision` is inside a `flow` element.
+
+The `StepExecutions` received by the `Decider` depend on the element that runs before the `decision`:
+
+.`StepExecutions` received by the `Decider`
+|===
+|Previous element|`StepExecutions`
+
+|`step`
+|The `StepExecution` of the `Step`
+
+|`flow`
+|The `StepExecution` of the last `Step` executed in the `flow` element
+
+|`split`
+|One `StepExecution` per `flow` element of the `split`, with the last `Step` executed in each `flow` element
+
+|===
+
+[IMPORTANT]
+====
+A `decision` cannot be the first element of a `Job`, because it requires a previous element to decide on. A `Job`
+that starts with a `decision` fails. A `decision` does not support the `next` attribute; it only uses transition
+elements.
+====
+
+If the `Decider` throws an exception, the `Job` ends with the batch status `FAILED`.
+
+[#flows]
+== Flows
+
+A `flow` element groups elements that run as a single unit. The elements of a `flow` element run in sequence,
+following the same rules as the elements of a `Job`, and when the `flow` element ends, the execution continues with
+the `next` attribute of the `flow` element. A `flow` element is mostly used to:
+
+- Group `Steps` that belong together, so the rest of the `Job` references a single element
+- Keep the transitions of a group of elements local to the group
+- Define each branch of a `split` element, which only runs `flow` elements
+
+A `flow` element may contain `step`, `decision`, `flow` and `split` elements:
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <flow id="ingest" next="report">                          <!--1-->
+    <step id="download" next="checkAuctions">               <!--2-->
+      <batchlet ref="auctionsDownloadBatchlet"/>
+    </step>
+    <decision id="checkAuctions" ref="auctionsDecider">
+      <properties>
+        <property name="minimumAuctions" value="100"/>
+      </properties>
+      <next on="NEW_AUCTIONS" to="statistics"/>             <!--3-->
+    </decision>
+    <step id="statistics">                                  <!--4-->
+      <chunk>
+        <reader ref="auctionItemReader"/>
+        <writer ref="auctionStatisticsWriter"/>
+      </chunk>
+    </step>
+  </flow>
+  <step id="report">                                        <!--5-->
+    <batchlet ref="auctionsReportBatchlet"/>
+  </step>
+</job>
+----
+
+<1> The `ingest` flow is the first element of the `Job`, so it runs first, and continues with the `report` step
+<2> The `download` step is the first element of the `ingest` flow, so it runs first in the `flow` element
+<3> Runs the `statistics` step when there are enough new auctions. Otherwise, no transition element matches, and the
+`ingest` flow ends
+<4> The `statistics` step does not set a `next` attribute, so the `ingest` flow ends when the `statistics` step
+completes
+<5> The `report` step runs when the `ingest` flow ends, with or without the `statistics` step
+
+Or with the programmatic API:
+
+[source,java]
+----
+new JobBuilder("auctionsJob")
+        .flow(new FlowBuilder("ingest")
+                .step(new StepBuilder("download")
+                        .batchlet("auctionsDownloadBatchlet")
+                        .next("checkAuctions")
+                        .build())
+                .decision(new DecisionBuilder("checkAuctions", "auctionsDecider")
+                        .property("minimumAuctions", "100")
+                        .nextOn("NEW_AUCTIONS").to("statistics")
+                        .build())
+                .step(new StepBuilder("statistics")
+                        .reader("auctionItemReader")
+                        .writer("auctionStatisticsWriter")
+                        .build())
+                .next("report")
+                .build())
+        .step(new StepBuilder("report")
+                .batchlet("auctionsReportBatchlet")
+                .build())
+        .build();
+----
+
+[IMPORTANT]
+====
+The elements of a `flow` element can only reference elements of the same `flow` element, with the `next` attribute
+or a `next` transition element. A reference to an element outside the `flow` element fails the `Job`. Likewise,
+elements outside the `flow` element cannot reference elements inside the `flow` element; they reference the `flow`
+element itself.
+====
+
+The `fail` and `stop` transition elements, declared in an element inside a `flow` element, end the `Job`. The `end`
+transition element only ends the `flow` element, and the execution continues with the `next` attribute of the `flow`
+element, unless the `flow` element is inside a `split` element, see <<splits>>.
+
+[#splits]
+== Splits
+
+A `split` element runs its `flow` elements in parallel, each one in a separate thread. The `split` element completes
+when all of its `flow` elements complete, and the execution continues with the `next` attribute of the `split`
+element. A `split` element is mostly used to:
+
+- Run independent `Steps` at the same time, to reduce the total execution time of the `Job`
+- Process different data sources in parallel, before combining the results in a later `Step`
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="download" next="process">
+    <batchlet ref="auctionsDownloadBatchlet"/>
+  </step>
+  <split id="process" next="report">                        <!--1-->
+    <flow id="statisticsFlow">                              <!--2-->
+      <step id="statistics">
+        <chunk>
+          <reader ref="auctionItemReader"/>
+          <writer ref="auctionStatisticsWriter"/>
+        </chunk>
+      </step>
+    </flow>
+    <flow id="archiveFlow">                                 <!--3-->
+      <step id="archive">
+        <batchlet ref="auctionsArchiveBatchlet"/>
+      </step>
+    </flow>
+  </split>
+  <step id="report">                                        <!--4-->
+    <batchlet ref="auctionsReportBatchlet"/>
+  </step>
+</job>
+----
+
+<1> The `process` split runs when the `download` step completes, and continues with the `report` step
+<2> The `statisticsFlow` computes the auctions statistics
+<3> The `archiveFlow` archives the downloaded auctions file, in parallel with the `statisticsFlow`
+<4> The `report` step runs when both the `statisticsFlow` and the `archiveFlow` complete
+
+Or with the programmatic API:
+
+[source,java]
+----
+new JobBuilder("auctionsJob")
+        .step(new StepBuilder("download")
+                .batchlet("auctionsDownloadBatchlet")
+                .next("process")
+                .build())
+        .split(new SplitBuilder("process")
+                .flow(new FlowBuilder("statisticsFlow")
+                        .step(new StepBuilder("statistics")
+                                .reader("auctionItemReader")
+                                .writer("auctionStatisticsWriter")
+                                .build())
+                        .build())
+                .flow(new FlowBuilder("archiveFlow")
+                        .step(new StepBuilder("archive")
+                                .batchlet("auctionsArchiveBatchlet")
+                                .build())
+                        .build())
+                .next("report")
+                .build())
+        .step(new StepBuilder("report")
+                .batchlet("auctionsReportBatchlet")
+                .build())
+        .build();
+----
+
+[IMPORTANT]
+====
+A `split` element only contains `flow` elements, and only supports the `next` attribute. Transition elements are not
+supported in a `split` element.
+====
+
+The `split` element always waits for all of its `flow` elements to end, even when one of them fails or stops. Then,
+the result of the `split` element depends on how its `flow` elements ended:
+
+.`split` results
+|===
+|`flow` elements|Result
+
+|All complete
+|The execution continues with the `next` attribute of the `split` element
+
+|At least one fails
+|The `Job` ends with the batch status `FAILED`
+
+|At least one stops, and none fails
+|The `Job` ends with the batch status `STOPPED`
+
+|At least one ends with an `end` transition element, and none fails or stops
+|The `Job` ends with the batch status `COMPLETED`
+
+|===
+
+A `decision` placed after a `split` element receives one `StepExecution` per `flow` element, with the last `Step`
+executed in each `flow` element. Use it to choose the next element from the combined results of the `flow` elements,
+see <<decisions>>.
+
+[#partitions]
+== Partitions
+
+A partitioned `Step` runs multiple instances of the same `Step` in parallel, called partitions. Each partition runs in
+a separate thread, with its own instances of the batch components of the `Step`, and processes a different slice of
+the data, configured by its own partition properties. Partitions are mostly used to:
+
+- Process large volumes of data faster, by splitting the data into ranges, for instance by id or by date
+- Process the same data from multiple sources, for instance one file or region per partition
+- Spread the processing of a `Chunk` across multiple threads, while keeping each `Chunk` in its own transaction
+
+A `Step` is partitioned with a `partition` element, declared after the `chunk` or `batchlet` element. A `Step` with
+either a `Chunk` or a `Batchlet` can be partitioned. For a `Chunk`, each partition processes its own chunks, with its
+own checkpoints, as described in xref:chunk-processing.adoc[Chunk Processing].
+
+=== Partition Plan
+
+The `plan` element configures a fixed number of partitions in the Job XML Definition, and the properties of each
+partition:
+
+.auctionsJob.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="auctionsJob" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <step id="statistics">
+    <chunk>
+      <reader ref="auctionItemReader">
+        <properties>
+          <property name="region" value="#{partitionPlan['region']}"/>  <!--1-->
+        </properties>
+      </reader>
+      <writer ref="auctionStatisticsWriter"/>
+    </chunk>
+    <partition>
+      <plan partitions="2" threads="2">                                 <!--2-->
+        <properties partition="0">                                      <!--3-->
+          <property name="region" value="eu"/>
+        </properties>
+        <properties partition="1">
+          <property name="region" value="us"/>
+        </properties>
+      </plan>
+    </partition>
+  </step>
+</job>
+----
+
+<1> Each partition resolves the `region` property of the `auctionItemReader` with the `region` property of its
+partition
+<2> Runs `2` partitions, with `2` threads
+<3> The properties of the first partition, with the partition index `0`
+
+The `#{partitionPlan['<name>']}` substitution expression references a partition property. It is only resolved in the
+properties of the partitioned `Step`, and its batch components, which inject the resolved value with
+`@BatchProperty`:
+
+[source,java]
+----
+@Inject
+@BatchProperty
+String region;
+----
+
+The `threads` attribute sets the maximum number of partitions running at the same time, and defaults to the number of
+partitions. When there are more partitions than threads, the remaining partitions wait for a running partition to end.
+
+=== Partition Mapper
+
+A `jakarta.batch.api.partition.PartitionMapper` creates the partition plan programmatically, when the `Step` runs,
+instead of the `plan` element. Use it when the number of partitions, or their properties, depend on the data or on
+the configuration:
+
+.PartitionMapper
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/composition/RegionPartitionMapper.java[]
+----
+
+<1> The regions to process, from the `auctions.regions` configuration, for instance `auctions.regions=eu,us,kr,tw`
+<2> Sets the `region` partition property of each partition
+<3> Runs one partition per region
+<4> Runs `2` partitions at the same time
+
+The `PartitionMapper` is referenced with the `mapper` element:
+
+[source,xml]
+----
+<partition>
+  <mapper ref="regionPartitionMapper"/>
+</partition>
+----
+
+[NOTE]
+====
+A `partition` element configures either a `plan` or a `mapper` element, but not both.
+====
+
+=== Collector, Analyzer and Reducer
+
+The `partition` element optionally configures batch components to coordinate the partitions:
+
+.Partition batch components
+|===
+|Component|Usage
+
+|`PartitionCollector`
+|Runs in the thread of each partition. Its `collectPartitionData` method is called after each `Chunk` checkpoint
+and when the partition ends, or when the `Batchlet` ends, and returns data to send to the `PartitionAnalyzer`
+
+|`PartitionAnalyzer`
+|Runs in the thread of the `Step`. Receives the data sent by each `PartitionCollector` with `analyzeCollectorData`,
+and the batch status and exit status of each partition when it ends with `analyzeStatus`
+
+|`PartitionReducer`
+|Runs in the thread of the `Step`. Receives callbacks before the partitions start (`beginPartitionedStep`), after all
+partitions end (`beforePartitionedStepCompletion`), when the `Step` rolls back (`rollbackPartitionedStep`), and when
+the `Step` ends (`afterPartitionedStepCompletion`), to prepare and clean up the work of the partitions
+
+|===
+
+[source,xml]
+----
+<partition>
+  <mapper ref="regionPartitionMapper"/>
+  <collector ref="auctionsPartitionCollector"/>
+  <analyzer ref="auctionsPartitionAnalyzer"/>
+  <reducer ref="auctionsPartitionReducer"/>
+</partition>
+----
+
+[TIP]
+====
+The `PartitionCollector` and the `PartitionAnalyzer` are the way to send data from the partitions to the `Step`. For
+instance, each partition may collect the number of items it processed, and the `PartitionAnalyzer` may add them up
+in the `Step`.
+====
+
+By default, the `PartitionAnalyzer` runs in a transaction, which commits after all partitions end, or rolls back if
+a partition fails or stops. To run the `PartitionAnalyzer` without a transaction, set the `Step` property
+`jberet.analyzer.txDisabled` to `true`.
+
+=== Status and Restart
+
+A partitioned `Step` completes when all of its partitions complete. If a partition fails, the `Step` fails, and if a
+partition stops, and none fails, the `Step` stops. Each partition has its own exit status, which is reported to the
+`PartitionAnalyzer`, and does not set the exit status of the `Step`. To set the exit status of the `Step`, from the
+results of the partitions, use `StepContext#setExitStatus` in the `PartitionAnalyzer` or the `PartitionReducer`.
+
+When a partitioned `Step` is restarted, only the partitions that did not complete run again, each one from its
+last checkpoint, and with the same partition properties. A `PartitionMapper` may set `partitionsOverride` to `true`
+in the `PartitionPlan`, to discard the previous partitions on restart, and run the new partition plan from the
+beginning. In this case, the `PartitionReducer` `rollbackPartitionedStep` method is called before the partitions run.
+
+=== Partition Scope
+
+Each partition creates its own instances of the batch components of the `Step`. To share a CDI bean between the batch
+components of the same partition, annotate it with `@org.jberet.cdi.PartitionScoped`. Each partition gets its own
+instance of the bean, which is destroyed when the partition ends.
+
+[NOTE]
+====
+The `@PartitionScoped`, `@StepScoped` and `@JobScoped` scopes are specific to JBeret, and not portable to other Batch
+implementations.
+====
+
+[#programmatic_definition]
+== Programmatic Definition
+
+All the execution elements and transition elements of the Job XML Definition are also available in the programmatic
+API, with the `JobBuilder`, `StepBuilder`, `DecisionBuilder`, `FlowBuilder` and `SplitBuilder`. The following CDI
+producer defines the same `Job` described at the beginning of this page:
+
+.CDI Producer
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/composition/AuctionsJob.java[]
+----
+
+<1> The `download` step runs first, and continues with the `checkAuctions` decision
+<2> The `checkAuctions` decision continues with the `process` split if there are enough new auctions, or ends the
+`Job`
+<3> The `process` split runs the `statisticsFlow` and the `archiveFlow` in parallel
+<4> The `statistics` step is partitioned by region, with the `RegionPartitionMapper`
+<5> The `report` step runs when both `flow` elements complete, and ends the `Job`
+
+[NOTE]
+====
+A `Job` declared and produced by a CDI bean is automatically discovered and exposed in the `JobOperator`.
+====
+
+The following table maps the Job XML Definition to the programmatic API:
+
+.Job XML Definition and programmatic API
+|===
+|Job XML|Programmatic API
+
+|`<step id="...">`
+|`new StepBuilder(id)`
+
+|`<decision id="..." ref="...">`
+|`new DecisionBuilder(id, ref)`
+
+|`<flow id="...">`
+|`new FlowBuilder(id)`
+
+|`<split id="...">`
+|`new SplitBuilder(id)`
+
+|`next` attribute
+|`next(id)`, in the `StepBuilder`, `FlowBuilder` and `SplitBuilder`
+
+|`<next on="..." to="..."/>`
+|`nextOn(on).to(id)`
+
+|`<end on="..." exit-status="..."/>`
+|`endOn(on).exitStatus(exitStatus)`
+
+|`<fail on="..." exit-status="..."/>`
+|`failOn(on).exitStatus(exitStatus)`
+
+|`<stop on="..." exit-status="..." restart="..."/>`
+|`stopOn(on).restartFrom(id).exitStatus(exitStatus)`
+
+|`<plan partitions="..." threads="...">`
+|`partitionPlan(partitions, threads, partitionProperties)`, in the `StepBuilder`
+
+|`<mapper>`, `<collector>`, `<analyzer>`, `<reducer>`
+|`partitionMapper(ref)`, `partitionCollector(ref)`, `partitionAnalyzer(ref)`, `partitionReducer(ref)`, in the
+`StepBuilder`
+
+|===
+
+[IMPORTANT]
+====
+The `endOn`, `failOn` and `stopOn` methods must be completed with a call to `exitStatus`, even without an exit status,
+to return to the enclosing builder.
+====
+
+[TIP]
+====
+The xref:dev-ui.adoc[Dev UI] renders a diagram of each `Job`, with its execution elements and the transitions
+between them, either from the Job XML Definition or from the programmatic API.
+====

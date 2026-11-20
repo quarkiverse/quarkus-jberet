@@ -1,5 +1,6 @@
 * xref:index.adoc[Getting started]
 * xref:batch.adoc[Writing a Batch Application with Quarkus]
+* xref:job-composition.adoc[Job Composition]
 * xref:chunk-processing.adoc[Chunk Processing]
 * xref:components.adoc[Components]
 * xref:dev-ui.adoc[Dev UI]
