@@ -19,6 +19,7 @@ import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobOperatorContext;
 
 import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
+import io.quarkiverse.jberet.runtime.telemetry.JBeretInstrumenterTracer;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.ThreadPoolConfig;
@@ -49,17 +50,23 @@ public class JBeretRecorder {
         JBeretDataHolder.registerJobs(jobs);
     }
 
-    public void init(final BeanContainer beanContainer) {
+    public void init(final BeanContainer beanContainer, final boolean tracingAvailable) {
+        boolean tracing = tracingAvailable && config.getValue().telemetry().tracesEnabled();
         ManagedExecutor managedExecutor = beanContainer.beanInstance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.beanInstance(TransactionManager.class);
         JobRepository jobRepository = beanContainer.beanInstance(QuarkusJobRepository.class);
         JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, config.getValue(),
                 threadPoolConfig.getValue());
-        BatchEnvironment batchEnvironment = new QuarkusBatchEnvironment(jobRepository, quarkusJobExecutor, transactionManager);
+        BatchEnvironment batchEnvironment = new QuarkusBatchEnvironment(
+                jobRepository, quarkusJobExecutor, transactionManager, tracing);
 
         JobProcessor jobProcessor = new JobProcessorBuilder().stepConsumer(new SetTransactionTimeout()).build();
         JBeretDataHolder.JBeretData data = JBeretDataHolder.getData();
         data.getJobs().forEach(jobProcessor::processJob);
+        if (tracing) {
+            JobProcessor tracingListeners = JBeretInstrumenterTracer.listeners();
+            data.getJobs().forEach(tracingListeners::processJob);
+        }
 
         QuarkusJobOperator operator = new QuarkusJobOperator(config.getValue(), batchEnvironment, data.getJobs());
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);

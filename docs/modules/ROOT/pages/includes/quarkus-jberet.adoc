@@ -70,6 +70,27 @@ endif::add-copy-button-to-env-var[]
 |int
 |
 
+a| [[quarkus-jberet_quarkus-jberet-telemetry-traces-enabled]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-telemetry-traces-enabled[`+++quarkus.jberet.telemetry.traces.enabled+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.jberet.telemetry.traces.enabled+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Create OpenTelemetry spans for Job, Step and Chunk executions. Only applies when the `quarkus-opentelemetry` extension is present and tracing is enabled.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_JBERET_TELEMETRY_TRACES_ENABLED+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_JBERET_TELEMETRY_TRACES_ENABLED+++`
+endif::add-copy-button-to-env-var[]
+--
+|boolean
+|`+++true+++`
+
 a|icon:lock[title=Fixed at build time] [[quarkus-jberet_quarkus-jberet-job-job-listeners]] [.property-path]##link:#quarkus-jberet_quarkus-jberet-job-job-listeners[`+++quarkus.jberet.job.job-listeners+++`]##
 ifdef::add-copy-button-to-config-props[]
 config_property_copy_button:+++quarkus.jberet.job.job-listeners+++[]

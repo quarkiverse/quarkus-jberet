@@ -4,8 +4,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import io.quarkiverse.jberet.runtime.JBeretConfig.Repository;
-import io.quarkiverse.jberet.runtime.JBeretConfig.Repository.Jdbc;
 import io.quarkus.runtime.annotations.ConfigDocMapKey;
 import io.quarkus.runtime.annotations.ConfigDocSection;
 import io.quarkus.runtime.annotations.ConfigPhase;
@@ -13,6 +11,7 @@ import io.quarkus.runtime.annotations.ConfigRoot;
 import io.quarkus.runtime.configuration.TrimmedStringConverter;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithConverter;
+import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithDefaults;
 import io.smallrye.config.WithName;
 
@@ -36,6 +35,11 @@ public interface JBeretRuntimeConfig {
      */
     @ConfigDocSection
     Repository repository();
+
+    /**
+     * The JBeret OpenTelemetry configuration.
+     */
+    Telemetry telemetry();
 
     interface JobConfig {
         /**
@@ -79,5 +83,15 @@ public interface JBeretRuntimeConfig {
             @WithConverter(TrimmedStringConverter.class)
             Optional<String> dbTableSuffix();
         }
+    }
+
+    interface Telemetry {
+        /**
+         * Create OpenTelemetry spans for Job, Step and Chunk executions. Only applies when the
+         * <code>quarkus-opentelemetry</code> extension is present and tracing is enabled.
+         */
+        @WithName("traces.enabled")
+        @WithDefault("true")
+        boolean tracesEnabled();
     }
 }
