@@ -10,10 +10,13 @@ invocation models, including ad hoc, scheduled, and on-demand.
 
 == Why Batch?
 
-// TODO - review
-- Use idle resources and shift processing time by scheduling Jobs to off-peak hours
-- Process high-volume datasets and manage extensive repeated work.
-- Handle complex business logic
+Batch processing is ideal for:
+
+- Processing high-volume datasets in chunks, with transactions and checkpoints
+- Restarting failed `Jobs` from the last checkpoint, without reprocessing completed work
+- Running `Steps` in parallel to reduce the total processing time
+- Scheduling `Jobs` to off-peak hours, to make use of idle resources
+- Tracking the status and history of each `Job` execution
 
 == Writing a Batch Application
 
@@ -42,13 +45,16 @@ implementation("io.quarkiverse.jberet:quarkus-jberet:{project-version}")
 A `Job` is an entity that encapsulates an entire batch process, and it is simply a container for `Steps`. A `Step` is a
 domain object that encapsulates an independent, sequential phase of a batch job. A `Step` can be as simple as loading
 data from a file into the database or as complex as processing payments in a banking system. A batch `Step` is either
-a `Chunk` or a `Batchlet`.
+a `Chunk` or a `Batchlet`. See xref:chunk-processing.adoc[Chunk Processing].
 
 A `Job` can be wired together via a Job Specification Language in XML, or programmatically via
 a `org.jberet.job.model.JobBuilder.JobBuilder`.
 
 A `Job` may also run multiple `Steps` in sequence, choose the next `Step` with transitions and decisions, and run
 `Steps` in parallel with splits and partitions. See xref:job-composition.adoc[Job Composition].
+
+The Quarkus JBeret Components provide reusable batch components for common data processing tasks, like reading and
+writing files, JSON, JDBC, JPA, or MongoDB. See xref:components.adoc[Components].
 
 === Running a Job
 
@@ -72,7 +78,6 @@ void execute() {
 [source,java]
 ----
 import jakarta.batch.operations.JobOperator;
-import jakarta.batch.runtime.BatchRuntime;
 import java.util.Properties;
 import jakarta.inject.Inject;
 
@@ -140,12 +145,10 @@ with `@Named`, its name is shortened to the component's simple name with the fir
 <2> The configuration `directory` to set which directory should be scanned for files
 <3> The configuration `daysToKeep` to set which files should be kept
 
-// TODO - Validate how Job configuration is working
-
 [TIP]
 ====
 The `directory` and `daysToKeep` configuration can also be set in `application.properties` or any other available
-configuration source.
+configuration source. A property set in the `Job` definition takes precedence over `application.properties`.
 ====
 
 Alternatively, the `Job` definition may also be declared programmatically:
@@ -174,10 +177,7 @@ import jakarta.inject.Inject;
 JobOperator jobOperator;
 
 void execute() {
-    Properties properties = new Properties();
-    properties.setProperty("directory", "/tmp/batch");
-    properties.setProperty("daysToKeep", "30");
-    long executionId = jobOperator.start("fileCleanupJob", properties);
+    long executionId = jobOperator.start("fileCleanupJob", new Properties());
 }
 ----
 
@@ -243,6 +243,49 @@ and ends with any of the status `STOPPED`, `FAILED`, `COMPLETED`, or `ABANDONED`
 The returned `JobExecution` from `JobOperator.getJobExecution` does not automatically update with the execution of
 the `Job`. Invoke `JobOperator.getJobExecution` as many times as required to get updated information.
 ====
+
+In dev mode, the xref:dev-ui.adoc[Dev UI] also lists the latest `Job` executions, with their status.
+
+=== Job and Step Context
+
+The `JobContext` and the `StepContext` provide information about the current `Job` and `Step` execution to the batch
+components. Both may be injected with `@Inject` in any batch component, like a `Batchlet`, a `Chunk` component or a
+listener:
+
+.JobContext and StepContext
+[source,java]
+----
+include::{examples-dir}/org/acme/batch/context/FileArchiveBatchlet.java[]
+----
+
+<1> Retrieves the number of files archived by a previous execution of the `Step`, when the `Job` is restarted
+<2> Stores the number of archived files in the persistent user data of the `Step`
+<3> Shares the number of archived files with the other `Steps` and listeners of the `Job`
+
+The `JobContext` provides:
+
+- The `Job` name, the `JobInstance` id and the `JobExecution` id
+- The batch status and exit status of the `Job`
+- The `Job` properties, set in the `job` element
+- The transient user data, shared by all the `Steps` and listeners of the `JobExecution`
+
+The `StepContext` provides:
+
+- The `Step` name and the `StepExecution` id
+- The batch status and exit status of the `Step`
+- The `Step` properties, set in the `step` element
+- The transient user data, only available to the batch components of the `Step`
+- The persistent user data, stored with the `StepExecution`
+- The `Step` metrics and the exception that failed the `Step`
+
+[NOTE]
+====
+The transient user data is only kept in memory during the `JobExecution`. The persistent user data is stored by the
+`JobRepository`, even when the `Step` fails, and it is available again to the `Step` when the `Job` is restarted.
+====
+
+The exit status of a `Step` may be set with `StepContext#setExitStatus`, to choose the next `Step` to execute. See
+xref:job-composition.adoc#exit_status[Exit Status].
 
 [#configuring_a_jobrepository]
 == Configuring a JobRepository
@@ -549,6 +592,3 @@ include::{examples-dir}/org/acme/batch/FileCleanupJobTest.java[]
 <2> Wait at most for 5 seconds, until the test condition is `true`, whichever happens first; at the end of the 5
 seconds if the condition is `false`, the wait is interrupted and the test fails.
 <3> Query `JobOperator` for the status of the `Job` and check if the `Job` reached a status of `BatchStatus.COMPLETED`
-
-// TODO - Add links to advanced documentation when done
-// TODO - Job and Step Context

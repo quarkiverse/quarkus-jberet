@@ -13,9 +13,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Named
 public class FileCleanupBatchlet extends AbstractBatchlet {
-    @ConfigProperty
+    @ConfigProperty(name = "directory", defaultValue = "/tmp")
     String directory;
-    @ConfigProperty
+    @ConfigProperty(name = "daysToKeep", defaultValue = "7")
     int daysToKeep;
 
     @Override
