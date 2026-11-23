@@ -21,7 +21,6 @@ import org.jberet.spi.JobOperatorContext;
 import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
 import io.quarkiverse.jberet.runtime.telemetry.JBeretInstrumenterTracer;
 import io.quarkus.arc.runtime.BeanContainer;
-import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.ThreadPoolConfig;
 import io.quarkus.runtime.annotations.Recorder;
 import io.quarkus.scheduler.runtime.SchedulerRuntimeConfig;
@@ -29,34 +28,29 @@ import io.smallrye.config.ConfigValue;
 import io.smallrye.config.DefaultValuesConfigSource;
 import io.smallrye.config.SmallRyeConfig;
 
+/**
+ * The {@link Recorder} is only kept for {@link #registerJobs(List, BeanContainer)}, because the parsed {@link Job}
+ * graph is recorded with non-default constructors, and cannot be captured by a service lambda.
+ */
 @Recorder
 public class JBeretRecorder {
-    private final RuntimeValue<JBeretRuntimeConfig> config;
-    private final RuntimeValue<ThreadPoolConfig> threadPoolConfig;
-    private final RuntimeValue<SchedulerRuntimeConfig> schedulerConfig;
-
-    public JBeretRecorder(
-            final RuntimeValue<JBeretRuntimeConfig> config,
-            final RuntimeValue<ThreadPoolConfig> threadPoolConfig,
-            final RuntimeValue<SchedulerRuntimeConfig> schedulerConfig) {
-        this.config = config;
-        this.threadPoolConfig = threadPoolConfig;
-        this.schedulerConfig = schedulerConfig;
-    }
-
     public void registerJobs(List<Job> jobs, BeanContainer beanContainer) {
         JobsProducer jobsProducer = beanContainer.beanInstance(JobsProducer.class);
         jobs.addAll(jobsProducer.getJobs());
         JBeretDataHolder.registerJobs(jobs);
     }
 
-    public void init(final BeanContainer beanContainer, final boolean tracingAvailable) {
-        boolean tracing = tracingAvailable && config.getValue().telemetry().tracesEnabled();
+    public static void init(
+            final BeanContainer beanContainer,
+            final JBeretRuntimeConfig config,
+            final ThreadPoolConfig threadPoolConfig,
+            final SchedulerRuntimeConfig schedulerConfig,
+            final boolean tracingAvailable) {
+        boolean tracing = tracingAvailable && config.telemetry().tracesEnabled();
         ManagedExecutor managedExecutor = beanContainer.beanInstance(ManagedExecutor.class);
         TransactionManager transactionManager = beanContainer.beanInstance(TransactionManager.class);
         JobRepository jobRepository = beanContainer.beanInstance(QuarkusJobRepository.class);
-        JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, config.getValue(),
-                threadPoolConfig.getValue());
+        JobExecutor quarkusJobExecutor = new QuarkusJobExecutor(managedExecutor, config, threadPoolConfig);
         BatchEnvironment batchEnvironment = new QuarkusBatchEnvironment(
                 jobRepository, quarkusJobExecutor, transactionManager, tracing);
 
@@ -68,11 +62,11 @@ public class JBeretRecorder {
             data.getJobs().forEach(tracingListeners::processJob);
         }
 
-        QuarkusJobOperator operator = new QuarkusJobOperator(config.getValue(), batchEnvironment, data.getJobs());
+        QuarkusJobOperator operator = new QuarkusJobOperator(config, batchEnvironment, data.getJobs());
         JobOperatorContext operatorContext = JobOperatorContext.create(operator);
         JobOperatorContext.setJobOperatorContextSelector(() -> operatorContext);
 
-        if (schedulerConfig.getValue().enabled()) {
+        if (schedulerConfig.enabled()) {
             beanContainer.beanInstance(JobScheduler.class);
             JobScheduler.getJobScheduler(QuarkusJobScheduler.Delegate.class, new ConcurrentHashMap<>(), null);
         }

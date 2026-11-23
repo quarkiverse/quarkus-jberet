@@ -54,6 +54,7 @@ import io.quarkiverse.jberet.runtime.JBeretConfig;
 import io.quarkiverse.jberet.runtime.JBeretConfigSourceFactoryBuilder;
 import io.quarkiverse.jberet.runtime.JBeretProducer;
 import io.quarkiverse.jberet.runtime.JBeretRecorder;
+import io.quarkiverse.jberet.runtime.JBeretRuntimeConfig;
 import io.quarkiverse.jberet.runtime.JobProcessor;
 import io.quarkiverse.jberet.runtime.JobProcessor.JobProcessorBuilder;
 import io.quarkiverse.jberet.runtime.JobsProducer;
@@ -72,12 +73,15 @@ import io.quarkus.arc.deployment.BeanDiscoveryFinishedBuildItem;
 import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem;
 import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
+import io.quarkus.arc.deployment.SyntheticBeansRuntimeInitBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem.ValidationErrorBuildItem;
 import io.quarkus.arc.processor.BeanInfo;
 import io.quarkus.arc.processor.BeanResolver;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.arc.processor.InjectionPointInfo;
+import io.quarkus.arc.runtime.BeanContainer;
+import io.quarkus.core.deployment.service.ServiceRegistrar;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.IsProduction;
@@ -96,6 +100,8 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
+import io.quarkus.runtime.ThreadPoolConfig;
+import io.quarkus.scheduler.runtime.SchedulerRuntimeConfig;
 
 class JBeretProcessor {
     private static final Logger log = Logger.getLogger("io.quarkiverse.jberet");
@@ -388,16 +394,20 @@ class JBeretProcessor {
     }
 
     @BuildStep
-    @Record(ExecutionTime.RUNTIME_INIT)
-    ServiceStartBuildItem init(
-            JBeretRecorder recorder,
-            BeanContainerBuildItem beanContainer,
-            // Ordering only: the JDBC Repository creates its tables if they don't exist, so schema management tools
-            // (Flyway, Liquibase) must run first
-            List<JdbcDataSourceSchemaReadyBuildItem> schemaReady,
-            Capabilities capabilities) {
-
-        recorder.init(beanContainer.getValue(), capabilities.isPresent(Capability.OPENTELEMETRY_TRACER));
+    ServiceStartBuildItem init(ServiceRegistrar serviceRegistrar, Capabilities capabilities) {
+        boolean tracingAvailable = capabilities.isPresent(Capability.OPENTELEMETRY_TRACER);
+        serviceRegistrar.forService("io.quarkiverse.jberet")
+                .require(BeanContainer.class)
+                .require(JBeretRuntimeConfig.class)
+                .require(ThreadPoolConfig.class)
+                .require(SchedulerRuntimeConfig.class)
+                // CDI beans used to set up JBeret (TransactionManager, DataSource for the JDBC Repository, etc.)
+                .afterBuildItem(SyntheticBeansRuntimeInitBuildItem.class)
+                // The JDBC Repository creates its tables if they don't exist, so schema management tools
+                // (Flyway, Liquibase) must run first
+                .afterBuildItem(JdbcDataSourceSchemaReadyBuildItem.class)
+                .onStart((ctx, beanContainer, config, threadPoolConfig, schedulerConfig) -> JBeretRecorder
+                        .init(beanContainer, config, threadPoolConfig, schedulerConfig, tracingAvailable));
 
         return new ServiceStartBuildItem("jberet");
     }
