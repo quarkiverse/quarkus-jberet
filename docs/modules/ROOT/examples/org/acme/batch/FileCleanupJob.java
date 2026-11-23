@@ -17,7 +17,7 @@ public class FileCleanupJob {
                 .step(new StepBuilder("cleanupStep")
                         .batchlet("fileCleanupBatchlet")
                         .property("directory", "/tmp/batch")
-                        .property("daysToKepp", "30")
+                        .property("daysToKeep", "30")
                         .build())
                 .build();
     }
