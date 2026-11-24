@@ -21,7 +21,7 @@ To use the extension, add the dependency to the target project:
     <dependency>
       <groupId>io.quarkiverse.jberet</groupId>
       <artifactId>quarkus-jberet-bom</artifactId>
-      <version>2.11.0</version>
+      <version>3.0.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -35,7 +35,7 @@ To use the extension, add the dependency to the target project:
 </dependencies>
 ```
 
-:information_source: **Recommended Quarkus version: `3.36.0` or higher for Quarkiverse JBeret 2.11.x**
+:information_source: **Recommended Quarkus version: `3.36.x` or higher for Quarkiverse JBeret 2.11.x**
 :information_source: **Recommended Quarkus version: `4.0.x` or higher for Quarkiverse JBeret 3.0.x**
 
 The Batch API and Runtime will be available out of the box. Please refer to the
