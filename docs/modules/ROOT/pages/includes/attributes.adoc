@@ -1,4 +1,4 @@
-:project-version: 3.0.0.Beta1
+:project-version: 3.0.0
 :quarkus-version: 4.0.0
 :chappie-version: 2.0.0
 
